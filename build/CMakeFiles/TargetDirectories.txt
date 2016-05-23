@@ -1,0 +1,2 @@
+/home/dream/mzx/build/CMakeFiles/mzx_static.dir
+/home/dream/mzx/build/CMakeFiles/mzx.dir
