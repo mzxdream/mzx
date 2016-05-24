@@ -4,6 +4,8 @@
 #include <mzx/util/m_errno.h>
 #include <sys/epoll.h>
 #include <mzx/util/m_type_define.h>
+#include <map>
+#include <list>
 
 #ifndef EPOLLRDHUP
 #define EPOLLRDHUP 0x2000

@@ -161,14 +161,9 @@ MError MEventLoop::AddTimerEvent(int64_t start_time, MTimerEventBase *p_event)
     {
         return MError::No;
     }
-    auto ret = timer_events_.insert(std::make_pair(start_time, p_event));
-    if (!ret.second)
-    {
-        MLOG(MGetDefaultLogger(), MERR, "insert timer event failed");
-        return MError::Unknown;
-    }
+    auto iter = timer_events_.insert(std::make_pair(start_time, p_event));
     p_event->SetActived(true);
-    p_event->SetLocation(ret.first);
+    p_event->SetLocation(iter);
     return MError::No;
 }
 
@@ -260,7 +255,7 @@ MError MEventLoop::Interrupt()
 {
     epoll_event ee;
     ee.events = EPOLLIN | EPOLLERR | EPOLLET;
-    ee.data.ptr = interrupter_[0];
+    ee.data.ptr = interrupter_;
     if (epoll_ctl(epoll_fd_, EPOLL_CTL_MOD, interrupter_[0], &ee) == -1)
     {
         MLOG(MGetDefaultLogger(), MERR, "epoll ctl failed errno:", errno);

@@ -32,7 +32,7 @@ void MTimeoutEvent::Clear()
     this->MTimerEventBase::Clear();
 }
 
-MError MTimeoutEvent::EnableEvent(const std::function<void ()> &cb, int timeout, int repeated = 0)
+MError MTimeoutEvent::EnableEvent(const std::function<void ()> &cb, int timeout, int repeated)
 {
     if (!cb || timeout <= 0)
     {

@@ -154,7 +154,7 @@ MBeforeEventBase::~MBeforeEventBase()
     Clear();
 }
 
-void MBeforeEventBase::IsActived()
+bool MBeforeEventBase::IsActived() const
 {
     return actived_;
 }

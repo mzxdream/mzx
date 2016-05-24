@@ -6,6 +6,7 @@
 #include <functional>
 
 class MBeforeIdleEvent
+    :public MBeforeEventBase
 {
 public:
     MBeforeIdleEvent();

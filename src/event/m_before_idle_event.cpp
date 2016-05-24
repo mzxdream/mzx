@@ -16,12 +16,12 @@ MError MBeforeIdleEvent::Init(MEventLoop *p_event_loop)
     {
         return MError::Invalid;
     }
-    return this->MTimerEventBase::Init(p_event_loop);
+    return this->MBeforeEventBase::Init(p_event_loop);
 }
 
 void MBeforeIdleEvent::Clear()
 {
-    this->MTimerEventBase::Clear();
+    this->MBeforeEventBase::Clear();
 }
 
 MError MBeforeIdleEvent::EnableEvent(const std::function<void ()> &cb, int repeated)
@@ -37,12 +37,12 @@ MError MBeforeIdleEvent::EnableEvent(const std::function<void ()> &cb, int repea
     }
     cb_ = cb;
     repeated_ = repeated;
-    return this->MTimerEventBase::EnableEvent();
+    return this->MBeforeEventBase::EnableEvent();
 }
 
 MError MBeforeIdleEvent::DisableEvent()
 {
-    return this->MTimerEventBase::DisableEvent();
+    return this->MBeforeEventBase::DisableEvent();
 }
 
 void MBeforeIdleEvent::_OnCallback()
@@ -54,6 +54,6 @@ void MBeforeIdleEvent::_OnCallback()
         {
             --repeated_;
         }
-        this->MTimerEventBase::EnableEvent();
+        this->MBeforeEventBase::EnableEvent();
     }
 }

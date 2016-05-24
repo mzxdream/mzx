@@ -6,6 +6,7 @@
 #include <functional>
 
 class MAfterIdleEvent
+    :public MAfterEventBase
 {
 public:
     MAfterIdleEvent();
