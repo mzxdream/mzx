@@ -68,7 +68,7 @@ MError MSocketOpts::Accept(int sock, int &accept_sock, std::string &ip, unsigned
     {
         if (errno == EINTR)
         {
-            return MError::InterruptedSysCall;
+            return MError::INTR;
         }
         else if (errno == EAGAIN)
         {
@@ -91,7 +91,7 @@ MError MSocketOpts::Accept(int sock, int &accept_sock)
     {
         if (errno == EINTR)
         {
-            return MError::InterruptedSysCall;
+            return MError::INTR;
         }
         else if (errno == EAGAIN)
         {
@@ -122,6 +122,14 @@ MError MSocketOpts::Connect(int sock, const std::string &ip, unsigned port)
         {
             return MError::InProgress;
         }
+        else if (errno == EINTR)
+        {
+            return MError::INTR;
+        }
+        else if (errno == ECONNREFUSED)
+        {
+            return MError::ConnectRefused;
+        }
         return MError::Unknown;
     }
     return MError::No;
@@ -138,7 +146,7 @@ std::pair<int, MError> MSocketOpts::Send(int sock, const char *p_buf, int len)
     {
         if (errno == EINTR)
         {
-            return std::make_pair(0, MError::InterruptedSysCall);
+            return std::make_pair(0, MError::INTR);
         }
         else if (errno == EAGAIN)
         {
@@ -156,7 +164,7 @@ std::pair<int, MError> MSocketOpts::Recv(int sock, void *p_buf, int len)
     {
         if (errno == EINTR)
         {
-            return std::make_pair(0, MError::InterruptedSysCall);
+            return std::make_pair(0, MError::INTR);
         }
         else if (errno == EAGAIN)
         {

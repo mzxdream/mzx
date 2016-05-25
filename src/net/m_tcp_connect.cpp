@@ -44,7 +44,9 @@ MError MTcpConnect::Start(const std::string &ip, unsigned port, const std::funct
         return err;
     }
     cb_ = cb;
-    err = MSocketOpts::Connect(fd_, ip, port);
+    while ((err = MSocketOpts::Connect(fd_, ip, port)) == MError::INTR)
+    {
+    }
     if (err == MError::InProgress)
     {
         return MError::No;
