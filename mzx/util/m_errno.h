@@ -23,6 +23,8 @@ enum class MError
     Invalid = 15,
     Underflow = 16,
     Overflow = 17,
+    SockDisconnect = 18,
+    SockError = 19,
 };
 
 #endif
