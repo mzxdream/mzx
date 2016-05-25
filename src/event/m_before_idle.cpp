@@ -1,16 +1,16 @@
-#include <mzx/event/m_before_idle_event.h>
+#include <mzx/event/m_before_idle.h>
 
-MBeforeIdleEvent::MBeforeIdleEvent()
+MBeforeIdle::MBeforeIdle()
     :repeated_(0)
 {
 }
 
-MBeforeIdleEvent::~MBeforeIdleEvent()
+MBeforeIdle::~MBeforeIdle()
 {
     Clear();
 }
 
-MError MBeforeIdleEvent::Init(MEventLoop *p_event_loop)
+MError MBeforeIdle::Init(MEventLoop *p_event_loop)
 {
     if (!p_event_loop)
     {
@@ -19,18 +19,18 @@ MError MBeforeIdleEvent::Init(MEventLoop *p_event_loop)
     return this->MBeforeEventBase::Init(p_event_loop);
 }
 
-void MBeforeIdleEvent::Clear()
+void MBeforeIdle::Clear()
 {
     this->MBeforeEventBase::Clear();
 }
 
-MError MBeforeIdleEvent::EnableEvent(const std::function<void ()> &cb, int repeated)
+MError MBeforeIdle::Start(const std::function<void ()> &cb, int repeated)
 {
     if (!cb)
     {
         return MError::Invalid;
     }
-    MError err = DisableEvent();
+    MError err = this->MBeforeEventBase::DisableEvent();
     if (err != MError::No)
     {
         return err;
@@ -40,12 +40,12 @@ MError MBeforeIdleEvent::EnableEvent(const std::function<void ()> &cb, int repea
     return this->MBeforeEventBase::EnableEvent();
 }
 
-MError MBeforeIdleEvent::DisableEvent()
+MError MBeforeIdle::Stop()
 {
     return this->MBeforeEventBase::DisableEvent();
 }
 
-void MBeforeIdleEvent::_OnCallback()
+void MBeforeIdle::_OnCallback()
 {
     cb_();
     if (repeated_ != 0)

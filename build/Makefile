@@ -130,59 +130,59 @@ mzx_static/fast:
 	$(MAKE) -f CMakeFiles/mzx_static.dir/build.make CMakeFiles/mzx_static.dir/build
 .PHONY : mzx_static/fast
 
-src/event/m_after_idle_event.o: src/event/m_after_idle_event.cpp.o
-.PHONY : src/event/m_after_idle_event.o
+src/event/m_after_idle.o: src/event/m_after_idle.cpp.o
+.PHONY : src/event/m_after_idle.o
 
 # target to build an object file
-src/event/m_after_idle_event.cpp.o:
-	$(MAKE) -f CMakeFiles/mzx.dir/build.make CMakeFiles/mzx.dir/src/event/m_after_idle_event.cpp.o
-	$(MAKE) -f CMakeFiles/mzx_static.dir/build.make CMakeFiles/mzx_static.dir/src/event/m_after_idle_event.cpp.o
-.PHONY : src/event/m_after_idle_event.cpp.o
+src/event/m_after_idle.cpp.o:
+	$(MAKE) -f CMakeFiles/mzx.dir/build.make CMakeFiles/mzx.dir/src/event/m_after_idle.cpp.o
+	$(MAKE) -f CMakeFiles/mzx_static.dir/build.make CMakeFiles/mzx_static.dir/src/event/m_after_idle.cpp.o
+.PHONY : src/event/m_after_idle.cpp.o
 
-src/event/m_after_idle_event.i: src/event/m_after_idle_event.cpp.i
-.PHONY : src/event/m_after_idle_event.i
+src/event/m_after_idle.i: src/event/m_after_idle.cpp.i
+.PHONY : src/event/m_after_idle.i
 
 # target to preprocess a source file
-src/event/m_after_idle_event.cpp.i:
-	$(MAKE) -f CMakeFiles/mzx.dir/build.make CMakeFiles/mzx.dir/src/event/m_after_idle_event.cpp.i
-	$(MAKE) -f CMakeFiles/mzx_static.dir/build.make CMakeFiles/mzx_static.dir/src/event/m_after_idle_event.cpp.i
-.PHONY : src/event/m_after_idle_event.cpp.i
+src/event/m_after_idle.cpp.i:
+	$(MAKE) -f CMakeFiles/mzx.dir/build.make CMakeFiles/mzx.dir/src/event/m_after_idle.cpp.i
+	$(MAKE) -f CMakeFiles/mzx_static.dir/build.make CMakeFiles/mzx_static.dir/src/event/m_after_idle.cpp.i
+.PHONY : src/event/m_after_idle.cpp.i
 
-src/event/m_after_idle_event.s: src/event/m_after_idle_event.cpp.s
-.PHONY : src/event/m_after_idle_event.s
+src/event/m_after_idle.s: src/event/m_after_idle.cpp.s
+.PHONY : src/event/m_after_idle.s
 
 # target to generate assembly for a file
-src/event/m_after_idle_event.cpp.s:
-	$(MAKE) -f CMakeFiles/mzx.dir/build.make CMakeFiles/mzx.dir/src/event/m_after_idle_event.cpp.s
-	$(MAKE) -f CMakeFiles/mzx_static.dir/build.make CMakeFiles/mzx_static.dir/src/event/m_after_idle_event.cpp.s
-.PHONY : src/event/m_after_idle_event.cpp.s
+src/event/m_after_idle.cpp.s:
+	$(MAKE) -f CMakeFiles/mzx.dir/build.make CMakeFiles/mzx.dir/src/event/m_after_idle.cpp.s
+	$(MAKE) -f CMakeFiles/mzx_static.dir/build.make CMakeFiles/mzx_static.dir/src/event/m_after_idle.cpp.s
+.PHONY : src/event/m_after_idle.cpp.s
 
-src/event/m_before_idle_event.o: src/event/m_before_idle_event.cpp.o
-.PHONY : src/event/m_before_idle_event.o
+src/event/m_before_idle.o: src/event/m_before_idle.cpp.o
+.PHONY : src/event/m_before_idle.o
 
 # target to build an object file
-src/event/m_before_idle_event.cpp.o:
-	$(MAKE) -f CMakeFiles/mzx.dir/build.make CMakeFiles/mzx.dir/src/event/m_before_idle_event.cpp.o
-	$(MAKE) -f CMakeFiles/mzx_static.dir/build.make CMakeFiles/mzx_static.dir/src/event/m_before_idle_event.cpp.o
-.PHONY : src/event/m_before_idle_event.cpp.o
+src/event/m_before_idle.cpp.o:
+	$(MAKE) -f CMakeFiles/mzx.dir/build.make CMakeFiles/mzx.dir/src/event/m_before_idle.cpp.o
+	$(MAKE) -f CMakeFiles/mzx_static.dir/build.make CMakeFiles/mzx_static.dir/src/event/m_before_idle.cpp.o
+.PHONY : src/event/m_before_idle.cpp.o
 
-src/event/m_before_idle_event.i: src/event/m_before_idle_event.cpp.i
-.PHONY : src/event/m_before_idle_event.i
+src/event/m_before_idle.i: src/event/m_before_idle.cpp.i
+.PHONY : src/event/m_before_idle.i
 
 # target to preprocess a source file
-src/event/m_before_idle_event.cpp.i:
-	$(MAKE) -f CMakeFiles/mzx.dir/build.make CMakeFiles/mzx.dir/src/event/m_before_idle_event.cpp.i
-	$(MAKE) -f CMakeFiles/mzx_static.dir/build.make CMakeFiles/mzx_static.dir/src/event/m_before_idle_event.cpp.i
-.PHONY : src/event/m_before_idle_event.cpp.i
+src/event/m_before_idle.cpp.i:
+	$(MAKE) -f CMakeFiles/mzx.dir/build.make CMakeFiles/mzx.dir/src/event/m_before_idle.cpp.i
+	$(MAKE) -f CMakeFiles/mzx_static.dir/build.make CMakeFiles/mzx_static.dir/src/event/m_before_idle.cpp.i
+.PHONY : src/event/m_before_idle.cpp.i
 
-src/event/m_before_idle_event.s: src/event/m_before_idle_event.cpp.s
-.PHONY : src/event/m_before_idle_event.s
+src/event/m_before_idle.s: src/event/m_before_idle.cpp.s
+.PHONY : src/event/m_before_idle.s
 
 # target to generate assembly for a file
-src/event/m_before_idle_event.cpp.s:
-	$(MAKE) -f CMakeFiles/mzx.dir/build.make CMakeFiles/mzx.dir/src/event/m_before_idle_event.cpp.s
-	$(MAKE) -f CMakeFiles/mzx_static.dir/build.make CMakeFiles/mzx_static.dir/src/event/m_before_idle_event.cpp.s
-.PHONY : src/event/m_before_idle_event.cpp.s
+src/event/m_before_idle.cpp.s:
+	$(MAKE) -f CMakeFiles/mzx.dir/build.make CMakeFiles/mzx.dir/src/event/m_before_idle.cpp.s
+	$(MAKE) -f CMakeFiles/mzx_static.dir/build.make CMakeFiles/mzx_static.dir/src/event/m_before_idle.cpp.s
+.PHONY : src/event/m_before_idle.cpp.s
 
 src/event/m_event_base.o: src/event/m_event_base.cpp.o
 .PHONY : src/event/m_event_base.o
@@ -238,32 +238,32 @@ src/event/m_event_loop.cpp.s:
 	$(MAKE) -f CMakeFiles/mzx_static.dir/build.make CMakeFiles/mzx_static.dir/src/event/m_event_loop.cpp.s
 .PHONY : src/event/m_event_loop.cpp.s
 
-src/event/m_timeout_event.o: src/event/m_timeout_event.cpp.o
-.PHONY : src/event/m_timeout_event.o
+src/event/m_timeout.o: src/event/m_timeout.cpp.o
+.PHONY : src/event/m_timeout.o
 
 # target to build an object file
-src/event/m_timeout_event.cpp.o:
-	$(MAKE) -f CMakeFiles/mzx.dir/build.make CMakeFiles/mzx.dir/src/event/m_timeout_event.cpp.o
-	$(MAKE) -f CMakeFiles/mzx_static.dir/build.make CMakeFiles/mzx_static.dir/src/event/m_timeout_event.cpp.o
-.PHONY : src/event/m_timeout_event.cpp.o
+src/event/m_timeout.cpp.o:
+	$(MAKE) -f CMakeFiles/mzx.dir/build.make CMakeFiles/mzx.dir/src/event/m_timeout.cpp.o
+	$(MAKE) -f CMakeFiles/mzx_static.dir/build.make CMakeFiles/mzx_static.dir/src/event/m_timeout.cpp.o
+.PHONY : src/event/m_timeout.cpp.o
 
-src/event/m_timeout_event.i: src/event/m_timeout_event.cpp.i
-.PHONY : src/event/m_timeout_event.i
+src/event/m_timeout.i: src/event/m_timeout.cpp.i
+.PHONY : src/event/m_timeout.i
 
 # target to preprocess a source file
-src/event/m_timeout_event.cpp.i:
-	$(MAKE) -f CMakeFiles/mzx.dir/build.make CMakeFiles/mzx.dir/src/event/m_timeout_event.cpp.i
-	$(MAKE) -f CMakeFiles/mzx_static.dir/build.make CMakeFiles/mzx_static.dir/src/event/m_timeout_event.cpp.i
-.PHONY : src/event/m_timeout_event.cpp.i
+src/event/m_timeout.cpp.i:
+	$(MAKE) -f CMakeFiles/mzx.dir/build.make CMakeFiles/mzx.dir/src/event/m_timeout.cpp.i
+	$(MAKE) -f CMakeFiles/mzx_static.dir/build.make CMakeFiles/mzx_static.dir/src/event/m_timeout.cpp.i
+.PHONY : src/event/m_timeout.cpp.i
 
-src/event/m_timeout_event.s: src/event/m_timeout_event.cpp.s
-.PHONY : src/event/m_timeout_event.s
+src/event/m_timeout.s: src/event/m_timeout.cpp.s
+.PHONY : src/event/m_timeout.s
 
 # target to generate assembly for a file
-src/event/m_timeout_event.cpp.s:
-	$(MAKE) -f CMakeFiles/mzx.dir/build.make CMakeFiles/mzx.dir/src/event/m_timeout_event.cpp.s
-	$(MAKE) -f CMakeFiles/mzx_static.dir/build.make CMakeFiles/mzx_static.dir/src/event/m_timeout_event.cpp.s
-.PHONY : src/event/m_timeout_event.cpp.s
+src/event/m_timeout.cpp.s:
+	$(MAKE) -f CMakeFiles/mzx.dir/build.make CMakeFiles/mzx.dir/src/event/m_timeout.cpp.s
+	$(MAKE) -f CMakeFiles/mzx_static.dir/build.make CMakeFiles/mzx_static.dir/src/event/m_timeout.cpp.s
+.PHONY : src/event/m_timeout.cpp.s
 
 src/net/m_socket_opts.o: src/net/m_socket_opts.cpp.o
 .PHONY : src/net/m_socket_opts.o
@@ -437,21 +437,21 @@ help:
 	@echo "... rebuild_cache"
 	@echo "... mzx_static"
 	@echo "... mzx"
-	@echo "... src/event/m_after_idle_event.o"
-	@echo "... src/event/m_after_idle_event.i"
-	@echo "... src/event/m_after_idle_event.s"
-	@echo "... src/event/m_before_idle_event.o"
-	@echo "... src/event/m_before_idle_event.i"
-	@echo "... src/event/m_before_idle_event.s"
+	@echo "... src/event/m_after_idle.o"
+	@echo "... src/event/m_after_idle.i"
+	@echo "... src/event/m_after_idle.s"
+	@echo "... src/event/m_before_idle.o"
+	@echo "... src/event/m_before_idle.i"
+	@echo "... src/event/m_before_idle.s"
 	@echo "... src/event/m_event_base.o"
 	@echo "... src/event/m_event_base.i"
 	@echo "... src/event/m_event_base.s"
 	@echo "... src/event/m_event_loop.o"
 	@echo "... src/event/m_event_loop.i"
 	@echo "... src/event/m_event_loop.s"
-	@echo "... src/event/m_timeout_event.o"
-	@echo "... src/event/m_timeout_event.i"
-	@echo "... src/event/m_timeout_event.s"
+	@echo "... src/event/m_timeout.o"
+	@echo "... src/event/m_timeout.i"
+	@echo "... src/event/m_timeout.s"
 	@echo "... src/net/m_socket_opts.o"
 	@echo "... src/net/m_socket_opts.i"
 	@echo "... src/net/m_socket_opts.s"

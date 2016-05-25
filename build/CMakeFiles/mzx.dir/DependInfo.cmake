@@ -4,11 +4,11 @@ set(CMAKE_DEPENDS_LANGUAGES
   )
 # The set of files for implicit dependencies of each language:
 set(CMAKE_DEPENDS_CHECK_CXX
-  "/home/dream/mzx/src/event/m_after_idle_event.cpp" "/home/dream/mzx/build/CMakeFiles/mzx.dir/src/event/m_after_idle_event.cpp.o"
-  "/home/dream/mzx/src/event/m_before_idle_event.cpp" "/home/dream/mzx/build/CMakeFiles/mzx.dir/src/event/m_before_idle_event.cpp.o"
+  "/home/dream/mzx/src/event/m_after_idle.cpp" "/home/dream/mzx/build/CMakeFiles/mzx.dir/src/event/m_after_idle.cpp.o"
+  "/home/dream/mzx/src/event/m_before_idle.cpp" "/home/dream/mzx/build/CMakeFiles/mzx.dir/src/event/m_before_idle.cpp.o"
   "/home/dream/mzx/src/event/m_event_base.cpp" "/home/dream/mzx/build/CMakeFiles/mzx.dir/src/event/m_event_base.cpp.o"
   "/home/dream/mzx/src/event/m_event_loop.cpp" "/home/dream/mzx/build/CMakeFiles/mzx.dir/src/event/m_event_loop.cpp.o"
-  "/home/dream/mzx/src/event/m_timeout_event.cpp" "/home/dream/mzx/build/CMakeFiles/mzx.dir/src/event/m_timeout_event.cpp.o"
+  "/home/dream/mzx/src/event/m_timeout.cpp" "/home/dream/mzx/build/CMakeFiles/mzx.dir/src/event/m_timeout.cpp.o"
   "/home/dream/mzx/src/net/m_socket_opts.cpp" "/home/dream/mzx/build/CMakeFiles/mzx.dir/src/net/m_socket_opts.cpp.o"
   "/home/dream/mzx/src/thread/m_thread.cpp" "/home/dream/mzx/build/CMakeFiles/mzx.dir/src/thread/m_thread.cpp.o"
   "/home/dream/mzx/src/util/m_circle_buffer.cpp" "/home/dream/mzx/build/CMakeFiles/mzx.dir/src/util/m_circle_buffer.cpp.o"

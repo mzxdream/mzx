@@ -1,16 +1,16 @@
-#include <mzx/event/m_after_idle_event.h>
+#include <mzx/event/m_after_idle.h>
 
-MAfterIdleEvent::MAfterIdleEvent()
+MAfterIdle::MAfterIdle()
     :repeated_(0)
 {
 }
 
-MAfterIdleEvent::~MAfterIdleEvent()
+MAfterIdle::~MAfterIdle()
 {
     Clear();
 }
 
-MError MAfterIdleEvent::Init(MEventLoop *p_event_loop)
+MError MAfterIdle::Init(MEventLoop *p_event_loop)
 {
     if (!p_event_loop)
     {
@@ -19,18 +19,18 @@ MError MAfterIdleEvent::Init(MEventLoop *p_event_loop)
     return this->MAfterEventBase::Init(p_event_loop);
 }
 
-void MAfterIdleEvent::Clear()
+void MAfterIdle::Clear()
 {
     this->MAfterEventBase::Clear();
 }
 
-MError MAfterIdleEvent::EnableEvent(const std::function<void ()> &cb, int repeated)
+MError MAfterIdle::Start(const std::function<void ()> &cb, int repeated)
 {
     if (!cb)
     {
         return MError::Invalid;
     }
-    MError err = DisableEvent();
+    MError err = this->MAfterEventBase::DisableEvent();
     if (err != MError::No)
     {
         return err;
@@ -40,12 +40,12 @@ MError MAfterIdleEvent::EnableEvent(const std::function<void ()> &cb, int repeat
     return this->MAfterEventBase::EnableEvent();
 }
 
-MError MAfterIdleEvent::DisableEvent()
+MError MAfterIdle::Stop()
 {
     return this->MAfterEventBase::DisableEvent();
 }
 
-void MAfterIdleEvent::_OnCallback()
+void MAfterIdle::_OnCallback()
 {
     cb_();
     if (repeated_ != 0)

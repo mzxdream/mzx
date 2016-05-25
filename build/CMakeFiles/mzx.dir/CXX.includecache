@@ -6,7 +6,7 @@
 
 #IncludeRegexTransform: 
 
-../../mzx/mzx/event/m_after_idle_event.h
+../../mzx/mzx/event/m_after_idle.h
 mzx/util/m_errno.h
 -
 mzx/event/m_event_base.h
@@ -14,7 +14,7 @@ mzx/event/m_event_base.h
 functional
 -
 
-../../mzx/mzx/event/m_before_idle_event.h
+../../mzx/mzx/event/m_before_idle.h
 mzx/util/m_errno.h
 -
 mzx/event/m_event_base.h
@@ -50,7 +50,7 @@ sys/epoll.h
 mzx/event/m_event_base.h
 -
 
-../../mzx/mzx/event/m_timeout_event.h
+../../mzx/mzx/event/m_timeout.h
 mzx/util/m_errno.h
 -
 mzx/event/m_event_loop.h
@@ -128,12 +128,12 @@ stdint.h
 string
 -
 
-/home/dream/mzx/src/event/m_after_idle_event.cpp
-mzx/event/m_after_idle_event.h
+/home/dream/mzx/src/event/m_after_idle.cpp
+mzx/event/m_after_idle.h
 -
 
-/home/dream/mzx/src/event/m_before_idle_event.cpp
-mzx/event/m_before_idle_event.h
+/home/dream/mzx/src/event/m_before_idle.cpp
+mzx/event/m_before_idle.h
 -
 
 /home/dream/mzx/src/event/m_event_base.cpp
@@ -154,8 +154,8 @@ mzx/util/m_time.h
 unistd.h
 -
 
-/home/dream/mzx/src/event/m_timeout_event.cpp
-mzx/event/m_timeout_event.h
+/home/dream/mzx/src/event/m_timeout.cpp
+mzx/event/m_timeout.h
 -
 
 /home/dream/mzx/src/net/m_socket_opts.cpp

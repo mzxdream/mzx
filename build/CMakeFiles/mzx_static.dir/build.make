@@ -190,28 +190,28 @@ CMakeFiles/mzx_static.dir/src/net/m_socket_opts.cpp.o.provides: CMakeFiles/mzx_s
 
 CMakeFiles/mzx_static.dir/src/net/m_socket_opts.cpp.o.provides.build: CMakeFiles/mzx_static.dir/src/net/m_socket_opts.cpp.o
 
-CMakeFiles/mzx_static.dir/src/event/m_after_idle_event.cpp.o: CMakeFiles/mzx_static.dir/flags.make
-CMakeFiles/mzx_static.dir/src/event/m_after_idle_event.cpp.o: ../src/event/m_after_idle_event.cpp
+CMakeFiles/mzx_static.dir/src/event/m_after_idle.cpp.o: CMakeFiles/mzx_static.dir/flags.make
+CMakeFiles/mzx_static.dir/src/event/m_after_idle.cpp.o: ../src/event/m_after_idle.cpp
 	$(CMAKE_COMMAND) -E cmake_progress_report /home/dream/mzx/build/CMakeFiles $(CMAKE_PROGRESS_7)
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Building CXX object CMakeFiles/mzx_static.dir/src/event/m_after_idle_event.cpp.o"
-	g++   $(CXX_DEFINES) $(CXX_FLAGS) -o CMakeFiles/mzx_static.dir/src/event/m_after_idle_event.cpp.o -c /home/dream/mzx/src/event/m_after_idle_event.cpp
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Building CXX object CMakeFiles/mzx_static.dir/src/event/m_after_idle.cpp.o"
+	g++   $(CXX_DEFINES) $(CXX_FLAGS) -o CMakeFiles/mzx_static.dir/src/event/m_after_idle.cpp.o -c /home/dream/mzx/src/event/m_after_idle.cpp
 
-CMakeFiles/mzx_static.dir/src/event/m_after_idle_event.cpp.i: cmake_force
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Preprocessing CXX source to CMakeFiles/mzx_static.dir/src/event/m_after_idle_event.cpp.i"
-	g++  $(CXX_DEFINES) $(CXX_FLAGS) -E /home/dream/mzx/src/event/m_after_idle_event.cpp > CMakeFiles/mzx_static.dir/src/event/m_after_idle_event.cpp.i
+CMakeFiles/mzx_static.dir/src/event/m_after_idle.cpp.i: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Preprocessing CXX source to CMakeFiles/mzx_static.dir/src/event/m_after_idle.cpp.i"
+	g++  $(CXX_DEFINES) $(CXX_FLAGS) -E /home/dream/mzx/src/event/m_after_idle.cpp > CMakeFiles/mzx_static.dir/src/event/m_after_idle.cpp.i
 
-CMakeFiles/mzx_static.dir/src/event/m_after_idle_event.cpp.s: cmake_force
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Compiling CXX source to assembly CMakeFiles/mzx_static.dir/src/event/m_after_idle_event.cpp.s"
-	g++  $(CXX_DEFINES) $(CXX_FLAGS) -S /home/dream/mzx/src/event/m_after_idle_event.cpp -o CMakeFiles/mzx_static.dir/src/event/m_after_idle_event.cpp.s
+CMakeFiles/mzx_static.dir/src/event/m_after_idle.cpp.s: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Compiling CXX source to assembly CMakeFiles/mzx_static.dir/src/event/m_after_idle.cpp.s"
+	g++  $(CXX_DEFINES) $(CXX_FLAGS) -S /home/dream/mzx/src/event/m_after_idle.cpp -o CMakeFiles/mzx_static.dir/src/event/m_after_idle.cpp.s
 
-CMakeFiles/mzx_static.dir/src/event/m_after_idle_event.cpp.o.requires:
-.PHONY : CMakeFiles/mzx_static.dir/src/event/m_after_idle_event.cpp.o.requires
+CMakeFiles/mzx_static.dir/src/event/m_after_idle.cpp.o.requires:
+.PHONY : CMakeFiles/mzx_static.dir/src/event/m_after_idle.cpp.o.requires
 
-CMakeFiles/mzx_static.dir/src/event/m_after_idle_event.cpp.o.provides: CMakeFiles/mzx_static.dir/src/event/m_after_idle_event.cpp.o.requires
-	$(MAKE) -f CMakeFiles/mzx_static.dir/build.make CMakeFiles/mzx_static.dir/src/event/m_after_idle_event.cpp.o.provides.build
-.PHONY : CMakeFiles/mzx_static.dir/src/event/m_after_idle_event.cpp.o.provides
+CMakeFiles/mzx_static.dir/src/event/m_after_idle.cpp.o.provides: CMakeFiles/mzx_static.dir/src/event/m_after_idle.cpp.o.requires
+	$(MAKE) -f CMakeFiles/mzx_static.dir/build.make CMakeFiles/mzx_static.dir/src/event/m_after_idle.cpp.o.provides.build
+.PHONY : CMakeFiles/mzx_static.dir/src/event/m_after_idle.cpp.o.provides
 
-CMakeFiles/mzx_static.dir/src/event/m_after_idle_event.cpp.o.provides.build: CMakeFiles/mzx_static.dir/src/event/m_after_idle_event.cpp.o
+CMakeFiles/mzx_static.dir/src/event/m_after_idle.cpp.o.provides.build: CMakeFiles/mzx_static.dir/src/event/m_after_idle.cpp.o
 
 CMakeFiles/mzx_static.dir/src/event/m_event_loop.cpp.o: CMakeFiles/mzx_static.dir/flags.make
 CMakeFiles/mzx_static.dir/src/event/m_event_loop.cpp.o: ../src/event/m_event_loop.cpp
@@ -236,28 +236,28 @@ CMakeFiles/mzx_static.dir/src/event/m_event_loop.cpp.o.provides: CMakeFiles/mzx_
 
 CMakeFiles/mzx_static.dir/src/event/m_event_loop.cpp.o.provides.build: CMakeFiles/mzx_static.dir/src/event/m_event_loop.cpp.o
 
-CMakeFiles/mzx_static.dir/src/event/m_timeout_event.cpp.o: CMakeFiles/mzx_static.dir/flags.make
-CMakeFiles/mzx_static.dir/src/event/m_timeout_event.cpp.o: ../src/event/m_timeout_event.cpp
+CMakeFiles/mzx_static.dir/src/event/m_timeout.cpp.o: CMakeFiles/mzx_static.dir/flags.make
+CMakeFiles/mzx_static.dir/src/event/m_timeout.cpp.o: ../src/event/m_timeout.cpp
 	$(CMAKE_COMMAND) -E cmake_progress_report /home/dream/mzx/build/CMakeFiles $(CMAKE_PROGRESS_9)
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Building CXX object CMakeFiles/mzx_static.dir/src/event/m_timeout_event.cpp.o"
-	g++   $(CXX_DEFINES) $(CXX_FLAGS) -o CMakeFiles/mzx_static.dir/src/event/m_timeout_event.cpp.o -c /home/dream/mzx/src/event/m_timeout_event.cpp
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Building CXX object CMakeFiles/mzx_static.dir/src/event/m_timeout.cpp.o"
+	g++   $(CXX_DEFINES) $(CXX_FLAGS) -o CMakeFiles/mzx_static.dir/src/event/m_timeout.cpp.o -c /home/dream/mzx/src/event/m_timeout.cpp
 
-CMakeFiles/mzx_static.dir/src/event/m_timeout_event.cpp.i: cmake_force
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Preprocessing CXX source to CMakeFiles/mzx_static.dir/src/event/m_timeout_event.cpp.i"
-	g++  $(CXX_DEFINES) $(CXX_FLAGS) -E /home/dream/mzx/src/event/m_timeout_event.cpp > CMakeFiles/mzx_static.dir/src/event/m_timeout_event.cpp.i
+CMakeFiles/mzx_static.dir/src/event/m_timeout.cpp.i: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Preprocessing CXX source to CMakeFiles/mzx_static.dir/src/event/m_timeout.cpp.i"
+	g++  $(CXX_DEFINES) $(CXX_FLAGS) -E /home/dream/mzx/src/event/m_timeout.cpp > CMakeFiles/mzx_static.dir/src/event/m_timeout.cpp.i
 
-CMakeFiles/mzx_static.dir/src/event/m_timeout_event.cpp.s: cmake_force
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Compiling CXX source to assembly CMakeFiles/mzx_static.dir/src/event/m_timeout_event.cpp.s"
-	g++  $(CXX_DEFINES) $(CXX_FLAGS) -S /home/dream/mzx/src/event/m_timeout_event.cpp -o CMakeFiles/mzx_static.dir/src/event/m_timeout_event.cpp.s
+CMakeFiles/mzx_static.dir/src/event/m_timeout.cpp.s: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Compiling CXX source to assembly CMakeFiles/mzx_static.dir/src/event/m_timeout.cpp.s"
+	g++  $(CXX_DEFINES) $(CXX_FLAGS) -S /home/dream/mzx/src/event/m_timeout.cpp -o CMakeFiles/mzx_static.dir/src/event/m_timeout.cpp.s
 
-CMakeFiles/mzx_static.dir/src/event/m_timeout_event.cpp.o.requires:
-.PHONY : CMakeFiles/mzx_static.dir/src/event/m_timeout_event.cpp.o.requires
+CMakeFiles/mzx_static.dir/src/event/m_timeout.cpp.o.requires:
+.PHONY : CMakeFiles/mzx_static.dir/src/event/m_timeout.cpp.o.requires
 
-CMakeFiles/mzx_static.dir/src/event/m_timeout_event.cpp.o.provides: CMakeFiles/mzx_static.dir/src/event/m_timeout_event.cpp.o.requires
-	$(MAKE) -f CMakeFiles/mzx_static.dir/build.make CMakeFiles/mzx_static.dir/src/event/m_timeout_event.cpp.o.provides.build
-.PHONY : CMakeFiles/mzx_static.dir/src/event/m_timeout_event.cpp.o.provides
+CMakeFiles/mzx_static.dir/src/event/m_timeout.cpp.o.provides: CMakeFiles/mzx_static.dir/src/event/m_timeout.cpp.o.requires
+	$(MAKE) -f CMakeFiles/mzx_static.dir/build.make CMakeFiles/mzx_static.dir/src/event/m_timeout.cpp.o.provides.build
+.PHONY : CMakeFiles/mzx_static.dir/src/event/m_timeout.cpp.o.provides
 
-CMakeFiles/mzx_static.dir/src/event/m_timeout_event.cpp.o.provides.build: CMakeFiles/mzx_static.dir/src/event/m_timeout_event.cpp.o
+CMakeFiles/mzx_static.dir/src/event/m_timeout.cpp.o.provides.build: CMakeFiles/mzx_static.dir/src/event/m_timeout.cpp.o
 
 CMakeFiles/mzx_static.dir/src/event/m_event_base.cpp.o: CMakeFiles/mzx_static.dir/flags.make
 CMakeFiles/mzx_static.dir/src/event/m_event_base.cpp.o: ../src/event/m_event_base.cpp
@@ -282,28 +282,28 @@ CMakeFiles/mzx_static.dir/src/event/m_event_base.cpp.o.provides: CMakeFiles/mzx_
 
 CMakeFiles/mzx_static.dir/src/event/m_event_base.cpp.o.provides.build: CMakeFiles/mzx_static.dir/src/event/m_event_base.cpp.o
 
-CMakeFiles/mzx_static.dir/src/event/m_before_idle_event.cpp.o: CMakeFiles/mzx_static.dir/flags.make
-CMakeFiles/mzx_static.dir/src/event/m_before_idle_event.cpp.o: ../src/event/m_before_idle_event.cpp
+CMakeFiles/mzx_static.dir/src/event/m_before_idle.cpp.o: CMakeFiles/mzx_static.dir/flags.make
+CMakeFiles/mzx_static.dir/src/event/m_before_idle.cpp.o: ../src/event/m_before_idle.cpp
 	$(CMAKE_COMMAND) -E cmake_progress_report /home/dream/mzx/build/CMakeFiles $(CMAKE_PROGRESS_11)
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Building CXX object CMakeFiles/mzx_static.dir/src/event/m_before_idle_event.cpp.o"
-	g++   $(CXX_DEFINES) $(CXX_FLAGS) -o CMakeFiles/mzx_static.dir/src/event/m_before_idle_event.cpp.o -c /home/dream/mzx/src/event/m_before_idle_event.cpp
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Building CXX object CMakeFiles/mzx_static.dir/src/event/m_before_idle.cpp.o"
+	g++   $(CXX_DEFINES) $(CXX_FLAGS) -o CMakeFiles/mzx_static.dir/src/event/m_before_idle.cpp.o -c /home/dream/mzx/src/event/m_before_idle.cpp
 
-CMakeFiles/mzx_static.dir/src/event/m_before_idle_event.cpp.i: cmake_force
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Preprocessing CXX source to CMakeFiles/mzx_static.dir/src/event/m_before_idle_event.cpp.i"
-	g++  $(CXX_DEFINES) $(CXX_FLAGS) -E /home/dream/mzx/src/event/m_before_idle_event.cpp > CMakeFiles/mzx_static.dir/src/event/m_before_idle_event.cpp.i
+CMakeFiles/mzx_static.dir/src/event/m_before_idle.cpp.i: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Preprocessing CXX source to CMakeFiles/mzx_static.dir/src/event/m_before_idle.cpp.i"
+	g++  $(CXX_DEFINES) $(CXX_FLAGS) -E /home/dream/mzx/src/event/m_before_idle.cpp > CMakeFiles/mzx_static.dir/src/event/m_before_idle.cpp.i
 
-CMakeFiles/mzx_static.dir/src/event/m_before_idle_event.cpp.s: cmake_force
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Compiling CXX source to assembly CMakeFiles/mzx_static.dir/src/event/m_before_idle_event.cpp.s"
-	g++  $(CXX_DEFINES) $(CXX_FLAGS) -S /home/dream/mzx/src/event/m_before_idle_event.cpp -o CMakeFiles/mzx_static.dir/src/event/m_before_idle_event.cpp.s
+CMakeFiles/mzx_static.dir/src/event/m_before_idle.cpp.s: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Compiling CXX source to assembly CMakeFiles/mzx_static.dir/src/event/m_before_idle.cpp.s"
+	g++  $(CXX_DEFINES) $(CXX_FLAGS) -S /home/dream/mzx/src/event/m_before_idle.cpp -o CMakeFiles/mzx_static.dir/src/event/m_before_idle.cpp.s
 
-CMakeFiles/mzx_static.dir/src/event/m_before_idle_event.cpp.o.requires:
-.PHONY : CMakeFiles/mzx_static.dir/src/event/m_before_idle_event.cpp.o.requires
+CMakeFiles/mzx_static.dir/src/event/m_before_idle.cpp.o.requires:
+.PHONY : CMakeFiles/mzx_static.dir/src/event/m_before_idle.cpp.o.requires
 
-CMakeFiles/mzx_static.dir/src/event/m_before_idle_event.cpp.o.provides: CMakeFiles/mzx_static.dir/src/event/m_before_idle_event.cpp.o.requires
-	$(MAKE) -f CMakeFiles/mzx_static.dir/build.make CMakeFiles/mzx_static.dir/src/event/m_before_idle_event.cpp.o.provides.build
-.PHONY : CMakeFiles/mzx_static.dir/src/event/m_before_idle_event.cpp.o.provides
+CMakeFiles/mzx_static.dir/src/event/m_before_idle.cpp.o.provides: CMakeFiles/mzx_static.dir/src/event/m_before_idle.cpp.o.requires
+	$(MAKE) -f CMakeFiles/mzx_static.dir/build.make CMakeFiles/mzx_static.dir/src/event/m_before_idle.cpp.o.provides.build
+.PHONY : CMakeFiles/mzx_static.dir/src/event/m_before_idle.cpp.o.provides
 
-CMakeFiles/mzx_static.dir/src/event/m_before_idle_event.cpp.o.provides.build: CMakeFiles/mzx_static.dir/src/event/m_before_idle_event.cpp.o
+CMakeFiles/mzx_static.dir/src/event/m_before_idle.cpp.o.provides.build: CMakeFiles/mzx_static.dir/src/event/m_before_idle.cpp.o
 
 # Object files for target mzx_static
 mzx_static_OBJECTS = \
@@ -313,11 +313,11 @@ mzx_static_OBJECTS = \
 "CMakeFiles/mzx_static.dir/src/util/m_math.cpp.o" \
 "CMakeFiles/mzx_static.dir/src/thread/m_thread.cpp.o" \
 "CMakeFiles/mzx_static.dir/src/net/m_socket_opts.cpp.o" \
-"CMakeFiles/mzx_static.dir/src/event/m_after_idle_event.cpp.o" \
+"CMakeFiles/mzx_static.dir/src/event/m_after_idle.cpp.o" \
 "CMakeFiles/mzx_static.dir/src/event/m_event_loop.cpp.o" \
-"CMakeFiles/mzx_static.dir/src/event/m_timeout_event.cpp.o" \
+"CMakeFiles/mzx_static.dir/src/event/m_timeout.cpp.o" \
 "CMakeFiles/mzx_static.dir/src/event/m_event_base.cpp.o" \
-"CMakeFiles/mzx_static.dir/src/event/m_before_idle_event.cpp.o"
+"CMakeFiles/mzx_static.dir/src/event/m_before_idle.cpp.o"
 
 # External object files for target mzx_static
 mzx_static_EXTERNAL_OBJECTS =
@@ -328,11 +328,11 @@ mzx_static_EXTERNAL_OBJECTS =
 ../lib/libmzx.a: CMakeFiles/mzx_static.dir/src/util/m_math.cpp.o
 ../lib/libmzx.a: CMakeFiles/mzx_static.dir/src/thread/m_thread.cpp.o
 ../lib/libmzx.a: CMakeFiles/mzx_static.dir/src/net/m_socket_opts.cpp.o
-../lib/libmzx.a: CMakeFiles/mzx_static.dir/src/event/m_after_idle_event.cpp.o
+../lib/libmzx.a: CMakeFiles/mzx_static.dir/src/event/m_after_idle.cpp.o
 ../lib/libmzx.a: CMakeFiles/mzx_static.dir/src/event/m_event_loop.cpp.o
-../lib/libmzx.a: CMakeFiles/mzx_static.dir/src/event/m_timeout_event.cpp.o
+../lib/libmzx.a: CMakeFiles/mzx_static.dir/src/event/m_timeout.cpp.o
 ../lib/libmzx.a: CMakeFiles/mzx_static.dir/src/event/m_event_base.cpp.o
-../lib/libmzx.a: CMakeFiles/mzx_static.dir/src/event/m_before_idle_event.cpp.o
+../lib/libmzx.a: CMakeFiles/mzx_static.dir/src/event/m_before_idle.cpp.o
 ../lib/libmzx.a: CMakeFiles/mzx_static.dir/build.make
 ../lib/libmzx.a: CMakeFiles/mzx_static.dir/link.txt
 	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --red --bold "Linking CXX static library ../lib/libmzx.a"
@@ -349,11 +349,11 @@ CMakeFiles/mzx_static.dir/requires: CMakeFiles/mzx_static.dir/src/util/m_time.cp
 CMakeFiles/mzx_static.dir/requires: CMakeFiles/mzx_static.dir/src/util/m_math.cpp.o.requires
 CMakeFiles/mzx_static.dir/requires: CMakeFiles/mzx_static.dir/src/thread/m_thread.cpp.o.requires
 CMakeFiles/mzx_static.dir/requires: CMakeFiles/mzx_static.dir/src/net/m_socket_opts.cpp.o.requires
-CMakeFiles/mzx_static.dir/requires: CMakeFiles/mzx_static.dir/src/event/m_after_idle_event.cpp.o.requires
+CMakeFiles/mzx_static.dir/requires: CMakeFiles/mzx_static.dir/src/event/m_after_idle.cpp.o.requires
 CMakeFiles/mzx_static.dir/requires: CMakeFiles/mzx_static.dir/src/event/m_event_loop.cpp.o.requires
-CMakeFiles/mzx_static.dir/requires: CMakeFiles/mzx_static.dir/src/event/m_timeout_event.cpp.o.requires
+CMakeFiles/mzx_static.dir/requires: CMakeFiles/mzx_static.dir/src/event/m_timeout.cpp.o.requires
 CMakeFiles/mzx_static.dir/requires: CMakeFiles/mzx_static.dir/src/event/m_event_base.cpp.o.requires
-CMakeFiles/mzx_static.dir/requires: CMakeFiles/mzx_static.dir/src/event/m_before_idle_event.cpp.o.requires
+CMakeFiles/mzx_static.dir/requires: CMakeFiles/mzx_static.dir/src/event/m_before_idle.cpp.o.requires
 .PHONY : CMakeFiles/mzx_static.dir/requires
 
 CMakeFiles/mzx_static.dir/clean:

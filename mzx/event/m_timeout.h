@@ -1,23 +1,23 @@
-#ifndef _M_TIMEOUT_EVENT_H_
-#define _M_TIMEOUT_EVENT_H_
+#ifndef _M_TIMEOUT_H_
+#define _M_TIMEOUT_H_
 
 #include <mzx/util/m_errno.h>
 #include <mzx/event/m_event_loop.h>
 #include <functional>
 
-class MTimeoutEvent
+class MTimeout
     :public MTimerEventBase
 {
 public:
-    MTimeoutEvent();
-    virtual ~MTimeoutEvent();
-    MTimeoutEvent(const MTimeoutEvent &) = delete;
-    MTimeoutEvent& operator=(const MTimeoutEvent &) = delete;
+    MTimeout();
+    virtual ~MTimeout();
+    MTimeout(const MTimeout &) = delete;
+    MTimeout& operator=(const MTimeout &) = delete;
 public:
     MError Init(MEventLoop *p_event_loop);
     void Clear();
-    MError EnableEvent(const std::function<void ()> &cb, int timeout, int repeated = 0);
-    MError DisableEvent();
+    MError Start(const std::function<void ()> &cb, int timeout, int repeated = 0);
+    MError Stop();
 private:
     virtual void _OnCallback() override;
 private:

@@ -1,18 +1,18 @@
-#include <mzx/event/m_timeout_event.h>
+#include <mzx/event/m_timeout.h>
 
-MTimeoutEvent::MTimeoutEvent()
+MTimeout::MTimeout()
     :p_event_loop_(nullptr)
     ,timeout_(0)
     ,repeated_(0)
 {
 }
 
-MTimeoutEvent::~MTimeoutEvent()
+MTimeout::~MTimeout()
 {
     Clear();
 }
 
-MError MTimeoutEvent::Init(MEventLoop *p_event_loop)
+MError MTimeout::Init(MEventLoop *p_event_loop)
 {
     if (!p_event_loop)
     {
@@ -27,18 +27,18 @@ MError MTimeoutEvent::Init(MEventLoop *p_event_loop)
     return MError::No;
 }
 
-void MTimeoutEvent::Clear()
+void MTimeout::Clear()
 {
     this->MTimerEventBase::Clear();
 }
 
-MError MTimeoutEvent::EnableEvent(const std::function<void ()> &cb, int timeout, int repeated)
+MError MTimeout::Start(const std::function<void ()> &cb, int timeout, int repeated)
 {
     if (!cb || timeout <= 0)
     {
         return MError::Invalid;
     }
-    MError err = DisableEvent();
+    MError err = this->MTimerEventBase::DisableEvent();
     if (err != MError::No)
     {
         return err;
@@ -50,12 +50,12 @@ MError MTimeoutEvent::EnableEvent(const std::function<void ()> &cb, int timeout,
     return err;
 }
 
-MError MTimeoutEvent::DisableEvent()
+MError MTimeout::Stop()
 {
     return this->MTimerEventBase::DisableEvent();
 }
 
-void MTimeoutEvent::_OnCallback()
+void MTimeout::_OnCallback()
 {
     cb_();
     if (repeated_ != 0)
