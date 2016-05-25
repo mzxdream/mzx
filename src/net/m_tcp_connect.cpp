@@ -38,7 +38,7 @@ MError MTcpConnect::Start(const std::string &ip, unsigned port, const std::funct
     {
         return err;
     }
-    err = this->MIOEventBase::EnableEvent(MIOEVENT_IN);
+    err = this->MIOEventBase::EnableEvent(MIOEVENT_IN|MIOEVENT_LEVEL);
     if (err != MError::No)
     {
         return err;
@@ -61,6 +61,7 @@ MError MTcpConnect::Stop()
 
 void MTcpConnect::_OnCallback(unsigned events)
 {
+    this->MIOEventBase::DisableAllEvent();
     if (!cb_)
     {
         return;
