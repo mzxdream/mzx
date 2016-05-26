@@ -5,26 +5,16 @@
 
 enum class MError
 {
-    No = 0,
-    Unknown = 1,
-    ConnectOpened = 2,
-    ConnectRefused = 3,
-    Disconnect = 4,
-    OutOfMemory = 5,
-    NotSupport = 6,
-    NoData = 7,
-    NotMatch = 8,
-    ConvertFailed = 9,
-    Running = 10,
-    Created = 11,
-    InProgress = 12,
-    Again = 13,
-    INTR = 14,
-    Invalid = 15,
-    Underflow = 16,
-    Overflow = 17,
-    SockDisconnect = 18,
-    SockError = 19,
+    No,
+    Unknown,
+    ConnectRefused,
+    Disconnect,
+    NotSupport,
+    InProgress,
+    Again,
+    INTR,
+    Invalid,
+    NoBufs,
 };
 
 #endif

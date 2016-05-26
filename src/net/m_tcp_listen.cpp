@@ -47,7 +47,7 @@ MError MTcpListen::Start(int once_count, const std::function<void (int, std::str
     }
     once_count_ = once_count;
     cb_ = cb;
-    return this->MIOEventBase::EnableEvent(MIOEVENT_IN|MIOEVENT_LEVEL);
+    return this->MIOEventBase::EnableEvent(MIOEVENT_IN|MIOEVENT_LT);
 }
 
 MError MTcpListen::Stop()

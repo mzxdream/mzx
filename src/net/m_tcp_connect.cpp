@@ -38,7 +38,7 @@ MError MTcpConnect::Start(const std::string &ip, unsigned port, const std::funct
     {
         return err;
     }
-    err = this->MIOEventBase::EnableEvent(MIOEVENT_IN|MIOEVENT_LEVEL);
+    err = this->MIOEventBase::EnableEvent(MIOEVENT_IN|MIOEVENT_LT);
     if (err != MError::No)
     {
         return err;
@@ -68,11 +68,11 @@ void MTcpConnect::_OnCallback(unsigned events)
     }
     if (events & (MIOEVENT_ERR|MIOEVENT_HUP))
     {
-        cb_(MError::SockError);
+        cb_(MError::Unknown);
     }
     else if (events & MIOEVENT_RDHUP)
     {
-        cb_(MError::SockDisconnect);
+        cb_(MError::Disconnect);
     }
     else if (events & MIOEVENT_IN)
     {
