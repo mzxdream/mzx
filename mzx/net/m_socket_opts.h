@@ -33,8 +33,8 @@ public:
     static MError Destroy(int sock);
     static MError Bind(int sock, const std::string &ip, unsigned port);
     static MError Listen(int sock, int backlog = 64);
-    static MError Accept(int sock, int &accept_sock, std::string &ip, unsigned &port);
-    static MError Accept(int sock, int &accept_sock);
+    static MError Accept(int sock, int &accepted_sock, std::string &accepted_ip, unsigned &accepted_port);
+    static MError Accept(int sock, int &accepted_sock);
     static MError Connect(int sock, const std::string &ip, unsigned port);
     static std::pair<int, MError> Send(int sock, const char *p_buf, int len);
     static std::pair<int, MError> Recv(int sock, void *p_buf, int len);

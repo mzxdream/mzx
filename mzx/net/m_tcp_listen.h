@@ -16,14 +16,17 @@ public:
 public:
     MError Init(MEventLoop *p_event_loop, int fd);
     void Clear();
-    MError Start(int once_count, const std::function<void (int, MError)> &cb);
+    MError Start(int once_count, const std::function<void (int, std::string, unsigned, MError)> &cb);
     MError Stop();
 private:
     virtual void _OnCallback(unsigned events) override;
 private:
     int fd_;
     int once_count_;
-    std::function<void (int, MError)> cb_;
+    std::function<void (int, std::string, unsigned, MError)> cb_;
+    int accepted_fd_;
+    std::string accepted_ip_;
+    unsigned accepted_port_;
 };
 
 #endif

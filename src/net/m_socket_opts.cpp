@@ -59,12 +59,12 @@ MError MSocketOpts::Listen(int sock, int backlog)
     return MError::No;
 }
 
-MError MSocketOpts::Accept(int sock, int &accept_sock, std::string &ip, unsigned &port)
+MError MSocketOpts::Accept(int sock, int &accepted_sock, std::string &accepted_ip, unsigned &accepted_port)
 {
     struct sockaddr_in addr;
     socklen_t len = sizeof(addr);
-    accept_sock = accept(sock, reinterpret_cast<struct sockaddr*>(&addr), &len);
-    if (accept_sock == -1)
+    accepted_sock = accept(sock, reinterpret_cast<struct sockaddr*>(&addr), &len);
+    if (accepted_sock == -1)
     {
         if (errno == EINTR)
         {
@@ -76,18 +76,18 @@ MError MSocketOpts::Accept(int sock, int &accept_sock, std::string &ip, unsigned
         }
         return MError::Unknown;
     }
-    ip.resize(64);
-    inet_ntop(AF_INET, &addr.sin_addr.s_addr, &ip[0], ip.size());
-    port = ntohs(addr.sin_port);
+    accepted_ip.resize(64);
+    inet_ntop(AF_INET, &addr.sin_addr.s_addr, &accepted_ip[0], accepted_ip.size());
+    accepted_port = ntohs(addr.sin_port);
     return MError::No;
 }
 
-MError MSocketOpts::Accept(int sock, int &accept_sock)
+MError MSocketOpts::Accept(int sock, int &accepted_sock)
 {
     struct sockaddr_in addr;
     socklen_t len = sizeof(addr);
-    accept_sock = accept(sock, reinterpret_cast<struct sockaddr*>(&addr), &len);
-    if (accept_sock == -1)
+    accepted_sock = accept(sock, reinterpret_cast<struct sockaddr*>(&addr), &len);
+    if (accepted_sock == -1)
     {
         if (errno == EINTR)
         {
