@@ -15,6 +15,7 @@ enum class MError
     INTR,
     Invalid,
     NoBufs,
+    Disabled,
 };
 
 #endif

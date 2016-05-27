@@ -36,17 +36,16 @@ public:
     MError Init(MEventLoop *p_event_loop, int fd);
     void Clear();
 
-    MError EnableRead(bool enable);
-    MError EnableWrite(bool enable);
+    MError Read(char *p_buf, std::size_t len, std::size_t min_len, const std::function<void (std::size_t, MError)> &read_cb);
+    void StopRead();
 
-    MError AsyncRead(char *p_buf, std::size_t len, std::size_t min_len, const std::function<void (std::size_t, MError)> &read_cb);
-    MError AsyncWrite(const char *p_buf, std::size_t len, const std::function<void (MError)> &write_cb);
+    MError Write(const char *p_buf, std::size_t len, const std::function<void (MError)> &write_cb);
+    void StopWrite();
 private:
+    void OnError(MError err);
     virtual void _OnCallback(unsigned events) override;
 private:
     int fd_;
-    bool read_enable_;
-    bool write_enable_;
     bool readable_;
     bool writable_;
     std::list<MTcpReadBuffer> read_buffers_;
