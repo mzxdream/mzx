@@ -74,6 +74,7 @@ MError MTcpStream::Read(char *p_buf, std::size_t len, std::size_t min_len, const
     }
     else if (ret.second != MError::INTR && ret.second != MError::Again)
     {
+        OnError(ret.second);
         return ret.second;
     }
     MError err = this->MIOEventBase::EnableEvent(MIOEVENT_IN|MIOEVENT_ET);
@@ -170,7 +171,7 @@ void MTcpStream::OnError(MError err)
     }
 
     std::list<MTcpWriteBuffer>::iterator it_write;
-    std::function<void (std::size_t, MError)> write_cb;
+    std::function<void (MError)> write_cb;
     while ((it_write = write_buffers_.begin()) != write_buffers_.end())
     {
         write_cb = it_write->write_cb;
@@ -180,6 +181,7 @@ void MTcpStream::OnError(MError err)
             write_cb(err);
         }
     }
+    this->MIOEventBase::DisableAllEvent();
 }
 
 void MTcpStream::_OnCallback(unsigned events)
@@ -204,6 +206,12 @@ void MTcpStream::_OnCallback(unsigned events)
         {
             if ((it_read = read_buffers_.begin()) == read_buffers_.end())
             {
+                MError err = this->MIOEventBase::DisableEvent(MIOEVENT_IN);
+                if (err != MError::No)
+                {
+                    OnError(err);
+                    return;
+                }
                 readable_ = true;
                 break;
             }
@@ -251,52 +259,68 @@ void MTcpStream::_OnCallback(unsigned events)
                 }
                 break;
             }
-            if (ret.second != MError::INTR && )
-
+            if (ret.second != MError::INTR && ret.second != MError::Again)
+            {
+                OnError(ret.second);
+                return;
+            }
+            break;
         }
     }
     if (events & MIOEVENT_OUT)
     {
-
-    }
-
-
-    if (events & MIOEVENT_IN)
-    {
-        std::list<MTcpReadBuffer>::iterator it_read = read_buffers_.begin();
+        std::list<MTcpWriteBuffer>::iterator it_write;
+        std::function<void (MError)> write_cb;
+        std::size_t write_len;
+        std::pair<int, MError> ret;
         while (true)
         {
-            it_read != read_buffers_.end()
-            if (it_read->len == it_read->read_len)
+            if ((it_write = write_buffers_.begin()) == write_buffers_.end())
             {
-                if (it_read->read_cb)
+                MError err = this->MIOEventBase::DisableEvent(MIOEVENT_OUT);
+                if (err != MError::No)
                 {
-                    (it_read->read_cb)(it_read->len, MError::No);
+                    OnError(err);
+                    return;
+                }
+                writable_ = true;
+                break;
+            }
+            if (it_write->write_len == it_write->len)
+            {
+                write_len = it_write->write_len;
+                write_cb = it_write->write_cb;
+                write_buffers_.erase(it_write);
+                if (write_cb)
+                {
+                    write_cb(MError::No);
                 }
                 continue;
             }
-            std::pair<int, MError> ret = MSocketOpts::Recv(fd_, it_read->p_buf+it_read->read_len, it_read->len-it_read->read_len);
+            ret = MSocketOpts::Send(fd_, it_write->p_buf+it_write->write_len, it_write->len-it_write->write_len);
             if (ret.second == MError::No)
             {
-
+                write_len = static_cast<std::size_t>(ret.first);
+                it_write->write_len += write_len;
+                if (it_write->write_len == it_write->len)
+                {
+                    write_len = it_write->write_len;
+                    write_cb = it_write->write_cb;
+                    write_buffers_.erase(it_write);
+                    if (write_cb)
+                    {
+                        write_cb(MError::No);
+                    }
+                    continue;
+                }
+                break;
             }
-            if (it_read->read_cb)
+            if (ret.second != MError::INTR && ret.second != MError::Again)
             {
-                (it_read->read_cb)(0, err);
+                OnError(ret.second);
+                return;
             }
-            it_read = read_buffers_.erase(it_read);
-        }
-    }
-    else if (events & MIOEVENT_OUT)
-    {
-        std::list<MTcpWriteBuffer>::iterator it_write = write_buffers_.begin();
-        while (it_write != write_buffers_.end())
-        {
-            if (it_write->write_cb)
-            {
-                (it_write->write_cb)(err);
-            }
-            it_write = write_buffers_.erase(it_write);
+            break;
         }
     }
 }
