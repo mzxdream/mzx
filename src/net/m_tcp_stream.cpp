@@ -93,7 +93,7 @@ MError MTcpStream::Read(char *p_buf, std::size_t len, std::size_t min_len, const
     return MError::No;
 }
 
-void MTcpStream::StopRead()
+void MTcpStream::CancelRead()
 {
     read_buffers_.clear();
 }
@@ -151,7 +151,7 @@ MError MTcpStream::Write(const char *p_buf, std::size_t len, const std::function
     return MError::No;
 }
 
-void MTcpStream::StopWrite()
+void MTcpStream::CancelWrite()
 {
     write_buffers_.clear();
 }

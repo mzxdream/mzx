@@ -37,10 +37,10 @@ public:
     void Clear();
 
     MError Read(char *p_buf, std::size_t len, std::size_t min_len, const std::function<void (std::size_t, MError)> &read_cb);
-    void StopRead();
+    void CancelRead();
 
     MError Write(const char *p_buf, std::size_t len, const std::function<void (MError)> &write_cb);
-    void StopWrite();
+    void CancelWrite();
 private:
     void OnError(MError err);
     virtual void _OnCallback(unsigned events) override;
