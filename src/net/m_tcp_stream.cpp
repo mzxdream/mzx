@@ -93,11 +93,6 @@ MError MTcpStream::Read(char *p_buf, std::size_t len, std::size_t min_len, const
     return MError::No;
 }
 
-void MTcpStream::CancelRead()
-{
-    read_buffers_.clear();
-}
-
 MError MTcpStream::Write(const char *p_buf, std::size_t len, const std::function<void (MError)> &write_cb)
 {
     if (!writable_)
@@ -151,9 +146,23 @@ MError MTcpStream::Write(const char *p_buf, std::size_t len, const std::function
     return MError::No;
 }
 
-void MTcpStream::CancelWrite()
+MError MTcpStream::StopRead()
+{
+    read_buffers_.clear();
+    return this->MIOEventBase::DisableEvent(MIOEVENT_IN);
+}
+
+MError MTcpStream::StopWrite()
 {
     write_buffers_.clear();
+    return this->MIOEventBase::DisableEvent(MIOEVENT_OUT);
+}
+
+MError MTcpStream::StopAll()
+{
+    read_buffers_.clear();
+    write_buffers_.clear();
+    return this->MIOEventBase::DisableAllEvent();
 }
 
 void MTcpStream::OnError(MError err)
