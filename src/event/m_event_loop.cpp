@@ -266,7 +266,11 @@ MError MEventLoop::Interrupt()
 
 MError MEventLoop::DispatchEvent()
 {
-    return MError::No;
+    MError err = MError::No;
+    while ((err = DispatchEventOnce()) == MError::No)
+    {
+    }
+    return err;
 }
 
 MError MEventLoop::DispatchEventOnce(int timeout)
