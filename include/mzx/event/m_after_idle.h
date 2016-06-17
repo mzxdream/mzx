@@ -6,11 +6,10 @@
 #include <functional>
 
 class MAfterIdle
-    :public MAfterEventBase
 {
 public:
     MAfterIdle();
-    virtual ~MAfterIdle();
+    ~MAfterIdle();
     MAfterIdle(const MAfterIdle &) = delete;
     MAfterIdle& operator=(const MAfterIdle &) = delete;
 public:
@@ -18,9 +17,10 @@ public:
     void Clear();
     MError Start(const std::function<void ()> &cb, int repeated = 0);
     MError Stop();
+public:
+    void OnCallback();
 private:
-    virtual void _OnCallback() override;
-private:
+    MAfterEventBase event_base_;
     std::function<void ()> cb_;
     int repeated_;
 };

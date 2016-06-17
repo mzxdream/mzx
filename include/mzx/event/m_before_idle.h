@@ -6,11 +6,10 @@
 #include <functional>
 
 class MBeforeIdle
-    :public MBeforeEventBase
 {
 public:
     MBeforeIdle();
-    virtual ~MBeforeIdle();
+    ~MBeforeIdle();
     MBeforeIdle(const MBeforeIdle &) = delete;
     MBeforeIdle& operator=(const MBeforeIdle &) = delete;
 public:
@@ -18,9 +17,10 @@ public:
     void Clear();
     MError Start(const std::function<void ()> &cb, int repeated = 0);
     MError Stop();
+public:
+    void OnCallback();
 private:
-    virtual void _OnCallback() override;
-private:
+    MBeforeEventBase event_base_;
     std::function<void ()> cb_;
     int repeated_;
 };

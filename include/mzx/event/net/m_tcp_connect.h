@@ -6,7 +6,6 @@
 #include <functional>
 
 class MTcpConnect
-    :public MIOEventBase
 {
 public:
     MTcpConnect();
@@ -18,10 +17,10 @@ public:
     void Clear();
     MError Start(const std::string &ip, unsigned port, const std::function<void (MError)> &cb);
     MError Stop();
+public:
+    void OnCallback(unsigned events);
 private:
-    virtual void _OnCallback(unsigned events) override;
-private:
-    int fd_;
+    MIOEventBase event_base_;
     std::function<void (MError)> cb_;
 };
 

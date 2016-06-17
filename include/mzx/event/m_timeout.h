@@ -6,11 +6,10 @@
 #include <functional>
 
 class MTimeout
-    :public MTimerEventBase
 {
 public:
     MTimeout();
-    virtual ~MTimeout();
+    ~MTimeout();
     MTimeout(const MTimeout &) = delete;
     MTimeout& operator=(const MTimeout &) = delete;
 public:
@@ -18,10 +17,10 @@ public:
     void Clear();
     MError Start(const std::function<void ()> &cb, int timeout, int repeated = 0);
     MError Stop();
+public:
+    void OnCallback();
 private:
-    virtual void _OnCallback() override;
-private:
-    MEventLoop *p_event_loop_;
+    MTimerEventBase event_base_;
     std::function<void ()> cb_;
     int timeout_;
     int repeated_;

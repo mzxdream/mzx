@@ -18,18 +18,17 @@ MError MTimeout::Init(MEventLoop *p_event_loop)
     {
         return MError::Invalid;
     }
-    MError err = this->MTimerEventBase::Init(p_event_loop);
+    MError err = event_base_.Init(p_event_loop);
     if (err != MError::No)
     {
         return err;
     }
-    p_event_loop_ = p_event_loop;
     return MError::No;
 }
 
 void MTimeout::Clear()
 {
-    this->MTimerEventBase::Clear();
+    event_base_.Clear();
 }
 
 MError MTimeout::Start(const std::function<void ()> &cb, int timeout, int repeated)
@@ -38,7 +37,7 @@ MError MTimeout::Start(const std::function<void ()> &cb, int timeout, int repeat
     {
         return MError::Invalid;
     }
-    MError err = this->MTimerEventBase::DisableEvent();
+    MError err = event_base_.DisableEvent();
     if (err != MError::No)
     {
         return err;
@@ -46,24 +45,26 @@ MError MTimeout::Start(const std::function<void ()> &cb, int timeout, int repeat
     cb_ = cb;
     timeout_ = timeout;
     repeated_ = repeated;
-    err = this->MTimerEventBase::EnableEvent(p_event_loop_->GetTime() + timeout_);
-    return err;
+    return event_base_.EnableEvent(event_base_.GetEventLoop()->GetTime() + timeout_, std::bind(&MTimeout::OnCallback, this));
 }
 
 MError MTimeout::Stop()
 {
-    return this->MTimerEventBase::DisableEvent();
+    return event_base_.DisableEvent();
 }
 
-void MTimeout::_OnCallback()
+void MTimeout::OnCallback()
 {
-    cb_();
+    if (cb_)
+    {
+        cb_();
+    }
     if (repeated_ != 0)
     {
         if (repeated_ > 0)
         {
             --repeated_;
         }
-        this->MTimerEventBase::EnableEvent(p_event_loop_->GetTime() + timeout_);
+        event_base_.EnableEvent(event_base_.GetEventLoop()->GetTime() + timeout_, std::bind(&MTimeout::OnCallback, this));
     }
 }

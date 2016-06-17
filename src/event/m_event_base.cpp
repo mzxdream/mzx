@@ -43,6 +43,7 @@ MError MIOEventBase::Init(MEventLoop *p_event_loop, int fd)
     fd_ = fd;
     events_ = 0;
     actived_ = false;
+    cb_ = nullptr;
     return MError::No;
 }
 
@@ -51,8 +52,9 @@ void MIOEventBase::Clear()
     DisableAllEvent();
 }
 
-MError MIOEventBase::EnableEvent(unsigned events)
+MError MIOEventBase::EnableEvent(unsigned events, const std::function<void (unsigned)> &cb)
 {
+    cb_ = cb;
     return p_event_loop_->AddIOEvent(events, this);
 }
 
@@ -78,7 +80,10 @@ void MIOEventBase::SetActived(bool actived)
 
 void MIOEventBase::OnCallback(unsigned events)
 {
-    _OnCallback(events);
+    if (cb_)
+    {
+        cb_(events);
+    }
 }
 
 MTimerEventBase::MTimerEventBase()
@@ -97,6 +102,11 @@ bool MTimerEventBase::IsActived() const
     return actived_;
 }
 
+MEventLoop* MTimerEventBase::GetEventLoop()
+{
+    return p_event_loop_;
+}
+
 MError MTimerEventBase::Init(MEventLoop *p_event_loop)
 {
     if (!p_event_loop)
@@ -104,6 +114,7 @@ MError MTimerEventBase::Init(MEventLoop *p_event_loop)
         return MError::Invalid;
     }
     p_event_loop_ = p_event_loop;
+    cb_ = nullptr;
     actived_ = false;
     return MError::No;
 }
@@ -113,8 +124,9 @@ void MTimerEventBase::Clear()
     DisableEvent();
 }
 
-MError MTimerEventBase::EnableEvent(int64_t start_time)
+MError MTimerEventBase::EnableEvent(int64_t start_time, const std::function<void ()> &cb)
 {
+    cb_ = cb;
     return p_event_loop_->AddTimerEvent(start_time, this);
 }
 
@@ -140,7 +152,10 @@ void MTimerEventBase::SetActived(bool actived)
 
 void MTimerEventBase::OnCallback()
 {
-    _OnCallback();
+    if (cb_)
+    {
+        cb_();
+    }
 }
 
 MBeforeEventBase::MBeforeEventBase()
@@ -166,6 +181,7 @@ MError MBeforeEventBase::Init(MEventLoop *p_event_loop)
         return MError::Invalid;
     }
     p_event_loop_ = p_event_loop;
+    cb_ = cb;
     actived_ = false;
     return MError::No;
 }
@@ -175,8 +191,9 @@ void MBeforeEventBase::Clear()
     DisableEvent();
 }
 
-MError MBeforeEventBase::EnableEvent()
+MError MBeforeEventBase::EnableEvent(const std::function<void ()> &cb)
 {
+    cb_ = cb;
     return p_event_loop_->AddBeforeEvent(this);
 }
 
@@ -202,7 +219,10 @@ void MBeforeEventBase::SetActived(bool actived)
 
 void MBeforeEventBase::OnCallback()
 {
-    _OnCallback();
+    if (cb_)
+    {
+        cb_();
+    }
 }
 
 MAfterEventBase::MAfterEventBase()
@@ -228,6 +248,7 @@ MError MAfterEventBase::Init(MEventLoop *p_event_loop)
         return MError::Invalid;
     }
     p_event_loop_ = p_event_loop;
+    cb_ = nullptr;
     actived_ = false;
     return MError::No;
 }
@@ -237,8 +258,9 @@ void MAfterEventBase::Clear()
     DisableEvent();
 }
 
-MError MAfterEventBase::EnableEvent()
+MError MAfterEventBase::EnableEvent(const std::function<void ()> &cb)
 {
+    cb_ = cb;
     return p_event_loop_->AddAfterEvent(this);
 }
 
@@ -264,5 +286,8 @@ MAfterEventLocation MAfterEventBase::GetLocation() const
 
 void MAfterEventBase::OnCallback()
 {
-    _OnCallback();
+    if (cb_)
+    {
+        cb_();
+    }
 }
