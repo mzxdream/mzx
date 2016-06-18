@@ -7,22 +7,7 @@
 #include <functional>
 #include <list>
 
-struct MTcpReadBuffer
-{
-    char *p_buf;
-    std::size_t len;
-    std::size_t min_len;
-    std::size_t read_len;
-    std::function<void (std::size_t, MError)> read_cb;
-};
 
-struct MTcpWriteBuffer
-{
-    const char *p_buf;
-    std::size_t len;
-    std::size_t write_len;
-    std::function<void (MError)> write_cb;
-};
 
 class MTcpStream
     :public MIOEventBase
