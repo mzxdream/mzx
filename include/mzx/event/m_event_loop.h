@@ -52,9 +52,14 @@ private:
     int epoll_fd_;
     int64_t cur_time_;
     int interrupter_[2];
+
     std::vector<epoll_event> io_events_;
+    std::map<int, std::pair<unsigned, std::function<void (unsigned)> > > io_handlers_;
+
     std::multimap<int64_t, MTimerEventBase*> timer_events_;
+
     std::list<MBeforeEventBase*> before_events_;
+
     std::list<MAfterEventBase*> after_events_;
 };
 
