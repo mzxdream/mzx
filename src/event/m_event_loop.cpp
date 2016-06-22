@@ -73,6 +73,30 @@ void MEventLoop::Clear()
         close(interrupter_[0]);
         interrupter_[0] = -1;
     }
+    for (auto it = timer_events_.begin(); it != timer_events_.end(); )
+    {
+        if (it->second)
+        {
+            it->second->SetActived(false);
+        }
+        it = timer_events_.erase(it);
+    }
+    for (auto it = before_events_.begin(); it != before_events_.end(); )
+    {
+        if (*it)
+        {
+            (*it)->SetActived(false);
+        }
+        it = before_events_.erase(it);
+    }
+    for (auto it = after_events_.begin(); it != after_events_.end(); )
+    {
+        if (*it)
+        {
+            (*it)->SetActived(false);
+        }
+        it = after_events_.erase(it);
+    }
 }
 
 int64_t MEventLoop::GetTime() const
@@ -281,28 +305,7 @@ MError MEventLoop::DispatchEventOnce(int timeout)
         MLOG(MGetDefaultLogger(), MERR, "DispatchBeforeEvent failed");
         return err;
     }
-    if (timeout < 0)
-    {
-        if (timer_events_.empty())
-        {
-            err = DispatchIOEvent(true, 0);
-        }
-        else
-        {
-            err = DispatchIOEvent(false, timer_events_.begin()->first);
-        }
-    }
-    else
-    {
-        if (timer_events_.empty())
-        {
-            err = DispatchIOEvent(false, cur_time_ + timeout);
-        }
-        else
-        {
-            err = DispatchIOEvent(false, std::min(timer_events_.begin()->first, cur_time_ + timeout));
-        }
-    }
+    err = DispatchIOEvent(timeout);
     if (err != MError::No)
     {
         MLOG(MGetDefaultLogger(), MERR, "DispatchIOEvent failed");
@@ -324,17 +327,25 @@ MError MEventLoop::DispatchEventOnce(int timeout)
     return MError::No;
 }
 
-MError MEventLoop::DispatchIOEvent(bool forever, int64_t outdate)
+MError MEventLoop::DispatchIOEvent(int timeout)
 {
-    int timeout = -1;
+    if (!timer_events_.empty())
+    {
+        int left_time = std::max(0, static_cast<int>(timer_events_.begin()->first - cur_time_));
+        if (timeout < 0)
+        {
+            timeout = left_time;
+        }
+        else
+        {
+            timeout = std::min(timeout, left_time);
+        }
+    }
     bool interrupt = false;
     int count = 48;
+    int64_t start_time = cur_time_;
     do
     {
-        if (!forever)
-        {
-            timeout = std::max(0, static_cast<int>(outdate - cur_time_));
-        }
         int nevents = epoll_wait(epoll_fd_, &io_events_[0], io_events_.size(), timeout);
         if (nevents == -1)
         {
@@ -370,13 +381,12 @@ MError MEventLoop::DispatchIOEvent(bool forever, int64_t outdate)
         {
             if (static_cast<size_t>(nevents) == io_events_.size() && (--count > 0))
             {
-                outdate = cur_time_;
                 continue;
             }
             break;
         }
         UpdateTime();
-        if (!forever && (outdate <= cur_time_))
+        if (timeout > 0 && start_time >= cur_time_ - timeout)
         {
             break;
         }

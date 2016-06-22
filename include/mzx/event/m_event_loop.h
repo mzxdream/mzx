@@ -9,10 +9,6 @@
 #include <sys/epoll.h>
 #include <mzx/event/m_event_base.h>
 
-typedef std::multimap<int64_t, MTimerEventBase*>::iterator MTimerEventLocation;
-typedef std::list<MBeforeEventBase*>::iterator MBeforeEventLocation;
-typedef std::list<MAfterEventBase*>::iterator MAfterEventLocation;
-
 class MEventLoop
 {
 public:
@@ -44,7 +40,7 @@ public:
     MError DispatchEventOnce(int timeout = -1);
 private:
     MError AddInterrupt();
-    MError DispatchIOEvent(bool forever, int64_t outdate);
+    MError DispatchIOEvent(int timeout);
     MError DispatchTimerEvent();
     MError DispatchBeforeEvent();
     MError DispatchAfterEvent();
@@ -54,12 +50,8 @@ private:
     int interrupter_[2];
 
     std::vector<epoll_event> io_events_;
-    std::map<int, std::pair<unsigned, std::function<void (unsigned)> > > io_handlers_;
-
     std::multimap<int64_t, MTimerEventBase*> timer_events_;
-
     std::list<MBeforeEventBase*> before_events_;
-
     std::list<MAfterEventBase*> after_events_;
 };
 
