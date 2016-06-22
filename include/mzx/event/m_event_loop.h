@@ -51,8 +51,8 @@ private:
 
     std::vector<epoll_event> io_events_;
     std::multimap<int64_t, MTimerEventBase*> timer_events_;
-    std::list<MBeforeEventBase*> before_events_;
-    std::list<MAfterEventBase*> after_events_;
+    MBeforeEventBase before_events_;
+    MAfterEventBase after_events_;
 };
 
 #endif

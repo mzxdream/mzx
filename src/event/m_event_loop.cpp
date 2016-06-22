@@ -52,6 +52,10 @@ MError MEventLoop::Init()
     }
     UpdateTime();
     io_events_.resize(1024);
+    before_events_.p_prev_ = &before_events_;
+    before_events_.p_next_ = &before_events_;
+    after_events_.p_prev_ = &after_events_;
+    after_events_.p_next_ = &after_events_;
     return MError::No;
 }
 
@@ -77,25 +81,25 @@ void MEventLoop::Clear()
     {
         if (it->second)
         {
-            it->second->SetActived(false);
+            it->second->actived_ = false;
         }
         it = timer_events_.erase(it);
     }
-    for (auto it = before_events_.begin(); it != before_events_.end(); )
+    while (before_events_.p_next_ != &before_events_)
     {
-        if (*it)
-        {
-            (*it)->SetActived(false);
-        }
-        it = before_events_.erase(it);
+        MBeforeEventBase *p_event = before_events_.p_next_;
+        p_event->p_prev_->p_next_ = p_event->p_next_;
+        p_event->p_next_->p_prev_ = p_event->p_prev_;
+        p_event->p_prev_ = nullptr;
+        p_event->p_next_ = nullptr;
     }
-    for (auto it = after_events_.begin(); it != after_events_.end(); )
+    while (after_events_.p_next_ != &after_events_)
     {
-        if (*it)
-        {
-            (*it)->SetActived(false);
-        }
-        it = after_events_.erase(it);
+        MBeforeEventBase *p_event = after_events_.p_next_;
+        p_event->p_prev_->p_next_ = p_event->p_next_;
+        p_event->p_next_->p_prev_ = p_event->p_prev_;
+        p_event->p_prev_ = nullptr;
+        p_event->p_next_ = nullptr;
     }
 }
 
@@ -135,8 +139,8 @@ MError MEventLoop::AddIOEvent(unsigned events, MIOEventBase *p_event)
         MLOG(MGetDefaultLogger(), MERR, "epoll add failed errno:", errno);
         return MError::Unknown;
     }
-    p_event->SetActived(true);
-    p_event->SetEvents(events);
+    p_event->events_ = events;
+    p_event->actived_ = true;
     return MError::No;
 }
 
@@ -166,11 +170,11 @@ MError MEventLoop::DelIOEvent(unsigned events, MIOEventBase *p_event)
         MLOG(MGetDefaultLogger(), MERR, "epoll del failed errno:", errno);
         return MError::Unknown;
     }
+    p_event->events_ = events;
     if (op == EPOLL_CTL_DEL)
     {
-        p_event->SetActived(false);
+        p_event->actived_ = false;
     }
-    p_event->SetEvents(events);
     return MError::No;
 }
 
@@ -183,11 +187,14 @@ MError MEventLoop::AddTimerEvent(int64_t start_time, MTimerEventBase *p_event)
     }
     if (p_event->IsActived())
     {
-        return MError::No;
+        MError err = DelTimerEvent(p_event);
+        if (err != MError::No)
+        {
+            return err;
+        }
     }
-    auto iter = timer_events_.insert(std::make_pair(start_time, p_event));
-    p_event->SetActived(true);
-    p_event->SetLocation(iter);
+    p_event->location_ = timer_events_.insert(std::make_pair(start_time, p_event));
+    p_event->actived_ = true;
     return MError::No;
 }
 
@@ -202,8 +209,8 @@ MError MEventLoop::DelTimerEvent(MTimerEventBase *p_event)
     {
         return MError::No;
     }
-    timer_events_.erase(p_event->GetLocation());
-    p_event->SetActived(false);
+    timer_events_.erase(p_event->location_);
+    p_event->actived_ = false;
     return MError::No;
 }
 
@@ -216,12 +223,16 @@ MError MEventLoop::AddBeforeEvent(MBeforeEventBase *p_event)
     }
     if (p_event->IsActived())
     {
-        return MError::No;
+        MError err = DelBeforeEvent(p_event);
+        if (err != MError::No)
+        {
+            return err;
+        }
     }
-    before_events_.push_back(p_event);
-    p_event->SetActived(true);
-    auto iter = before_events_.end();
-    p_event->SetLocation(--iter);
+    p_event->p_next_ = &before_events_;
+    p_event->p_prev_ = before_events_.p_prev_;
+    p_event->p_prev_->p_next_ = p_event;
+    before_events_.p_prev_ = p_event;
     return MError::No;
 }
 
@@ -236,8 +247,10 @@ MError MEventLoop::DelBeforeEvent(MBeforeEventBase *p_event)
     {
         return MError::No;
     }
-    before_events_.erase(p_event->GetLocation());
-    p_event->SetActived(false);
+    p_event->p_prev_->p_next_ = p_event->p_next_;
+    p_event->p_next_->p_prev_ = p_event->p_prev_;
+    p_event->p_prev_ = nullptr;
+    p_event->p_next_ = nullptr;
     return MError::No;
 }
 
@@ -252,10 +265,10 @@ MError MEventLoop::AddAfterEvent(MAfterEventBase *p_event)
     {
         return MError::No;
     }
-    after_events_.push_back(p_event);
-    p_event->SetActived(true);
-    auto iter = after_events_.end();
-    p_event->SetLocation(--iter);
+    p_event->p_next_ = &after_events_;
+    p_event->p_prev_ = after_events_.p_prev_;
+    p_event->p_prev_->p_next_ = p_event;
+    before_events_.p_prev_ = p_event;
     return MError::No;
 }
 
@@ -270,8 +283,10 @@ MError MEventLoop::DelAfterEvent(MAfterEventBase *p_event)
     {
         return MError::No;
     }
-    after_events_.erase(p_event->GetLocation());
-    p_event->SetActived(false);
+    p_event->p_prev_->p_next_ = p_event->p_next_;
+    p_event->p_next_->p_prev_ = p_event->p_prev_;
+    p_event->p_prev_ = nullptr;
+    p_event->p_next_ = nullptr;
     return MError::No;
 }
 
@@ -404,7 +419,7 @@ MError MEventLoop::DispatchTimerEvent()
         timer_events_.erase(it);
         if (p_event)
         {
-            p_event->SetActived(false);
+            p_event->actived_ = false;
             p_event->OnCallback();
         }
         it = timer_events_.begin();
@@ -414,36 +429,52 @@ MError MEventLoop::DispatchTimerEvent()
 
 MError MEventLoop::DispatchBeforeEvent()
 {
-    std::list<MBeforeEventBase*> events;
-    events.swap(before_events_);
-    auto it = events.begin();
-    while (it != events.end())
+    if (before_events_.p_next_ == &before_events_)
     {
-        MBeforeEventBase *p_event = *it;
-        it = events.erase(it);
-        if (p_event)
-        {
-            p_event->SetActived(false);
-            p_event->OnCallback();
-        }
+        return MError::No;
+    }
+    MBeforeEventBase events;
+    events.p_prev_ = before_events_.p_prev_;
+    events.p_prev_->p_next_ = &events;
+    events.p_next_ = before_events_.p_next_;
+    events.p_next_->p_prev_ = &events;
+    before_events_.p_prev_ = &before_events_;
+    before_events_.p_next_ = &before_events_;
+
+    while (events.p_next_ != &events)
+    {
+        MBeforeEventBase *p_event = events.p_next_;
+        p_event->p_prev_->p_next_ = p_event->p_next_;
+        p_event->p_next_->p_prev_ = p_event->p_prev_;
+        p_event->p_prev_ = nullptr;
+        p_event->p_next_ = nullptr;
+        p_event->OnCallback();
     }
     return MError::No;
 }
 
 MError MEventLoop::DispatchAfterEvent()
 {
-    std::list<MAfterEventBase*> events;
-    events.swap(after_events_);
-    auto it = events.begin();
-    while (it != events.end())
+    if (after_events_.p_next_ == &after_events_)
     {
-        MAfterEventBase *p_event = *it;
-        it = events.erase(it);
-        if (p_event)
-        {
-            p_event->SetActived(false);
-            p_event->OnCallback();
-        }
+        return MError::No;
+    }
+    MAfterEventBase events;
+    events.p_prev_ = after_events_.p_prev_;
+    events.p_prev_->p_next_ = &events;
+    events.p_next_ = after_events_.p_next_;
+    events.p_next_->p_prev_ = &events;
+    after_events_.p_prev_ = &after_events_;
+    after_events_.p_next_ = &after_events_;
+
+    while (events.p_next_ != &events)
+    {
+        MAfterEventBase *p_event = events.p_next_;
+        p_event->p_prev_->p_next_ = p_event->p_next_;
+        p_event->p_next_->p_prev_ = p_event->p_prev_;
+        p_event->p_prev_ = nullptr;
+        p_event->p_next_ = nullptr;
+        p_event->OnCallback();
     }
     return MError::No;
 }

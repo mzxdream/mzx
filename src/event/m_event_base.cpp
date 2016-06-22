@@ -60,22 +60,16 @@ MError MIOEventBase::EnableEvent(unsigned events, const std::function<void (unsi
 
 MError MIOEventBase::DisableEvent(unsigned events)
 {
+    if (!IsActived())
+    {
+        return MError::No;
+    }
     return p_event_loop_->DelIOEvent(events, this);
 }
 
 MError MIOEventBase::DisableAllEvent()
 {
     return DisableEvent(static_cast<unsigned>(-1));
-}
-
-void MIOEventBase::SetEvents(unsigned events)
-{
-    events_ = events;
-}
-
-void MIOEventBase::SetActived(bool actived)
-{
-    actived_ = actived;
 }
 
 void MIOEventBase::OnCallback(unsigned events)
@@ -132,22 +126,11 @@ MError MTimerEventBase::EnableEvent(int64_t start_time, const std::function<void
 
 MError MTimerEventBase::DisableEvent()
 {
+    if (!IsActived())
+    {
+        return MError::No;
+    }
     return p_event_loop_->DelTimerEvent(this);
-}
-
-void MTimerEventBase::SetLocation(MTimerEventLocation location)
-{
-    location_ = location;
-}
-
-MTimerEventLocation MTimerEventBase::GetLocation() const
-{
-    return location_;
-}
-
-void MTimerEventBase::SetActived(bool actived)
-{
-    actived_ = actived;
 }
 
 void MTimerEventBase::OnCallback()
@@ -160,7 +143,8 @@ void MTimerEventBase::OnCallback()
 
 MBeforeEventBase::MBeforeEventBase()
     :p_event_loop_(nullptr)
-    ,actived_(false)
+    ,p_prev_(nullptr)
+    ,p_next_(nullptr)
 {
 }
 
@@ -171,7 +155,7 @@ MBeforeEventBase::~MBeforeEventBase()
 
 bool MBeforeEventBase::IsActived() const
 {
-    return actived_;
+    return p_prev_ != nullptr || p_next_ != nullptr;
 }
 
 MError MBeforeEventBase::Init(MEventLoop *p_event_loop)
@@ -181,8 +165,9 @@ MError MBeforeEventBase::Init(MEventLoop *p_event_loop)
         return MError::Invalid;
     }
     p_event_loop_ = p_event_loop;
-    cb_ = cb;
-    actived_ = false;
+    cb_ = nullptr;
+    p_prev_ = nullptr;
+    p_next_ = nullptr;
     return MError::No;
 }
 
@@ -199,22 +184,11 @@ MError MBeforeEventBase::EnableEvent(const std::function<void ()> &cb)
 
 MError MBeforeEventBase::DisableEvent()
 {
+    if (!IsActived())
+    {
+        return MError::No;
+    }
     return p_event_loop_->DelBeforeEvent(this);
-}
-
-void MBeforeEventBase::SetLocation(MBeforeEventLocation location)
-{
-    location_ = location;
-}
-
-MBeforeEventLocation MBeforeEventBase::GetLocation() const
-{
-    return location_;
-}
-
-void MBeforeEventBase::SetActived(bool actived)
-{
-    actived_ = actived;
 }
 
 void MBeforeEventBase::OnCallback()
@@ -227,7 +201,8 @@ void MBeforeEventBase::OnCallback()
 
 MAfterEventBase::MAfterEventBase()
     :p_event_loop_(nullptr)
-    ,actived_(false)
+    ,p_prev_(nullptr)
+    ,p_next_(nullptr)
 {
 }
 
@@ -238,7 +213,7 @@ MAfterEventBase::~MAfterEventBase()
 
 bool MAfterEventBase::IsActived() const
 {
-    return actived_;
+    return p_prev_ != nullptr || p_next_ != nullptr;
 }
 
 MError MAfterEventBase::Init(MEventLoop *p_event_loop)
@@ -249,7 +224,8 @@ MError MAfterEventBase::Init(MEventLoop *p_event_loop)
     }
     p_event_loop_ = p_event_loop;
     cb_ = nullptr;
-    actived_ = false;
+    p_prev_ = nullptr;
+    p_next_ = nullptr;
     return MError::No;
 }
 
@@ -266,22 +242,11 @@ MError MAfterEventBase::EnableEvent(const std::function<void ()> &cb)
 
 MError MAfterEventBase::DisableEvent()
 {
+    if (!IsActived())
+    {
+        return MError::No;
+    }
     return p_event_loop_->DelAfterEvent(this);
-}
-
-void MAfterEventBase::SetActived(bool actived)
-{
-    actived_ = actived;
-}
-
-void MAfterEventBase::SetLocation(MAfterEventLocation location)
-{
-    location_ = location;
-}
-
-MAfterEventLocation MAfterEventBase::GetLocation() const
-{
-    return location_;
 }
 
 void MAfterEventBase::OnCallback()

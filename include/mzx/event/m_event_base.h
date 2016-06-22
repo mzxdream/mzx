@@ -41,8 +41,6 @@ public:
     MError DisableAllEvent();
 private:
     friend class MEventLoop;
-    void SetEvents(unsigned events);
-    void SetActived(bool actived);
     void OnCallback(unsigned events);
 private:
     MEventLoop *p_event_loop_;
@@ -71,9 +69,6 @@ public:
     MError DisableEvent();
 private:
     friend class MEventLoop;
-    void SetLocation(MTimerEventLocation location);
-    MTimerEventLocation GetLocation() const;
-    void SetActived(bool actived);
     void OnCallback();
 private:
     MEventLoop *p_event_loop_;
@@ -84,7 +79,6 @@ private:
 
 class MBeforeEventBase
 {
-    typedef std::list<MBeforeEventBase*>::iterator MBeforeEventLocation;
 public:
     MBeforeEventBase();
     ~MBeforeEventBase();
@@ -99,15 +93,12 @@ public:
     MError DisableEvent();
 private:
     friend class MEventLoop;
-    void SetLocation(MBeforeEventLocation location);
-    MBeforeEventLocation GetLocation() const;
-    void SetActived(bool actived);
     void OnCallback();
 private:
     MEventLoop *p_event_loop_;
     std::function<void ()> cb_;
-    bool actived_;
-    MBeforeEventLocation location_;
+    MBeforeEventBase *p_prev_;
+    MBeforeEventBase *p_next_;
 };
 
 class MAfterEventBase
@@ -127,15 +118,12 @@ public:
     MError DisableEvent();
 private:
     friend class MEventLoop;
-    void SetActived(bool actived);
-    void SetLocation(MAfterEventLocation location);
-    MAfterEventLocation GetLocation() const;
     void OnCallback();
 private:
     MEventLoop *p_event_loop_;
     std::function<void ()> cb_;
-    bool actived_;
-    MAfterEventLocation location_;
+    MAfterEventBase *p_prev_;
+    MAfterEventBase *p_next_;
 };
 
 #endif
