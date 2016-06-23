@@ -27,7 +27,7 @@ MError MEventLoop::AddInterrupt()
     fcntl(interrupter_[1], F_SETFL, O_NONBLOCK);
     epoll_event ee;
     ee.events = EPOLLIN | EPOLLERR | EPOLLET;
-    ee.data.ptr = interrupter_;
+    ee.data.fd = interrupter_[0];
     if (epoll_ctl(epoll_fd_, EPOLL_CTL_ADD, interrupter_[0], &ee) == -1)
     {
         MLOG(MGetDefaultLogger(), MERR, "epoll ctl failed, errno:", errno);
@@ -77,6 +77,7 @@ void MEventLoop::Clear()
         close(interrupter_[0]);
         interrupter_[0] = -1;
     }
+    io_handlers_.clear();
     for (auto it = timer_events_.begin(); it != timer_events_.end(); )
     {
         if (it->second)
@@ -113,67 +114,73 @@ void MEventLoop::UpdateTime()
     cur_time_ = MTime::GetTime();
 }
 
-MError MEventLoop::AddIOEvent(unsigned events, MIOEventBase *p_event)
+MError MEventLoop::AddIOEvent(int fd, unsigned events, const std::function<void (unsigned)> &cb)
 {
-    if (!p_event)
+    if (fd < 0)
     {
-        MLOG(MGetDefaultLogger(), MERR, "event is Invalid");
+        MLOG(MGetDefaultLogger(), MERR, "fd is Invalid");
         return MError::Invalid;
     }
-    events |= p_event->GetEvents();
-    if (events & (MIOEVENT_IN | MIOEVENT_OUT | MIOEVENT_RDHUP))
+    auto it = io_handlers_.find(fd);
+    if (it == io_handlers_.end())
     {
-        MLOG(MGetDefaultLogger(), MERR, "events is not in out or rdhup");
-        return MError::Invalid;
+        if (!(events & (MIOEVENT_IN|MIOEVENT_OUT|MIOEVENT_RDHUP)))
+        {
+            MLOG(MGetDefaultLogger(), MERR, "events is not in out or rdhup");
+            return MError::Invalid;
+        }
+        epoll_event ee;
+        ee.data.fd = fd;
+        ee.events = events;
+        if (epoll_ctl(epoll_fd_, EPOLL_CTL_ADD, fd, &ee) == -1)
+        {
+            MLOG(MGetDefaultLogger(), MERR, "epoll add failed errno:", errno);
+            return MError::Unknown;
+        }
+        io_handlers_.insert(std::pair<int, std::pair<unsigned, std::function<void (unsigned)> > >(fd, ee.events, cb));
     }
-    int op = EPOLL_CTL_ADD;
-    if (p_event->IsActived())
+    else
     {
-        op = EPOLL_CTL_MOD;
+        epoll_event ee;
+        ee.data.fd = fd;
+        ee.events = it->second.first | events;
+        if (epoll_ctl(epoll_fd_, EPOLL_CTL_MOD, fd, &ee) == -1)
+        {
+            MLOG(MGetDefaultLogger(), MERR, "epoll mod failed errno:", errno);
+            return MError::Unknown;
+        }
+        it->second.first = ee.events;
+        it->second.second = cb;
     }
-    epoll_event ee;
-    ee.events = events;
-    ee.data.ptr = p_event;
-    if (epoll_ctl(epoll_fd_, op, p_event->GetFD(), &ee) == -1)
-    {
-        MLOG(MGetDefaultLogger(), MERR, "epoll add failed errno:", errno);
-        return MError::Unknown;
-    }
-    p_event->events_ = events;
-    p_event->actived_ = true;
     return MError::No;
 }
 
-MError MEventLoop::DelIOEvent(unsigned events, MIOEventBase *p_event)
+MError MEventLoop::DelIOEvent(int fd, unsigned events)
 {
-    if (!p_event)
+    auto it = io_handlers_.find(fd);
+    if (it != io_handlers_.end())
     {
-        MLOG(MGetDefaultLogger(), MERR, "event is Invalid");
-        return MError::Invalid;
-    }
-    events = p_event->GetEvents() & ~events;
-    if (!p_event->IsActived())
-    {
-        p_event->SetEvents(events);
-        return MError::No;
-    }
-    int op = EPOLL_CTL_DEL;
-    if (events & (MIOEVENT_IN | MIOEVENT_OUT | MIOEVENT_RDHUP))
-    {
-        op = EPOLL_CTL_MOD;
-    }
-    epoll_event ee;
-    ee.events = events;
-    ee.data.ptr = p_event;
-    if (epoll_ctl(epoll_fd_, op, p_event->GetFD(), &ee) == -1)
-    {
-        MLOG(MGetDefaultLogger(), MERR, "epoll del failed errno:", errno);
-        return MError::Unknown;
-    }
-    p_event->events_ = events;
-    if (op == EPOLL_CTL_DEL)
-    {
-        p_event->actived_ = false;
+        epoll_event ee;
+        ee.data.fd = fd;
+        ee.events = it->second.first & ~events;
+        if (!(ee.events & (MIOEVENT_IN|MIOEVENT_OUT|MIOEVENT_RDHUP)))
+        {
+            if (epoll_ctl(epoll_fd_, EPOLL_CTL_DEL, fd, &ee) == -1)
+            {
+                MLOG(MGetDefaultLogger(), MERR, "epoll del failed errno:", errno);
+                return MError::Unknown;
+            }
+            io_handlers_.erase(it);
+        }
+        else
+        {
+            if (epoll_ctl(epoll_fd_, EPOLL_CTL_MOD, fd, &ee) == -1)
+            {
+                MLOG(MGetDefaultLogger(), MERR, "epoll mod failed errno:", errno);
+                return MError::Unknown;
+            }
+            it->second.first = ee.events;
+        }
     }
     return MError::No;
 }
@@ -294,7 +301,7 @@ MError MEventLoop::Interrupt()
 {
     epoll_event ee;
     ee.events = EPOLLIN | EPOLLERR | EPOLLET;
-    ee.data.ptr = interrupter_;
+    ee.data.fd = interrupter_[0];
     if (epoll_ctl(epoll_fd_, EPOLL_CTL_MOD, interrupter_[0], &ee) == -1)
     {
         MLOG(MGetDefaultLogger(), MERR, "epoll ctl failed errno:", errno);
@@ -374,18 +381,28 @@ MError MEventLoop::DispatchIOEvent(int timeout)
         {
             for (int i = 0; i < nevents; ++i)
             {
-                void *p_tmp = io_events_[i].data.ptr;
-                if (!p_tmp)
-                {
-                    continue;
-                }
-                if (p_tmp == interrupter_)
+                int fd = io_events_[i].data.fd;
+                if (fd == interrupter_[0])
                 {
                     interrupt = true;
                     continue;
                 }
-                MIOEventBase *p_event = static_cast<MIOEventBase*>(p_tmp);
-                p_event->OnCallback(io_events_[i].events);
+                auto it = io_handlers_.find(fd);
+                if (it == io_handlers_.end())
+                {
+                    epoll_event ee;
+                    ee.data.fd = fd;
+                    ee.events = 0;
+                    epoll_ctl(epoll_fd_, EPOLL_CTL_DEL, fd, &ee);
+                }
+                else
+                {
+                    auto &cb = it->second.second;
+                    if (cb)
+                    {
+                        cb(io_events_[i].events);
+                    }
+                }
             }
         }
         if (interrupt)

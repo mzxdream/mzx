@@ -8,47 +8,7 @@
 #include <list>
 #include <functional>
 
-#ifndef EPOLLRDHUP
-#define EPOLLRDHUP 0x2000
-#endif
-
-#define MIOEVENT_IN      EPOLLIN
-#define MIOEVENT_OUT     EPOLLOUT
-#define MIOEVENT_RDHUP   EPOLLRDHUP
-#define MIOEVENT_LT      0
-#define MIOEVENT_ET      EPOLLET
-#define MIOEVENT_ERR     EPOLLERR
-#define MIOEVENT_HUP     EPOLLHUP
-
 class MEventLoop;
-
-class MIOEventBase
-{
-public:
-    MIOEventBase();
-    ~MIOEventBase();
-    MIOEventBase(const MIOEventBase &) = delete;
-    MIOEventBase& operator=(const MIOEventBase &) = delete;
-public:
-    int GetFD() const;
-    unsigned GetEvents() const;
-    bool IsActived() const;
-
-    MError Init(MEventLoop *p_event_loop, int fd);
-    void Clear();
-    MError EnableEvent(unsigned events, const std::function<void (unsigned)> &cb);
-    MError DisableEvent(unsigned events);
-    MError DisableAllEvent();
-private:
-    friend class MEventLoop;
-    void OnCallback(unsigned events);
-private:
-    MEventLoop *p_event_loop_;
-    int fd_;
-    unsigned events_;
-    std::function<void (unsigned)> cb_;
-    bool actived_;
-};
 
 class MTimerEventBase
 {

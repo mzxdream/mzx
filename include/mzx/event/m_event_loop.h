@@ -9,6 +9,18 @@
 #include <sys/epoll.h>
 #include <mzx/event/m_event_base.h>
 
+#ifndef EPOLLRDHUP
+#define EPOLLRDHUP 0x2000
+#endif
+
+#define MIOEVENT_IN      EPOLLIN
+#define MIOEVENT_OUT     EPOLLOUT
+#define MIOEVENT_RDHUP   EPOLLRDHUP
+#define MIOEVENT_LT      0
+#define MIOEVENT_ET      EPOLLET
+#define MIOEVENT_ERR     EPOLLERR
+#define MIOEVENT_HUP     EPOLLHUP
+
 class MEventLoop
 {
 public:
@@ -23,8 +35,8 @@ public:
     int64_t GetTime() const;
     void UpdateTime();
 
-    MError AddIOEvent(unsigned events, MIOEventBase *p_event);
-    MError DelIOEvent(unsigned events, MIOEventBase *p_event);
+    MError AddIOEvent(int fd, unsigned events, const std::function<void (unsigned)> &cb);
+    MError DelIOEvent(int fd, unsigned events = MIOEVENT_IN|MIOEVENT_OUT|MIOEVENT_RDHUP);
 
     MError AddTimerEvent(int64_t start_time, MTimerEventBase *p_event);
     MError DelTimerEvent(MTimerEventBase *p_event);
@@ -50,6 +62,7 @@ private:
     int interrupter_[2];
 
     std::vector<epoll_event> io_events_;
+    std::map<int, std::pair<unsigned, std::function<void (unsigned)> > > io_handlers_;
     std::multimap<int64_t, MTimerEventBase*> timer_events_;
     MBeforeEventBase before_events_;
     MAfterEventBase after_events_;
