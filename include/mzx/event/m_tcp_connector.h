@@ -38,8 +38,8 @@ public:
     MError AsyncRead(char *p_buf, std::size_t len, std::size_t min_len, const std::function<void (std::size_t, MError)> &read_cb);
     MError AysncWrite(const char *p_buf, std::size_t len, std::size_t min_len, const std::function<void (std::size_t, MError)> &write_cb);
 
-    MError ClearRead();
-    MError ClearWrite();
+    void ClearRead();
+    void ClearWrite();
 private:
     void OnError(MError err);
 public:
