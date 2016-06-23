@@ -20,7 +20,7 @@ struct MTcpWriteBuffer
     std::size_t len;
     std::size_t min_len;
     std::size_t write_len;
-    std::function<void (MError)> write_cb;
+    std::function<void (std::size_t, MError)> write_cb;
 };
 
 class MTcpConnector
@@ -36,18 +36,18 @@ public:
 
     MError AsyncConnect(const std::string &ip, unsigned port, const std::function<void (MError)> &cb);
     MError AsyncRead(char *p_buf, std::size_t len, std::size_t min_len, const std::function<void (std::size_t, MError)> &read_cb);
-    MError AysncWrite(const char *p_buf, std::size_t len, std::size_t min_len, const std::function<void (MError)> &write_cb);
+    MError AysncWrite(const char *p_buf, std::size_t len, std::size_t min_len, const std::function<void (std::size_t, MError)> &write_cb);
 
     MError ClearRead();
     MError ClearWrite();
-    MError ClearReadWrite();
 private:
     void OnError(MError err);
 public:
     void OnConnectCallback(unsigned events);
     void OnStreamCallback(unsigned events);
 private:
-    MIOEventBase event_base_;
+    MEventLoop *p_event_loop_;
+    int fd_;
     bool close_on_free_;
     bool readable_;
     bool writable_;
