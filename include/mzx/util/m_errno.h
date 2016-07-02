@@ -1,21 +1,34 @@
 #ifndef _M_ERRNO_H_
 #define _M_ERRNO_H_
 
-#include <errno.h>
-
 enum class MError
 {
     No,
     Unknown,
-    ConnectRefused,
-    Disconnect,
-    NotSupport,
-    InProgress,
-    Again,
-    INTR,
-    Invalid,
-    NoBufs,
-    Disabled,
+    OperationNotPermitted,
+    NoSuchFileOrDirectory,
+    NoSuchProcess,
+    InterruptedSystemCall,
+    IOError,
+    NoSuchDeviceOrAddress,
+    ArgumentListTooLong,
+    ExecFormatError,
+    BadFileNumber,
+    NoChildProcesses,
+    TryAgain,
+    OutOfMemory,
+    PermissionDenied,
+    DeviceOrResourceBusy,
+    InvalidArgument,
+    FileTableOverflow,
+    TooManyOpenFiles,
+    NoData,
+    TimerExpired,
+    AddressInUse,
+    NoBufferSpace,
+    ConnectionRefused,
 };
+
+MError MGetLastError();
 
 #endif
