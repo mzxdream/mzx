@@ -16,29 +16,29 @@ public:
         }
         return ++val;
     }
-	template <typename T, typename std::enable_if<std::is_unsigned<T>::value, int>::type = 0>
+    template <typename T, typename std::enable_if<std::is_unsigned<T>::value, int>::type = 0>
     static bool IsPowerOf2(T val)
     {
         return val & (val - 1);
     }
-	template <typename T, typename std::enable_if<std::is_unsigned<T>::value, int>::type = 0>
+    template <typename T, typename std::enable_if<std::is_unsigned<T>::value, int>::type = 0>
     static unsigned short Power2Index(T val)
     {
-		unsigned short index = 0;
+        unsigned short index = 0;
         while (val >>= 1)
-		{
-			++index;
-		}
+        {
+            ++index;
+        }
         return index;
     }
-	template <typename T, typename std::enable_if<std::is_unsigned<T>::value, int>::type = 0>
+    template <typename T, typename std::enable_if<std::is_unsigned<T>::value, int>::type = 0>
     static unsigned short NextPower2Index(T val)
     {
-		unsigned short index = Power2Index(val);
-		if (!IsPowerOf2(val))
-		{
-			++index;
-		}
+        unsigned short index = Power2Index(val);
+        if (!IsPowerOf2(val))
+        {
+            ++index;
+        }
         return index;
     }
 };
