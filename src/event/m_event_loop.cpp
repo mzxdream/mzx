@@ -20,8 +20,8 @@ MError MEventLoop::AddInterrupt()
 {
     if (pipe(interrupter_) != 0)
     {
-        MLOG(MGetDefaultLogger(), MERR, "create pipe failed, errno:", errno);
-        return MError::Unknown;
+        MLOG(MGetDefaultLogger(), MERR, "create pipe failed:", MGetLastErrorMsg());
+        return MGetLastError();
     }
     fcntl(interrupter_[0], F_SETFL, O_NONBLOCK);
     fcntl(interrupter_[1], F_SETFL, O_NONBLOCK);
@@ -30,8 +30,8 @@ MError MEventLoop::AddInterrupt()
     ee.data.fd = interrupter_[0];
     if (epoll_ctl(epoll_fd_, EPOLL_CTL_ADD, interrupter_[0], &ee) == -1)
     {
-        MLOG(MGetDefaultLogger(), MERR, "epoll ctl failed, errno:", errno);
-        return MError::Unknown;
+        MLOG(MGetDefaultLogger(), MERR, "epoll ctl failed:", MGetLastErrorMsg());
+        return MGetLastError();
     }
     int tmp = 1;
     write(interrupter_[1], &tmp, sizeof(tmp));
@@ -42,8 +42,8 @@ MError MEventLoop::Init()
 {
     if ((epoll_fd_ = epoll_create1(EPOLL_CLOEXEC)) == -1)
     {
-        MLOG(MGetDefaultLogger(), MERR, "create epoll failed, errno:", errno);
-        return MError::Unknown;
+        MLOG(MGetDefaultLogger(), MERR, "create epoll failed:", MGetLastErrorMsg());
+        return MGetLastError();
     }
     MError err = AddInterrupt();
     if (err != MError::No)
@@ -119,7 +119,7 @@ MError MEventLoop::AddIOEvent(int fd, unsigned events, const std::function<void 
     if (fd < 0)
     {
         MLOG(MGetDefaultLogger(), MERR, "fd is Invalid");
-        return MError::Invalid;
+        return MError::InvalidArgument;
     }
     auto it = io_handlers_.find(fd);
     if (it == io_handlers_.end())
@@ -127,15 +127,15 @@ MError MEventLoop::AddIOEvent(int fd, unsigned events, const std::function<void 
         if (!(events & (MIOEVENT_IN|MIOEVENT_OUT|MIOEVENT_RDHUP)))
         {
             MLOG(MGetDefaultLogger(), MERR, "events is not in out or rdhup");
-            return MError::Invalid;
+            return MError::InvalidArgument;
         }
         epoll_event ee;
         ee.data.fd = fd;
         ee.events = events;
         if (epoll_ctl(epoll_fd_, EPOLL_CTL_ADD, fd, &ee) == -1)
         {
-            MLOG(MGetDefaultLogger(), MERR, "epoll add failed errno:", errno);
-            return MError::Unknown;
+            MLOG(MGetDefaultLogger(), MERR, "epoll add failed:", MGetLastErrorMsg());
+            return MGetLastError();
         }
         io_handlers_.insert(std::pair<int, std::pair<unsigned, std::function<void (unsigned)> > >(fd, ee.events, cb));
     }
@@ -146,8 +146,8 @@ MError MEventLoop::AddIOEvent(int fd, unsigned events, const std::function<void 
         ee.events = it->second.first | events;
         if (epoll_ctl(epoll_fd_, EPOLL_CTL_MOD, fd, &ee) == -1)
         {
-            MLOG(MGetDefaultLogger(), MERR, "epoll mod failed errno:", errno);
-            return MError::Unknown;
+            MLOG(MGetDefaultLogger(), MERR, "epoll mod failed:", MGetLastErrorMsg());
+            return MGetLastError();
         }
         it->second.first = ee.events;
         it->second.second = cb;
@@ -167,8 +167,8 @@ MError MEventLoop::DelIOEvent(int fd, unsigned events)
         {
             if (epoll_ctl(epoll_fd_, EPOLL_CTL_DEL, fd, &ee) == -1)
             {
-                MLOG(MGetDefaultLogger(), MERR, "epoll del failed errno:", errno);
-                return MError::Unknown;
+                MLOG(MGetDefaultLogger(), MERR, "epoll del failed:", MGetLastErrorMsg());
+                return MGetLastError();
             }
             io_handlers_.erase(it);
         }
@@ -176,8 +176,8 @@ MError MEventLoop::DelIOEvent(int fd, unsigned events)
         {
             if (epoll_ctl(epoll_fd_, EPOLL_CTL_MOD, fd, &ee) == -1)
             {
-                MLOG(MGetDefaultLogger(), MERR, "epoll mod failed errno:", errno);
-                return MError::Unknown;
+                MLOG(MGetDefaultLogger(), MERR, "epoll mod failed:", MGetLastErrorMsg());
+                return MGetLastError();
             }
             it->second.first = ee.events;
         }
@@ -190,7 +190,7 @@ MError MEventLoop::AddTimerEvent(int64_t start_time, MTimerEventBase *p_event)
     if (!p_event)
     {
         MLOG(MGetDefaultLogger(), MERR, "event is Invalid");
-        return MError::Invalid;
+        return MError::InvalidArgument;
     }
     if (p_event->IsActived())
     {
@@ -210,7 +210,7 @@ MError MEventLoop::DelTimerEvent(MTimerEventBase *p_event)
     if (!p_event)
     {
         MLOG(MGetDefaultLogger(), MERR, "event is Invalid");
-        return MError::Invalid;
+        return MError::InvalidArgument;
     }
     if (!p_event->IsActived())
     {
@@ -226,7 +226,7 @@ MError MEventLoop::AddBeforeEvent(MBeforeEventBase *p_event)
     if (!p_event)
     {
         MLOG(MGetDefaultLogger(), MERR, "event is Invalid");
-        return MError::Invalid;
+        return MError::InvalidArgument;
     }
     if (p_event->IsActived())
     {
@@ -248,7 +248,7 @@ MError MEventLoop::DelBeforeEvent(MBeforeEventBase *p_event)
     if (!p_event)
     {
         MLOG(MGetDefaultLogger(), MERR, "event is Invalid");
-        return MError::Invalid;
+        return MError::InvalidArgument;
     }
     if (!p_event->IsActived())
     {
@@ -266,7 +266,7 @@ MError MEventLoop::AddAfterEvent(MAfterEventBase *p_event)
     if (!p_event)
     {
         MLOG(MGetDefaultLogger(), MERR, "event is Invalid");
-        return MError::Invalid;
+        return MError::InvalidArgument;
     }
     if (p_event->IsActived())
     {
@@ -284,7 +284,7 @@ MError MEventLoop::DelAfterEvent(MAfterEventBase *p_event)
     if (!p_event)
     {
         MLOG(MGetDefaultLogger(), MERR, "event is Invalid");
-        return MError::Invalid;
+        return MError::InvalidArgument;
     }
     if (!p_event->IsActived())
     {
@@ -304,8 +304,8 @@ MError MEventLoop::Interrupt()
     ee.data.fd = interrupter_[0];
     if (epoll_ctl(epoll_fd_, EPOLL_CTL_MOD, interrupter_[0], &ee) == -1)
     {
-        MLOG(MGetDefaultLogger(), MERR, "epoll ctl failed errno:", errno);
-        return MError::Unknown;
+        MLOG(MGetDefaultLogger(), MERR, "epoll ctl failed:", MGetLastErrorMsg());
+        return MGetLastError();
     }
     return MError::No;
 }
@@ -371,10 +371,11 @@ MError MEventLoop::DispatchIOEvent(int timeout)
         int nevents = epoll_wait(epoll_fd_, &io_events_[0], io_events_.size(), timeout);
         if (nevents == -1)
         {
-            if (errno != EINTR)
+            MError err = MGetLastError();
+            if (err != MError::InterruptedSystemCall)
             {
-                MLOG(MGetDefaultLogger(), MERR, "epoll wait failed errno:", errno);
-                return MError::Unknown;
+                MLOG(MGetDefaultLogger(), MERR, "epoll wait failed:", MGetErrorMsg(err));
+                return err;
             }
         }
         else

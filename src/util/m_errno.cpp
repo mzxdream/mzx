@@ -3,7 +3,17 @@
 
 MError MGetLastError()
 {
-    switch (errno)
+    return MMakeError(errno);
+}
+
+std::string MGetLastErrorMsg()
+{
+    return MGetErrorMsg(errno);
+}
+
+MError MMakeError(int err)
+{
+    switch (err)
     {
     case 0:
         return MError::No;
@@ -41,8 +51,6 @@ MError MGetLastError()
         return MError::FileTableOverflow;
     case EMFILE:
         return MError::TooManyOpenFiles;
-    //case EWOULDBLOCK:
-    //    return MError::TryAgain;
     case ENODATA:
         return MError::NoData;
     case ETIME:
@@ -55,6 +63,61 @@ MError MGetLastError()
         return MError::ConnectionRefused;
     default:
         return MError::Unknown;
+    }
+}
+
+std::string MGetErrorMsg(int err)
+{
+    switch (err)
+    {
+    case 0:
+        return "no error";
+    case EPERM:
+        return "operation not permitted";
+    case ENOENT:
+        return "no such file or directory";
+    case ESRCH:
+        return "no such process";
+    case EINTR:
+        return "interrupted system call";
+    case EIO:
+        return "io error";
+    case ENXIO:
+        return "no such device or address";
+    case E2BIG:
+        return "argument list too long";
+    case ENOEXEC:
+        return "exec format error";
+    case EBADF:
+        return "bad file number";
+    case ECHILD:
+        return "no child processes";
+    case EAGAIN:
+        return "try again";
+    case ENOMEM:
+        return "out of memory";
+    case EACCES:
+        return "permission denied";
+    case EBUSY:
+        return "device or resource busy";
+    case EINVAL:
+        return "invalid argument";
+    case ENFILE:
+        return "file table overflow";
+    case EMFILE:
+        return "too many open files";
+    case ENODATA:
+        return "no data";
+    case ETIME:
+        return "timer expired";
+    case EADDRINUSE:
+        return "address in use";
+    case ENOBUFS:
+        return "no buffer space";
+    case ECONNREFUSED:
+        return "connection refused";
+    default:
+        return "unknown error";
     }
 }
 

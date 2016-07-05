@@ -32,6 +32,9 @@ enum class MError
 };
 
 MError MGetLastError();
+std::string MGetLastErrorMsg();
+MError MMakeError(int err);
+std::string MGetErrorMsg(int err);
 std::string MGetErrorMsg(MError err);
 
 #endif

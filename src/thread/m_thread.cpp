@@ -1,5 +1,4 @@
 #include <mzx/thread/m_thread.h>
-#include <mzx/util/m_string.h>
 #include <mzx/util/m_logger.h>
 
 MThread::MThread()
@@ -19,8 +18,7 @@ MError MThread::Start()
     int err = pthread_create(&tid_, nullptr, &ThreadMain, this);
     if (err != 0)
     {
-        MLOG(MGetDefaultLogger(), MERR, "create thread failed error:", err);
-        return MError::Unknown;
+        return MMakeError(err);
     }
     return MError::No;
 }
@@ -35,8 +33,7 @@ MError MThread::Join()
     int err = pthread_join(tid_, nullptr);
     if (err != 0)
     {
-        MLOG(MGetDefaultLogger(), MERR, "join thread failed err:", err);
-        return MError::Unknown;
+        return MMakeError(err);
     }
     return MError::No;
 }
