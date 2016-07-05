@@ -1,6 +1,8 @@
 #ifndef _M_ERRNO_H_
 #define _M_ERRNO_H_
 
+#include <string>
+
 enum class MError
 {
     No,

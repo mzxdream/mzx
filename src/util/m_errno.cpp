@@ -41,8 +41,8 @@ MError MGetLastError()
         return MError::FileTableOverflow;
     case EMFILE:
         return MError::TooManyOpenFiles;
-    case EWOULDBLOCK:
-        return MError::TryAgain;
+    //case EWOULDBLOCK:
+    //    return MError::TryAgain;
     case ENODATA:
         return MError::NoData;
     case ETIME:
@@ -98,8 +98,6 @@ std::string MGetErrorMsg(MError err)
         return "file table overflow";
     case MError::TooManyOpenFiles:
         return "too many open files";
-    case MError::TryAgain:
-        return "try again";
     case MError::NoData:
         return "no data";
     case MError::TimerExpired:
