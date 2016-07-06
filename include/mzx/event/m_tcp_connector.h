@@ -16,7 +16,7 @@ struct MTcpReadBuffer
 
 struct MTcpWriteBuffer
 {
-    char *p_buf;
+    const char *p_buf;
     std::size_t len;
     std::size_t min_len;
     std::size_t write_len;

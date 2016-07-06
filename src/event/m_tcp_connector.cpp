@@ -20,7 +20,7 @@ MError MTcpConnector::Init(MEventLoop *p_event_loop, int fd, bool close_on_free)
 {
     if (!p_event_loop || fd < 0)
     {
-        return MError::Invalid;
+        return MError::InvalidArgument;
     }
     p_event_loop_ = p_event_loop;
     fd_ = fd;
@@ -44,35 +44,36 @@ void MTcpConnector::Clear()
         }
     }
     read_buffers_.clear();
-    for (auto it = write_buffers_.begin(); it != write_buffers_.end(); )
-    {
-        free(it->p_buf);
-        it = write_buffers_.erase(it);
-    }
+    write_buffers_.clear();
 }
 
-MError MTcpConnector::AsyncConnect(const std::string &ip, unsigned port, const std::function<void (MError)> &cb)
+MError MTcpConnector::AsyncConnect(const std::string &ip, unsigned port
+    , const std::function<void (MError)> &cb)
 {
     if (!p_event_loop_)
     {
-        return MError::Invalid;
+        return MError::InvalidArgument;
     }
-    while ((err = MSocketOpts::Connect(fd_, ip, port)) == MError::INTR)
+    MError err = MError::No;
+    while ((err = MSocketOpts::Connect(fd_, ip, port))
+        == MError::InterruptedSystemCall)
     {
     }
     if (err != MError::No && err != MError::InProgress)
     {
         return err;
     }
-    err = p_event_loop_->AddIOEvent(fd_, MIOEVENT_IN|MIOEVENT_LT, std::bind(&MTcpConnector::OnConnectCallback, this));
+    err = p_event_loop_->AddIOEvent(fd_, MIOEVENT_OUT
+        , std::bind(&MTcpConnector::OnConnectCallback, this));
     return err;
 }
 
-MError MTcpConnector::AsyncRead(char *p_buf, std::size_t len, std::size_t min_len, const std::function<void (std::size_t, MError)> &read_cb)
+MError MTcpConnector::AsyncRead(char *p_buf, std::size_t len, std::size_t min_len
+    , const std::function<void (std::size_t, MError)> &read_cb)
 {
     if (!p_event_loop_ || fd < 0)
     {
-        return MError::Invalid;
+        return MError::InvalidArgument;
     }
     if (!readable_)
     {
@@ -100,8 +101,8 @@ MError MTcpConnector::AsyncRead(char *p_buf, std::size_t len, std::size_t min_le
         read_len = static_cast<std::size_t>(ret.first);
         if (read_len == 0)
         {
-            OnError(MError::Disconnect);
-            return MError::Disconnect;
+            OnError(MError::ConnectReset);
+            return MError::ConnectReset;
         }
         if (read_len == len || read_len >= min_len)
         {
@@ -112,12 +113,14 @@ MError MTcpConnector::AsyncRead(char *p_buf, std::size_t len, std::size_t min_le
             return MError::No;
         }
     }
-    else if (ret.second != MError::INTR && ret.second != MError::Again)
+    else if (ret.second != MError::InterruptedSystemCall
+        && ret.second != MError::TryAgain)
     {
         OnError(ret.second);
         return ret.second;
     }
-    MError err = p_event_loop_->AddIOEvent(fd_, MIOEVENT_IN|MIOEVENT_LT, std::bind(&MTcpConnector::OnStreamCallback, this));
+    MError err = p_event_loop_->AddIOEvent(fd_, MIOEVENT_IN|MIOEVENT_LT
+        , std::bind(&MTcpConnector::OnStreamCallback, this));
     if (err != MError::No)
     {
         return err;
@@ -133,7 +136,8 @@ MError MTcpConnector::AsyncRead(char *p_buf, std::size_t len, std::size_t min_le
     return MError::No;
 }
 
-MError MTcpConnector::AsyncWrite(const char *p_buf, std::size_t len, std::size_t min_len, const std::function<void (std::size_t, MError)> &write_cb)
+MError MTcpConnector::AsyncWrite(const char *p_buf, std::size_t len
+    , std::size_t min_len, const std::function<void (std::size_t, MError)> &write_cb)
 {
     if (!p_event_loop_ || fd < 0)
     {
@@ -143,8 +147,7 @@ MError MTcpConnector::AsyncWrite(const char *p_buf, std::size_t len, std::size_t
     if (!writable_)
     {
         MTcpWriteBuffer buf;
-        buf.p_buf = static_cast<char*>(malloc(sizeof(char)*len));
-        memcpy(buf.p_buf, p_buf, len);
+        buf.p_buf = p_buf;
         buf.len = len;
         buf.min_len = min_len;
         buf.write_len = 0;
@@ -174,20 +177,21 @@ MError MTcpConnector::AsyncWrite(const char *p_buf, std::size_t len, std::size_t
             return MError::No;
         }
     }
-    else if (ret.second != MError::INTR && ret.second != MError::Again)
+    else if (ret.second != MError::InterruptedSystemCall
+        && ret.second != MError::TryAgain)
     {
         OnError(ret.second);
         return ret.second;
     }
-    MError err = p_event_loop_->AddIOEvent(fd_, MIOEVENT_OUT|MIOEVENT_LT, std::bind(&MTcpConnector::OnStreamCallback, this));
+    MError err = p_event_loop_->AddIOEvent(fd_, MIOEVENT_OUT|MIOEVENT_LT
+        , std::bind(&MTcpConnector::OnStreamCallback, this));
     if (err != MError::No)
     {
         return err;
     }
     writable_ = false;
     MTcpWriteBuffer buf;
-    buf.p_buf = static_cast<char*>(malloc(sizeof(char)*len));
-    memcpy(buf.p_buf, p_buf, len);
+    buf.p_buf = p_buf;
     buf.len = len;
     buf.min_len = min_len;
     buf.write_len = write_len;
@@ -203,11 +207,7 @@ void MTcpConnector::ClearRead()
 
 void MTcpConnector::ClearWrite()
 {
-    for (auto it = write_buffers_.begin(); it != write_buffers_.end(); )
-    {
-        free(it->p_buf);
-        it = write_buffers_.erase(it);
-    }
+    write_buffers_.clear();
 }
 
 void MTcpConnector::OnError(MError err)
@@ -228,7 +228,6 @@ void MTcpConnector::OnError(MError err)
     {
         auto write_cb = it->write_cb;
         std::size_t write_len = it->write_len;
-        free(it->p_buf);
         write_buffers_.erase(it);
         if (write_cb)
         {
@@ -252,9 +251,9 @@ void MTcpConnector::OnConnectCallback(unsigned events)
     }
     else if (events & MIOEVENT_RDHUP)
     {
-        cb_(MError::Disconnect);
+        cb_(MError::ConnectReset);
     }
-    else if (events & MIOEVENT_IN)
+    else if (events & MIOEVENT_OUT)
     {
         cb_(MError::No);
     }

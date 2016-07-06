@@ -31,6 +31,7 @@ enum class MError:int
     NoBufferSpace = ENOBUFS,
     ConnectionRefused = ECONNREFUSED,
     InProgress = EINPROGRESS,
+    ConnectReset = ECONNRESET,
 };
 
 MError MGetLastError();

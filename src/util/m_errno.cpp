@@ -62,6 +62,8 @@ MError MMakeError(int err)
         return MError::ConnectionRefused;
     case EINPROGRESS:
         return MError::InProgress;
+    case ECONNRESET:
+        return MError::ConnectReset;
     default:
         return MError::Unknown;
     }
@@ -119,6 +121,8 @@ std::string MGetErrorMsg(int err)
         return "connection refused";
     case EINPROGRESS:
         return "operation now in progress";
+    case ECONNRESET:
+        return "connect reset by peer";
     default:
         return "unknown error";
     }
