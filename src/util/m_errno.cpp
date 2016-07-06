@@ -1,5 +1,4 @@
 #include <mzx/util/m_errno.h>
-#include <errno.h>
 
 MError MGetLastError()
 {
@@ -61,6 +60,8 @@ MError MMakeError(int err)
         return MError::NoBufferSpace;
     case ECONNREFUSED:
         return MError::ConnectionRefused;
+    case EINPROGRESS:
+        return MError::InProgress;
     default:
         return MError::Unknown;
     }
@@ -116,6 +117,8 @@ std::string MGetErrorMsg(int err)
         return "no buffer space";
     case ECONNREFUSED:
         return "connection refused";
+    case EINPROGRESS:
+        return "operation now in progress";
     default:
         return "unknown error";
     }
@@ -123,55 +126,5 @@ std::string MGetErrorMsg(int err)
 
 std::string MGetErrorMsg(MError err)
 {
-    switch (err)
-    {
-    case MError::No:
-        return "no error";
-    case MError::OperationNotPermitted:
-        return "operation not permitted";
-    case MError::NoSuchFileOrDirectory:
-        return "no such file or directory";
-    case MError::NoSuchProcess:
-        return "no such process";
-    case MError::InterruptedSystemCall:
-        return "interrupted system call";
-    case MError::IOError:
-        return "io error";
-    case MError::NoSuchDeviceOrAddress:
-        return "no such device or address";
-    case MError::ArgumentListTooLong:
-        return "argument list too long";
-    case MError::ExecFormatError:
-        return "exec format error";
-    case MError::BadFileNumber:
-        return "bad file number";
-    case MError::NoChildProcesses:
-        return "no child processes";
-    case MError::TryAgain:
-        return "try again";
-    case MError::OutOfMemory:
-        return "out of memory";
-    case MError::PermissionDenied:
-        return "permission denied";
-    case MError::DeviceOrResourceBusy:
-        return "device or resource busy";
-    case MError::InvalidArgument:
-        return "invalid argument";
-    case MError::FileTableOverflow:
-        return "file table overflow";
-    case MError::TooManyOpenFiles:
-        return "too many open files";
-    case MError::NoData:
-        return "no data";
-    case MError::TimerExpired:
-        return "timer expired";
-    case MError::AddressInUse:
-        return "address in use";
-    case MError::NoBufferSpace:
-        return "no buffer space";
-    case MError::ConnectionRefused:
-        return "connection refused";
-    default:
-        return "unknown error";
-    }
+    return MGetErrorMsg(statice_cast<int>(err));
 }
