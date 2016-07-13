@@ -1,32 +1,33 @@
-#ifndef _M_TCP_LISTEN_H_
-#define _M_TCP_LISTEN_H_
+#ifndef _M_TCP_LISTENER_H_
+#define _M_TCP_LISTENER_H_
 
 #include <mzx/util/m_errno.h>
 #include <mzx/event/m_event_loop.h>
 #include <functional>
+#include <string>
+#include <list>
 
-class MTcpListen
-    :public MIOEventBase
+class MTcpListener
 {
 public:
-    MTcpListen();
-    virtual ~MTcpListen();
-    MTcpListen(const MTcpListen &) = delete;
-    MTcpListen& operator=(const MTcpListen &) = delete;
+    MTcpListener();
+    ~MTcpListener();
+    MTcpListener(const MTcpListener &) = delete;
+    MTcpListener& operator=(const MTcpListener &) = delete;
 public:
-    MError Init(MEventLoop *p_event_loop, int fd);
+    MError Init(MEventLoop *p_event_loop, int fd, bool close_on_free);
     void Clear();
-    MError Start(int once_count, const std::function<void (int, std::string, unsigned, MError)> &cb);
-    MError Stop();
+
+    MError AsyncAccept(const std::function<void (int, std::string, unsigned, MError)> &cb);
+    MError StopAccept();
+public:
+    void OnAcceptCallback(unsigned events);
 private:
-    virtual void _OnCallback(unsigned events) override;
-private:
+    MEventLoop *p_event_loop_;
     int fd_;
-    int once_count_;
-    std::function<void (int, std::string, unsigned, MError)> cb_;
-    int accepted_fd_;
-    std::string accepted_ip_;
-    unsigned accepted_port_;
+    bool close_on_free_;
+    bool acceptable_;
+    std::list<std::function<void (int, std::string, unsigned, MError)> > accept_buffers_;
 };
 
 #endif

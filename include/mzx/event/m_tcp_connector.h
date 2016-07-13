@@ -4,6 +4,7 @@
 #include <mzx/util/m_errno.h>
 #include <mzx/event/m_event_loop.h>
 #include <functional>
+#include <list>
 
 struct MTcpReadBuffer
 {

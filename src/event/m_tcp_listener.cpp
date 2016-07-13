@@ -1,62 +1,76 @@
-#include <mzx/net/m_tcp_listen.h>
-#include <mzx/net/m_socket_opts.h>
+#include <mzx/event/m_tcp_listener.h>
+#include <mzx/util/m_socket_opts.h>
 
-MTcpListen::MTcpListen()
-    :fd_(-1)
-    ,once_count_(0)
-    ,cb_(nullptr)
+MTcpListener::MTcpListener()
+    :p_event_loop_(nullptr)
+    ,fd_(-1)
+    ,close_on_free_(true)
+    ,acceptable_(true)
 {
 }
 
-MTcpListen::~MTcpListen()
+MTcpListener::~MTcpListener()
 {
     Clear();
 }
 
-MError MTcpListen::Init(MEventLoop *p_event_loop, int fd)
+MError MTcpListener::Init(MEventLoop *p_event_loop, int fd, bool close_on_free)
 {
     if (!p_event_loop || fd < 0)
     {
-        return MError::Invalid;
+        return MError::InvalidArgument;
     }
-    MError err = this->MIOEventBase::Init(p_event_loop, fd);
-    if (err != MError::No)
-    {
-        return err;
-    }
+    p_event_loop_ = p_event_loop;
     fd_ = fd;
+    close_on_free_ = close_on_free;
+    acceptable_ = true;
     return MError::No;
 }
 
-void MTcpListen::Clear()
+void MTcpListener::Clear()
 {
-    cb_ = nullptr;
-    this->MIOEventBase::Clear();
+    if (fd_ >= 0)
+    {
+        if (p_event_loop_)
+        {
+            p_event_loop_->DelIOEvent(fd_);
+        }
+        if (close_on_free_)
+        {
+            MSocketOpts::Destroy(fd_);
+        }
+    }
+    accept_buffers_.clear();
 }
 
-MError MTcpListen::Start(int once_count, const std::function<void (int, std::string, unsigned, MError)> &cb)
+MError MTcpListener::AsyncAccept(const std::function<void (int, std::string, unsigned, MError)> &cb)
 {
-    if (once_count == 0 || !cb)
+    if (!p_event_loop_ || !cb)
     {
-        return MError::Invalid;
+        return MError::InvalidArgument;
     }
-    MError err = this->MIOEventBase::DisableAllEvent();
+    if (!acceptable_)
+    {
+        accept_buffers_.push_back(cb);
+        return MError::No;
+    }
+    MError err = MSocketOpts::Accept(fd_, accept_fd_, accept_ip_, accept_port_);
     if (err != MError::No)
     {
-        return err;
+        if (err != MError::INTR && err != MError::Again)
+        {
+            this->MIOEventBase::DisableAllEvent();
+            cb_(accepted_fd_, accepted_ip_, accepted_port_, err);
+        }
+        return;
     }
-    once_count_ = once_count;
-    cb_ = cb;
-    return this->MIOEventBase::EnableEvent(MIOEVENT_IN|MIOEVENT_LT);
 }
 
-MError MTcpListen::Stop()
+MError MTcpListener::StopAccept()
 {
-    cb_ = nullptr;
-    return this->MIOEventBase::DisableAllEvent();
 }
 
-void MTcpListen::_OnCallback(unsigned events)
+void MTcpListener::_OnCallback(unsigned events)
 {
     MError err = MError::No;
     int count = once_count_;

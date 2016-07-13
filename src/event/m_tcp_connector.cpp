@@ -1,6 +1,5 @@
-#include <mzx/event/net/m_tcp_connector.h>
+#include <mzx/event/m_tcp_connector.h>
 #include <mzx/util/m_socket_opts.h>
-#include <cstring>
 
 MTcpConnector::MTcpConnector()
     :p_event_loop_(nullptr)
