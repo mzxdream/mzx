@@ -35,11 +35,15 @@ public:
     void Clear();
 
     MError AsyncConnect(const std::string &ip, unsigned port, const std::function<void (MError)> &cb);
-    MError AsyncRead(char *p_buf, std::size_t len, std::size_t min_len, const std::function<void (std::size_t, MError)> &read_cb);
-    MError AysncWrite(const char *p_buf, std::size_t len, std::size_t min_len, const std::function<void (std::size_t, MError)> &write_cb);
+    MError StopConnect();
 
-    void ClearRead();
-    void ClearWrite();
+    MError AsyncRead(char *p_buf, std::size_t len, const std::function<void (std::size_t, MError)> &read_cb);
+    MError AsyncReadSome(char *p_buf, std::size_t len, std::size_t min_len, const std::function<void (std::size_t, MError)> &read_cb);
+    MError StopRead();
+
+    MError AysncWrite(const char *p_buf, std::size_t len, const std::function<void (std::size_t, MError)> &write_cb);
+    MError AysncWriteSome(const char *p_buf, std::size_t len, std::size_t min_len, const std::function<void (std::size_t, MError)> &write_cb);
+    MError StopWrite();
 private:
     void OnError(MError err);
 public:
