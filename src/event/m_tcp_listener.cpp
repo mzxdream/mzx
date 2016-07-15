@@ -54,42 +54,92 @@ MError MTcpListener::AsyncAccept(const std::function<void (int, std::string, uns
         accept_buffers_.push_back(cb);
         return MError::No;
     }
-    MError err = MSocketOpts::Accept(fd_, accept_fd_, accept_ip_, accept_port_);
+    int fd = -1;
+    std::string ip;
+    unsigned port = 0;
+    MError err = MSocketOpts::Accept(fd_, fd, ip, port);
+    if (err == MError::No)
+    {
+        cb(fd, ip, port, err);
+        return err;
+    }
+    if (err != MError::InterruptedSystemCall && err != MError::TryAgain)
+    {
+        return err;
+    }
+    err = p_event_loop_->AddIOEvent(fd_, MIOEVENT_IN|MIOEVENT_LT, std::bind(&MTcpListener::OnAcceptCallback, this));
     if (err != MError::No)
     {
-        if (err != MError::INTR && err != MError::Again)
-        {
-            this->MIOEventBase::DisableAllEvent();
-            cb_(accepted_fd_, accepted_ip_, accepted_port_, err);
-        }
-        return;
+        return err;
     }
+    acceptable_ = false;
+    accept_buffers_.push_back(cb);
+    return MError::No;
 }
 
 MError MTcpListener::StopAccept()
 {
+    accept_buffers_.clear();
+    if (p_event_loop_)
+    {
+        return p_event_loop_->DelIOEvent(fd_);
+    }
+    return MError::No;
 }
 
-void MTcpListener::_OnCallback(unsigned events)
+void MTcpListener::OnError(MError err)
 {
-    MError err = MError::No;
-    int count = once_count_;
-    while (count < 0 || count-- > 0)
+    for (auto it = accept_buffers_.begin(); it != accept_buffers_.end(); )
     {
-        if (!cb_)//callback can stop listen
+        auto accept_cb = *it;
+        accept_buffers_.erase(it);
+        if (accept_cb)
         {
-            return;
+            accept_cb(-1, "", 0, err);
         }
-        err = MSocketOpts::Accept(fd_, accepted_fd_, accepted_ip_, accepted_port_);
-        if (err != MError::No)
+        it = accept_buffers_.begin();
+    }
+    p_event_loop_->DelIOEvent(fd_);
+}
+
+void MTcpListener::OnAcceptCallback(unsigned events)
+{
+    if (events & (MIOEVENT_HUP|MIOEVENT_ERR))
+    {
+        OnError(MError::Unknown);
+        return;
+    }
+    if (events & MIOEVENT_RDHUP)
+    {
+        OnError(MError::ConnectReset);
+        return;
+    }
+    if (events & MIOEVENT_IN)
+    {
+        while (true)
         {
-            if (err != MError::INTR && err != MError::Again)
+            auto it_accept = accept_buffers_.begin();
+            if (it_accept == accept_buffers_.end())
             {
-                this->MIOEventBase::DisableAllEvent();
-                cb_(accepted_fd_, accepted_ip_, accepted_port_, err);
+                p_event_loop_->DelIOEvent(fd_, MIOEVENT_IN);
+                acceptable_ = true;
+                break;
             }
-            return;
+            int fd = -1;
+            std::string ip;
+            unsigned port = 0;
+            MError err = MSocketOpts::Accept(fd_, fd, ip, port);
+            if (err == MError::No)
+            {
+                cb(fd, ip, port, err);
+                return err;
+            }
+            if (err != MError::InterruptedSystemCall && err != MError::TryAgain)
+            {
+                return err;
+            }
+
+            MError err = MSocketOpts::Accept();
         }
-        cb_(accepted_fd_, accepted_ip_, accepted_port_, err);
     }
 }

@@ -21,6 +21,7 @@ public:
     MError AsyncAccept(const std::function<void (int, std::string, unsigned, MError)> &cb);
     MError StopAccept();
 public:
+    void OnError(MError err);
     void OnAcceptCallback(unsigned events);
 private:
     MEventLoop *p_event_loop_;

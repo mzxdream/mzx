@@ -311,7 +311,7 @@ void MTcpConnector::OnStreamCallback(unsigned events)
             it_read = read_buffers_.begin();
             if (it_read == read_buffers_.end())
             {
-                p_event_loop_->DelIOEvent(MIOEVENT_IN);
+                p_event_loop_->DelIOEvent(fd_, MIOEVENT_IN);
                 readable_ = true;
                 break;
             }
@@ -378,7 +378,7 @@ void MTcpConnector::OnStreamCallback(unsigned events)
             it_write = write_buffers_.begin();
             if (it_write == write_buffers_.end())
             {
-                p_event_loop_->DelIOEvent(MIOEVENT_OUT);
+                p_event_loop_->DelIOEvent(fd_, MIOEVENT_OUT);
                 writable_ = true;
                 break;
             }
