@@ -131,15 +131,17 @@ void MTcpListener::OnAcceptCallback(unsigned events)
             MError err = MSocketOpts::Accept(fd_, fd, ip, port);
             if (err == MError::No)
             {
-                cb(fd, ip, port, err);
-                return err;
+                auto cb = *it_accept;
+                accept_buffers_.erase(it_accept);
+                cb(fd, ip, port, MError::No);
+                continue;
             }
-            if (err != MError::InterruptedSystemCall && err != MError::TryAgain)
+            else if (err != MError::InterruptedSystemCall && err != MError::TryAgain)
             {
-                return err;
+                OnError(err);
+                return;
             }
-
-            MError err = MSocketOpts::Accept();
+            break;
         }
     }
 }

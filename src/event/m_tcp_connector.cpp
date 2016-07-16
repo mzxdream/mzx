@@ -359,7 +359,7 @@ void MTcpConnector::OnStreamCallback(unsigned events)
                     }
                 }
             }
-            if (ret.second != MError::InterruptedSystemCall && ret.second != MError::TryAgain)
+            else if (ret.second != MError::InterruptedSystemCall && ret.second != MError::TryAgain)
             {
                 OnError(ret.second);
                 return;
@@ -421,7 +421,7 @@ void MTcpConnector::OnStreamCallback(unsigned events)
                     }
                 }
             }
-            if (ret.second != MError::InterruptedSystemCall && ret.second != MError::TryAgain)
+            else if (ret.second != MError::InterruptedSystemCall && ret.second != MError::TryAgain)
             {
                 OnError(ret.second);
                 return;
