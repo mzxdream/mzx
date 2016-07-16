@@ -96,7 +96,7 @@ void MEventLoop::Clear()
     }
     while (after_events_.p_next_ != &after_events_)
     {
-        MBeforeEventBase *p_event = after_events_.p_next_;
+        MAfterEventBase *p_event = after_events_.p_next_;
         p_event->p_prev_->p_next_ = p_event->p_next_;
         p_event->p_next_->p_prev_ = p_event->p_prev_;
         p_event->p_prev_ = nullptr;
@@ -137,7 +137,7 @@ MError MEventLoop::AddIOEvent(int fd, unsigned events, const std::function<void 
             MLOG(MGetDefaultLogger(), MERR, "epoll add failed:", MGetLastErrorMsg());
             return MGetLastError();
         }
-        io_handlers_.insert(std::pair<int, std::pair<unsigned, std::function<void (unsigned)> > >(fd, ee.events, cb));
+        io_handlers_.insert(std::make_pair(fd, std::make_pair(events, cb)));
     }
     else
     {
@@ -275,7 +275,7 @@ MError MEventLoop::AddAfterEvent(MAfterEventBase *p_event)
     p_event->p_next_ = &after_events_;
     p_event->p_prev_ = after_events_.p_prev_;
     p_event->p_prev_->p_next_ = p_event;
-    before_events_.p_prev_ = p_event;
+    after_events_.p_prev_ = p_event;
     return MError::No;
 }
 

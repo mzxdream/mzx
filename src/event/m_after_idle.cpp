@@ -14,7 +14,7 @@ MError MAfterIdle::Init(MEventLoop *p_event_loop)
 {
     if (!p_event_loop)
     {
-        return MError::Invalid;
+        return MError::InvalidArgument;
     }
     return event_base_.Init(p_event_loop);
 }
@@ -28,7 +28,7 @@ MError MAfterIdle::Start(const std::function<void ()> &cb, int repeated)
 {
     if (!cb)
     {
-        return MError::Invalid;
+        return MError::InvalidArgument;
     }
     MError err = event_base_.DisableEvent();
     if (err != MError::No)

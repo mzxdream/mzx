@@ -26,7 +26,7 @@ MError MTimerEventBase::Init(MEventLoop *p_event_loop)
 {
     if (!p_event_loop)
     {
-        return MError::Invalid;
+        return MError::InvalidArgument;
     }
     p_event_loop_ = p_event_loop;
     cb_ = nullptr;
@@ -41,9 +41,9 @@ void MTimerEventBase::Clear()
 
 MError MTimerEventBase::EnableEvent(int64_t start_time, const std::function<void ()> &cb)
 {
-    if (!p_event_loop)
+    if (!p_event_loop_)
     {
-        return MError::Invalid;
+        return MError::InvalidArgument;
     }
     cb_ = cb;
     return p_event_loop_->AddTimerEvent(start_time, this);
@@ -87,7 +87,7 @@ MError MBeforeEventBase::Init(MEventLoop *p_event_loop)
 {
     if (!p_event_loop)
     {
-        return MError::Invalid;
+        return MError::InvalidArgument;
     }
     p_event_loop_ = p_event_loop;
     cb_ = nullptr;
@@ -103,9 +103,9 @@ void MBeforeEventBase::Clear()
 
 MError MBeforeEventBase::EnableEvent(const std::function<void ()> &cb)
 {
-    if (!p_event_loop)
+    if (!p_event_loop_)
     {
-        return MError::Invalid;
+        return MError::InvalidArgument;
     }
     cb_ = cb;
     return p_event_loop_->AddBeforeEvent(this);
@@ -149,7 +149,7 @@ MError MAfterEventBase::Init(MEventLoop *p_event_loop)
 {
     if (p_event_loop)
     {
-        return MError::Invalid;
+        return MError::InvalidArgument;
     }
     p_event_loop_ = p_event_loop;
     cb_ = nullptr;
@@ -165,9 +165,9 @@ void MAfterEventBase::Clear()
 
 MError MAfterEventBase::EnableEvent(const std::function<void ()> &cb)
 {
-    if (!p_event_loop)
+    if (!p_event_loop_)
     {
-        return MError::Invalid;
+        return MError::InvalidArgument;
     }
     cb_ = cb;
     return p_event_loop_->AddAfterEvent(this);

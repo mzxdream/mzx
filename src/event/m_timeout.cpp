@@ -1,8 +1,7 @@
 #include <mzx/event/m_timeout.h>
 
 MTimeout::MTimeout()
-    :p_event_loop_(nullptr)
-    ,timeout_(0)
+    :timeout_(0)
     ,repeated_(0)
 {
 }
@@ -16,14 +15,9 @@ MError MTimeout::Init(MEventLoop *p_event_loop)
 {
     if (!p_event_loop)
     {
-        return MError::Invalid;
+        return MError::InvalidArgument;
     }
-    MError err = event_base_.Init(p_event_loop);
-    if (err != MError::No)
-    {
-        return err;
-    }
-    return MError::No;
+    return event_base_.Init(p_event_loop);
 }
 
 void MTimeout::Clear()
@@ -35,7 +29,7 @@ MError MTimeout::Start(const std::function<void ()> &cb, int timeout, int repeat
 {
     if (!cb || timeout <= 0)
     {
-        return MError::Invalid;
+        return MError::InvalidArgument;
     }
     MError err = event_base_.DisableEvent();
     if (err != MError::No)

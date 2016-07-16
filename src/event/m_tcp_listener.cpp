@@ -67,7 +67,7 @@ MError MTcpListener::AsyncAccept(const std::function<void (int, std::string, uns
     {
         return err;
     }
-    err = p_event_loop_->AddIOEvent(fd_, MIOEVENT_IN|MIOEVENT_LT, std::bind(&MTcpListener::OnAcceptCallback, this));
+    err = p_event_loop_->AddIOEvent(fd_, MIOEVENT_IN|MIOEVENT_LT, std::bind(&MTcpListener::OnAcceptCallback, this, std::placeholders::_1));
     if (err != MError::No)
     {
         return err;

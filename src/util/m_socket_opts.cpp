@@ -1,4 +1,4 @@
-#include <mzx/net/m_socket_opts.h>
+#include <mzx/util/m_socket_opts.h>
 #include <string.h>
 #include <arpa/inet.h>
 #include <unistd.h>

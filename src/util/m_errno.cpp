@@ -130,5 +130,5 @@ std::string MGetErrorMsg(int err)
 
 std::string MGetErrorMsg(MError err)
 {
-    return MGetErrorMsg(statice_cast<int>(err));
+    return MGetErrorMsg(static_cast<int>(err));
 }

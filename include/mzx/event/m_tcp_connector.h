@@ -42,8 +42,8 @@ public:
     MError AsyncReadSome(char *p_buf, std::size_t len, std::size_t min_len, const std::function<void (std::size_t, MError)> &read_cb);
     MError StopRead();
 
-    MError AysncWrite(const char *p_buf, std::size_t len, const std::function<void (std::size_t, MError)> &write_cb);
-    MError AysncWriteSome(const char *p_buf, std::size_t len, std::size_t min_len, const std::function<void (std::size_t, MError)> &write_cb);
+    MError AsyncWrite(const char *p_buf, std::size_t len, const std::function<void (std::size_t, MError)> &write_cb);
+    MError AsyncWriteSome(const char *p_buf, std::size_t len, std::size_t min_len, const std::function<void (std::size_t, MError)> &write_cb);
     MError StopWrite();
 private:
     void OnError(MError err);
