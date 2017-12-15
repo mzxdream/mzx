@@ -9,7 +9,7 @@
 
 namespace mzx {
 
-enum class LoggerLevel
+enum class LogLevel
     : int
 {
     All,
@@ -36,12 +36,12 @@ public:
     Logger(const Logger &) = delete;
     Logger& operator=(const Logger &) = delete;
 public:
-    static void SetLevel(LoggerLevel level)
+    static void SetLevel(LogLevel level)
     {
         level_ = level;
     }
     template <typename ...Args>
-    static void Print(LoggerLevel level, const char *file_name, int line, const Args& ...args)
+    static void Print(LogLevel level, const char *file_name, int line, const Args& ...args)
     {
         if (Enum2Value(level) < Enum2Value(level_))
         {
@@ -67,13 +67,28 @@ private:
         }
     }
 private:
-    static LoggerLevel level_;
+    static LogLevel level_;
     static FnPrintLog log_print_;
 };
 
 }
 
-#define MLOG(level, args...) logger.Print(level, __FILE__, __LINE__, __func__, args)
+#define MLOG(level, args...) Logger::Print(level, __FILE__, __LINE__, __func__, args)
 #define MLOG_IF(level, condition, args...) !(condition) ? (void)0 : MLOG(level, args)
+
+#define MDEBUG(args...) MLOG(LogLevel::Debug, args)
+#define MDEBUG_IF(args...) MLOG_IF(LogLevel::Debug, args)
+
+#define MINFO(args...) MLOG(LogLevel::Info, args)
+#define MINFO_IF(args...) MLOG_IF(LogLevel::Info, args)
+
+#define MWARN(args...) MLOG(LogLevel::Warn, args)
+#define MWARN_IF(args...) MLOG_IF(LogLevel::Warn, args)
+
+#define MERR(args...) MLOG(LogLevel::Error, args)
+#define MERR_IF(args...) MLOG_IF(LogLevel::Error, args)
+
+#define MFATAL(args...) MLOG(LogLevel::Fatal, args)
+#define MFATAL_IF(args...) MLOG_IF(LogLevel::Fatal, args)
 
 #endif
