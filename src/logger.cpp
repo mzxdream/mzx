@@ -1,8 +1,15 @@
-#include <mzx/util/logger.h>
+#include <iostream>
+#include <mzx/logger.h>
 
 namespace mzx {
 
-LoggerLevel Logger::level_ = LoggerLevel::Warn;
+
+void PrintLog(const std::string &log)
+{
+    std::cerr << log << std::endl;
+}
+
+LogLevel Logger::level_ = LogLevel::Warn;
 Logger::FnPrintLog Logger::log_print_ = PrintLog;
 
 }

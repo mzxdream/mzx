@@ -1,12 +1,12 @@
-#ifndef __MZX_STRING_OPTS_H__
-#define __MZX_STRING_OPTS_H__
+#ifndef __MZX_STRING_UTIL_H__
+#define __MZX_STRING_UTIL_H__
 
 #include <string>
 #include <sstream>
 
 namespace mzx {
 
-class StringOpts
+class StringUtil
 {
 public:
     template <typename ...Args>

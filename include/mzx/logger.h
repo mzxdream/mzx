@@ -1,7 +1,6 @@
 #ifndef __MZX_LOGGER_H__
 #define __MZX_LOGGER_H__
 
-#include <iostream>
 #include <sstream>
 #include <functional>
 
@@ -21,11 +20,6 @@ enum class LogLevel
     Off,
 };
 
-void PrintLog(const std::string &log)
-{
-    std::cerr << log << std::endl;
-}
-
 class Logger
 {
  public:
@@ -43,12 +37,12 @@ public:
     template <typename ...Args>
     static void Print(LogLevel level, const char *file_name, int line, const Args& ...args)
     {
-        if (Enum2Value(level) < Enum2Value(level_))
+        if (EnumUtil::ToValue(level) < EnumUtil::ToValue(level_))
         {
             return;
         }
         std::ostringstream stream;
-        stream << "[" << Enum2Value(level) << " " << file_name << ":" << line << "]";
+        stream << "[" << EnumUtil::ToValue(level) << " " << file_name << ":" << line << "]";
         PrintArgs(stream, args...);
     }
 private:

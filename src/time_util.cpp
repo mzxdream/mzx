@@ -1,9 +1,9 @@
 #include <sys/time.h>
-#include <mzx/time_opts.h>
+#include <mzx/time_util.h>
 
 namespace mzx {
 
-int64_t TimeOpts::UnixTime()
+int64_t TimeUtil::UnixTime()
 {
     struct timeval tv;
     gettimeofday(&tv, nullptr);

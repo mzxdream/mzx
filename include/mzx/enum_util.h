@@ -5,11 +5,15 @@
 
 namespace mzx {
 
-template<typename E>
-typename std::underlying_type<E>::type Enum2Value(E e)
+class EnumUtil
 {
-    return static_cast<typename std::underlying_type<E>::type>(e);
-}
+public:
+    template<typename E>
+    static typename std::underlying_type<E>::type ToValue(E e)
+    {
+        return static_cast<typename std::underlying_type<E>::type>(e);
+    }
+};
 
 }
 
