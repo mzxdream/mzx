@@ -2,6 +2,7 @@
 #define __MZX_ECS_COMPONENT_H__
 
 #include <cstddef>
+#include <utility>
 
 namespace mzx {
 namespace ecs {
@@ -26,8 +27,8 @@ class Component
     friend class Entity;
 private:
     template <typename ...Args>
-    explicit Component(const Args & ...args)
-        : data_(new T(args...))
+    explicit Component(Args && ...args)
+        : data_(new T(std::forward<Args>(args)...))
     {
     }
     virtual ~Component()

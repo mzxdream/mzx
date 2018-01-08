@@ -41,16 +41,16 @@ public:
         return HasComponent<T>() && HasComponent<V, Args...>();
     }
     template <typename T, typename ...Args>
-    ComponentHandler<T> AddComponent(const Args & ...args)
+    ComponentHandler<T> AddComponent(Args && ...args)
     {
         auto iter_component = component_list_.find(Component<T>::GetID());
         if (iter_component != component_list_.end())
         {
             Component<T> *component = static_cast<Component<T> *>(iter_component->second);
-            *(component->Data()) = T(args...);
+            *(component->Data()) = T(std::forward<Args>(args)...);
             return ComponentHandler<T>(component->Data());
         }
-        Component<T> *component = new Component<T>(args...);
+        Component<T> *component = new Component<T>(std::forward<Args>(args)...);
         component_list_[Component<T>::GetID()] = component;
         return ComponentHandler<T>(component->Data());
     }
