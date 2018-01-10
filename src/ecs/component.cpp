@@ -3,7 +3,7 @@
 namespace mzx {
 namespace ecs {
 
-ComponentBase::ID ComponentBase::next_id_ = 0;
+ComponentBase::ClassIndexType ComponentBase::next_class_index_ = 0;
 
 }
 }

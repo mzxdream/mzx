@@ -13,11 +13,11 @@ class ComponentBase
 {
     friend class Entity;
 public:
-    typedef std::size_t ID;
+    typedef std::size_t ClassIndexType;
 private:
     virtual ~ComponentBase() = 0;
 protected:
-    static ID next_id_;
+    static ClassIndexType next_class_index_;
 };
 
 template <typename T>
@@ -25,6 +25,8 @@ class Component
     : public ComponentBase
 {
     friend class Entity;
+public:
+    const static ClassIndexType CLASS_INDEX = ++ComponentBase::next_class_index_;
 private:
     template <typename ...Args>
     explicit Component(Args && ...args)
@@ -45,11 +47,6 @@ private:
     T * Data() const
     {
         return data_;
-    }
-    static ID GetID()
-    {
-        static ID id = ++ComponentBase::next_id_;
-        return id;
     }
 private:
     T *data_;

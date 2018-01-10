@@ -3,7 +3,7 @@
 namespace mzx {
 namespace ecs {
 
-Entity::Entity(Entity::ID id)
+Entity::Entity(Entity::IDType id)
     : id_(id)
 {
 }
@@ -17,7 +17,7 @@ Entity::~Entity()
     component_list_.clear();
 }
 
-Entity::ID Entity::GetID() const
+Entity::IDType Entity::ID() const
 {
     return id_;
 }

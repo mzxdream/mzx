@@ -12,18 +12,18 @@ namespace ecs {
 class Entity
 {
 public:
-    typedef std::size_t ID;
+    typedef std::size_t IDType;
 public:
-    Entity(ID id);
+    Entity(IDType id);
     ~Entity();
     Entity(const Entity &) = delete;
     Entity & operator=(const Entity &) = delete;
 public:
-    ID GetID() const;
+    IDType ID() const;
     template <typename T>
     ComponentHandler<T> GetComponent() const
     {
-        auto iter_component = component_list_.find(Component<T>::GetID());
+        auto iter_component = component_list_.find(Component<T>::CLASS_INDEX);
         if (iter_component == component_list_.end())
         {
             return ComponentHandler<T>(nullptr);
@@ -33,7 +33,7 @@ public:
     template <typename T>
     bool HasComponent() const
     {
-        return component_list_.find(Component<T>::GetID()) != component_list_.end();
+        return component_list_.find(Component<T>::CLASS_INDEX) != component_list_.end();
     }
     template <typename T, typename V, typename ...Args>
     bool HasComponent() const
@@ -43,7 +43,7 @@ public:
     template <typename T, typename ...Args>
     ComponentHandler<T> AddComponent(Args && ...args)
     {
-        auto iter_component = component_list_.find(Component<T>::GetID());
+        auto iter_component = component_list_.find(Component<T>::CLASS_INDEX);
         if (iter_component != component_list_.end())
         {
             Component<T> *component = static_cast<Component<T> *>(iter_component->second);
@@ -51,13 +51,13 @@ public:
             return ComponentHandler<T>(component->Data());
         }
         Component<T> *component = new Component<T>(std::forward<Args>(args)...);
-        component_list_[Component<T>::GetID()] = component;
+        component_list_[Component<T>::CLASS_INDEX] = component;
         return ComponentHandler<T>(component->Data());
     }
     template <typename T>
     void RemoveComponent()
     {
-        auto iter_component = component_list_.find(Component<T>::GetID());
+        auto iter_component = component_list_.find(Component<T>::CLASS_INDEX);
         if (iter_component == component_list_.end())
         {
             return;
@@ -66,8 +66,8 @@ public:
         component_list_.erase(iter_component);
     }
 private:
-    ID id_;
-    std::map<ComponentBase::ID, ComponentBase *> component_list_;
+    IDType id_;
+    std::map<ComponentBase::ClassIndexType, ComponentBase *> component_list_;
 };
 
 }
