@@ -10,11 +10,7 @@ Entity::Entity(Entity::IDType id)
 
 Entity::~Entity()
 {
-    for (auto iter_component : component_list_)
-    {
-        delete iter_component.second;
-    }
-    component_list_.clear();
+    RemoveAllComponent();
 }
 
 Entity::IDType Entity::ID() const

@@ -9,6 +9,7 @@ class EntityManager
 public:
     EntityManager();
     ~EntityManager();
+public:
 };
 
 }
