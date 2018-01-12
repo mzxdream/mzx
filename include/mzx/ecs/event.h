@@ -18,7 +18,7 @@ protected:
     static ClassIndexType next_class_index_;
 };
 
-template <typename T, typename ...Args>
+template <typename ...Args>
 class Event
     : public EventBase
 {
@@ -60,8 +60,8 @@ private:
     static IDType next_id_;
 };
 
-template <typename T, typename ...Args>
-typename Event<T, Args...>::IDType Event<T, Args...>::next_id_ = 0;
+template <typename ...Args>
+typename Event<Args...>::IDType Event<Args...>::next_id_ = 0;
 
 }
 }
