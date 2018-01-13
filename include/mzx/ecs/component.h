@@ -30,26 +30,21 @@ public:
 private:
     template <typename ...Args>
     explicit Component(Args && ...args)
-        : data_(new T(std::forward<Args>(args)...))
+        : data_(std::forward<Args>(args)...)
     {
     }
     virtual ~Component()
     {
-        if (data_)
-        {
-            delete data_;
-            data_ = nullptr;
-        }
     }
     Component(const Component &) = delete;
     Component & operator=(const Component &) = delete;
-private:
-    T * Data() const
+public:
+    T & Data() const
     {
         return data_;
     }
 private:
-    T *data_;
+    T data_;
 };
 
 

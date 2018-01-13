@@ -28,7 +28,7 @@ public:
         {
             return ComponentHandler<T>(nullptr);
         }
-        return ComponentHandler<T>((static_cast<Component<T> *>(iter_component->second))->Data());
+        return ComponentHandler<T>(&(static_cast<Component<T> *>(iter_component->second))->Data());
     }
     template <typename T>
     bool HasComponent() const
@@ -47,12 +47,12 @@ public:
         if (iter_component != component_list_.end())
         {
             Component<T> *component = static_cast<Component<T> *>(iter_component->second);
-            *(component->Data()) = T(std::forward<Args>(args)...);
-            return ComponentHandler<T>(component->Data());
+            component->Data() = std::move(T(std::forward<Args>(args)...));
+            return ComponentHandler<T>(&component->Data());
         }
         Component<T> *component = new Component<T>(std::forward<Args>(args)...);
         component_list_[Component<T>::CLASS_INDEX] = component;
-        return ComponentHandler<T>(component->Data());
+        return ComponentHandler<T>(&component->Data());
     }
     template <typename T>
     void RemoveComponent()
