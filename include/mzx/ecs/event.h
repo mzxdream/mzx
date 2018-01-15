@@ -12,6 +12,7 @@ class EventBase
 {
 public:
     typedef std::size_t ClassIndexType;
+    typedef std::size_t IDType;
 public:
     virtual ~EventBase() = 0;
 protected:
@@ -23,7 +24,6 @@ class Event
     : public EventBase
 {
 public:
-    typedef std::size_t IDType;
     typedef std::function<void (Args...)> Listener;
     const static ClassIndexType CLASS_INDEX = ++EventBase::next_class_index_;
 public:
