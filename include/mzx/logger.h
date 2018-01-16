@@ -3,86 +3,76 @@
 
 #include <sstream>
 #include <functional>
-
-#include <mzx/enum_util.h>
+#include <cstdlib>
+#include <utility>
 
 namespace mzx {
 
-enum class LogLevel
-    : int
-{
-    All,
-    Debug,
-    Info,
-    Warn,
-    Error,
-    Fatal,
-    Off,
-};
-
 class Logger
 {
- public:
-  typedef std::function<void (const std::string &)> FnPrintLog;
+public:
+    enum class Level
+    {
+        Debug = 0,
+        Info,
+        Warn,
+        Error,
+        Fatal,
+    };
+    typedef std::function<void (Level, const char *, int, const std::string &)> Printer;
 public:
     Logger() = delete;
     ~Logger() = delete;
     Logger(const Logger &) = delete;
     Logger& operator=(const Logger &) = delete;
 public:
-    static void SetLevel(LogLevel level)
-    {
-        level_ = level;
-    }
+    static void SetPrinter(const Printer &printer);
     template <typename ...Args>
-    static void Print(LogLevel level, const char *file_name, int line, const Args& ...args)
+    static void Print(Level level, const char *file_name, int line, Args && ...args)
     {
-        if (EnumUtil::ToValue(level) < EnumUtil::ToValue(level_))
+        if (printer_)
         {
-            return;
+            std::ostringstream stream;
+            ReadArgs(stream, std::forward<Args>(args)...);
+            printer_(level, file_name, line, stream.str());
         }
-        std::ostringstream stream;
-        stream << "[" << EnumUtil::ToValue(level) << " " << file_name << ":" << line << "]";
-        PrintArgs(stream, args...);
+        if (level >= Level::Fatal)
+        {
+            std::abort();
+        }
     }
 private:
     template <typename T, typename ...Args>
-    static void PrintArgs(std::ostringstream &stream, const T &arg, const Args& ...args)
+    static void ReadArgs(std::ostringstream &stream, T &&arg, Args && ...args)
     {
-        stream << " " << arg;
-        PrintArgs(stream, args...);
+        stream << std::forward<T>(arg);
+        ReadArgs(stream, std::forward<Args>(args)...);
     }
-    static void PrintArgs(std::ostringstream &stream)
+    static void ReadArgs(std::ostringstream &stream)
     {
-        stream << "\n";
-        if (log_print_)
-        {
-            log_print_(stream.str());
-        }
     }
 private:
-    static LogLevel level_;
-    static FnPrintLog log_print_;
+    static Printer printer_;
 };
 
 }
 
-#define MLOG(level, args...) Logger::Print(level, __FILE__, __LINE__, __func__, args)
-#define MLOG_IF(level, condition, args...) !(condition) ? (void)0 : MLOG(level, args)
+#define MZX_LOG(level, args...) mzx::Logger::Print(level, __FILE__, __LINE__, __func__, args)
+#define MZX_LOG_IF(level, condition, args...) !(condition) ? (void)0 : MZX_LOG(level, args)
 
-#define MDEBUG(args...) MLOG(LogLevel::Debug, args)
-#define MDEBUG_IF(args...) MLOG_IF(LogLevel::Debug, args)
+#define MZX_DEBUG(args...) MZX_LOG(mzx::Logger::Level::Debug, args)
+#define MZX_DEBUG_IF(args...) MZX_LOG_IF(mzx::Logger::Level::Debug, args)
 
-#define MINFO(args...) MLOG(LogLevel::Info, args)
-#define MINFO_IF(args...) MLOG_IF(LogLevel::Info, args)
+#define MZX_INFO(args...) MZX_LOG(mzx::Logger::Level::Info, args)
+#define MZX_INFO_IF(args...) MZX_LOG_IF(mzx::Logger::Level::Info, args)
 
-#define MWARN(args...) MLOG(LogLevel::Warn, args)
-#define MWARN_IF(args...) MLOG_IF(LogLevel::Warn, args)
+#define MZX_WARN(args...) MZX_LOG(mzx::Logger::Level::Warn, args)
+#define MZX_WARN_IF(args...) MZX_LOG_IF(mzx::Logger::Level::Warn, args)
 
-#define MERR(args...) MLOG(LogLevel::Error, args)
-#define MERR_IF(args...) MLOG_IF(LogLevel::Error, args)
+#define MZX_ERR(args...) MZX_LOG(mzx::Logger::Level::Error, args)
+#define MZX_ERR_IF(args...) MZX_LOG_IF(mzx::Logger::Level::Debug, args)
 
-#define MFATAL(args...) MLOG(LogLevel::Fatal, args)
-#define MFATAL_IF(args...) MLOG_IF(LogLevel::Fatal, args)
+#define MZX_FATAL(args...) MZX_LOG(mzx::Logger::Level::Debug, args)
+#define MZX_FATAL_IF(args...) MZX_LOG_IF(mzx::Logger::Level::Debug, args)
 
 #endif

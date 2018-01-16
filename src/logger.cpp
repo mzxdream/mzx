@@ -1,15 +1,19 @@
-#include <iostream>
 #include <mzx/logger.h>
+#include <mzx/enum_util.h>
+#include <iostream>
 
 namespace mzx {
 
-
-void PrintLog(const std::string &log)
+void LogPrint(Logger::Level level, const char *file_name, int line, const std::string &message)
 {
-    std::cerr << log << std::endl;
+    const static char *level_names[] = {"DEBUG", "INFO", "WARN", "ERROR", "FATAL"};
+    std::cerr << "[mzx " << level_names[EnumUtil::ToValue(level)]
+        << " " << file_name
+        << ":" << line
+        << "]" << message
+        << std::endl;
 }
 
-LogLevel Logger::level_ = LogLevel::Warn;
-Logger::FnPrintLog Logger::log_print_ = PrintLog;
+Logger::Printer Logger::printer_ = LogPrint;
 
 }
