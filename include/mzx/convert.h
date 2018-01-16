@@ -4,7 +4,7 @@
 #include <sstream>
 #include <string>
 
-#include <mzx/assert.h>
+#include <mzx/logger.h>
 
 namespace mzx {
 
@@ -27,7 +27,7 @@ inline Target ConvertTo(const Source &src)
     Target tgt;
     if (!(ss << src) || !(ss >> tgt))
     {
-        Assert(false, "convert failed");
+        MZX_FATAL("convert failed");
     }
     return tgt;
 }

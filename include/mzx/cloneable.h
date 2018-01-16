@@ -9,7 +9,7 @@ protected:
     Cloneable() = default;
     ~Cloneable() = default;
 public:
-    virtual Cloneable* Clone() = 0;
+    virtual Cloneable * Clone() = 0;
 };
 
 }
