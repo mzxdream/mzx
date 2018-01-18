@@ -7,17 +7,20 @@
 #include <string>
 #include <list>
 #include <mzx/thread.h>
+#include <mzx/singleton.h>
 
 namespace mzx {
 
 class CmdManager
     : public Thread
+    , public Singleton<CmdManager>
 {
+    friend class Singleton<CmdManager>;
 public:
     using Callback = std::function<void ()>;
-public:
+private:
     CmdManager();
-    ~CmdManager();
+    virtual ~CmdManager();
     CmdManager(const CmdManager &) = delete;
     CmdManager& operator=(const CmdManager &) = delete;
 public:

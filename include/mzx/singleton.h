@@ -6,7 +6,7 @@
 
 namespace mzx {
 
-template <typename T, typename Mtx = NullMutex>
+template <typename T, typename Mutex = NullMutex>
 class Singleton
 {
 protected:
@@ -18,6 +18,10 @@ public:
     static T& Instance()
     {
         return instance_.Instance();
+    }
+    static void DestroyInstance()
+    {
+        return instance_.DestoryInstance();
     }
 private:
     class SingletonBase
@@ -42,7 +46,7 @@ private:
         {
             if (!instance_)
             {
-                std::lock_guard<Mtx> lock(mtx_);
+                std::lock_guard<Mutex> lock(mtx_);
                 if (!instance_)
                 {
                     instance_ = new T();
@@ -50,16 +54,28 @@ private:
             }
             return *instance_;
         }
+        void DestroyInstance()
+        {
+            if (instance_)
+            {
+                std::lock_guard<Mutex> lock(mtx_);
+                if (instance_)
+                {
+                    delete instance_;
+                    instance_ = nullptr;
+                }
+            }
+        }
     private:
         T *instance_;
-        Mtx mtx_;
+        Mutex mtx_;
     };
 private:
     static SingletonBase instance_;
 };
 
-template<typename T, typename Mtx>
-typename Singleton<T, Mtx>::SingletonBase Singleton<T, Mtx>::instance_;
+template<typename T, typename Mutex>
+typename Singleton<T, Mutex>::SingletonBase Singleton<T, Mutex>::instance_;
 
 }
 
