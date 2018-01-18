@@ -41,6 +41,11 @@ void CmdManager::ExcuteCmd()
             (iter_callback->second)();
         }
     }
+    if (cmd_list.size() > 0)
+    {
+        printf("\ncmd>");
+        fflush(stdout);
+    }
 }
 
 int KeyBoardHitReturn()
