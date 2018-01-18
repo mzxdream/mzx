@@ -1,5 +1,6 @@
 #include <mzx/cmd_manager.h>
 #include <cstdio>
+#include <unistd.h>
 
 namespace mzx {
 
@@ -42,6 +43,18 @@ void CmdManager::ExcuteCmd()
     }
 }
 
+int KeyBoardHitReturn()
+{
+    struct timeval tv;
+    tv.tv_sec = 0;
+    tv.tv_usec = 0;
+    fd_set fds;
+    FD_ZERO(&fds);
+    FD_SET(STDIN_FILENO, &fds);
+    select(STDIN_FILENO + 1, &fds, NULL, NULL, &tv);
+    return FD_ISSET(STDIN_FILENO, &fds);
+}
+
 void CmdManager::_Run()
 {
     printf("cmd>");
@@ -49,6 +62,14 @@ void CmdManager::_Run()
     while (!StopFlag())
     {
         fflush(stdout);
+        while (!KeyBoardHitReturn() && !StopFlag())
+        {
+            usleep(100);
+        }
+        if (StopFlag())
+        {
+            return;
+        }
         char *cmd_str = fgets(cmd_buf, sizeof(cmd_buf), stdin);
         if (cmd_str)
         {
