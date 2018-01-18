@@ -1,28 +1,36 @@
-#include <mzx/cmd_manager.h>
+#include <mzx/system/cmd_line.h>
 #include <cstdio>
 #include <unistd.h>
 
 namespace mzx {
+namespace system {
 
-CmdManager::CmdManager()
+std::map<std::string, CmdLine::Callback> CmdLine::callback_list_;
+std::mutex CmdLine::cmd_mutex_;
+std::list<std::string> CmdLine::cmd_list_;
+CmdLine::WorkThread CmdLine::thread_;
+
+bool CmdLine::Start()
 {
+    return thread_.Start();
 }
 
-CmdManager::~CmdManager()
+void CmdLine::Stop()
 {
+    thread_.StopAndJoin();
 }
 
-void CmdManager::RegistCmd(const std::string &cmd, const CmdManager::Callback &callback)
+void CmdLine::Regist(const std::string &cmd, const CmdLine::Callback &callback)
 {
     callback_list_[cmd] = callback;
 }
 
-void CmdManager::UnregistCmd(const std::string &cmd)
+void CmdLine::Unregist(const std::string &cmd)
 {
     callback_list_.erase(cmd);
 }
 
-void CmdManager::ExcuteCmd()
+void CmdLine::Excute()
 {
     std::list<std::string> cmd_list;
     {
@@ -38,10 +46,10 @@ void CmdManager::ExcuteCmd()
         }
         if (iter_callback->second)
         {
-            (iter_callback->second)();
+            (iter_callback->second)(cmd);
         }
     }
-    if (cmd_list.size() > 0)
+    if (!cmd_list.empty())
     {
         printf("\ncmd>");
         fflush(stdout);
@@ -60,7 +68,7 @@ int KeyBoardHitReturn()
     return FD_ISSET(STDIN_FILENO, &fds);
 }
 
-void CmdManager::_Run()
+void CmdLine::WorkThread::_Run()
 {
     printf("cmd>");
     char cmd_buf[1024] = {0};
@@ -92,8 +100,8 @@ void CmdManager::_Run()
                 continue;
             }
             {
-                std::lock_guard<std::mutex> lock(cmd_mutex_);
-                cmd_list_.push_back(cmd_str);
+                std::lock_guard<std::mutex> lock(CmdLine::cmd_mutex_);
+                CmdLine::cmd_list_.push_back(cmd_str);
             }
         }
         else if (feof(stdin))
@@ -103,4 +111,5 @@ void CmdManager::_Run()
     }
 }
 
+}
 }
