@@ -58,12 +58,17 @@ bool Thread::StopAndJoin()
     return Join();
 }
 
+bool Thread::StopFlag() const
+{
+    return stop_flag_;
+}
+
 Thread::PID Thread::GetPID() const
 {
     return pid_;
 }
 
-Thread::PID Thread::GetCurPID()
+Thread::PID Thread::GetCurrentPID()
 {
     return pthread_self();
 }
@@ -76,16 +81,7 @@ void* Thread::ThreadMain(void *param)
         MZX_ERR("param is null");
         return nullptr;
     }
-    if (!th->_BeforeRun())
-    {
-        MZX_ERR("before run failed");
-        return nullptr;
-    }
-    while (!th->stop_flag_)
-    {
-        th->_Run();
-    }
-    th->_AfterRun();
+    th->_Run();
     return nullptr;
 }
 

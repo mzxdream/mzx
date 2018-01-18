@@ -10,7 +10,6 @@ class Thread
 {
 public:
     typedef pthread_t PID;
-private:
     static const PID PID_INVALID = 0;
 protected:
     Thread();
@@ -22,16 +21,10 @@ public:
     void Stop();
     bool Join();
     bool StopAndJoin();
+    bool StopFlag() const;
     PID GetPID() const;
-    static PID GetCurPID();
+    static PID GetCurrentPID();
 private:
-    virtual bool _BeforeRun()
-    {
-        return true;
-    }
-    virtual void _AfterRun()
-    {
-    }
     virtual void _Run() = 0;
 private:
     static void* ThreadMain(void *p_param);
