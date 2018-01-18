@@ -13,7 +13,7 @@ public:
     static const PID PID_INVALID = 0;
 protected:
     Thread();
-    ~Thread();
+    virtual ~Thread();
     Thread(const Thread &) = delete;
     Thread& operator=(const Thread &) = delete;
 public:
