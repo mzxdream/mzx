@@ -8,7 +8,7 @@ namespace mzx {
 class TimeUtil
 {
 public:
-    static int64_t UnixTime();
+    static int64_t Now();
 };
 
 }

@@ -3,7 +3,7 @@
 
 namespace mzx {
 
-int64_t TimeUtil::UnixTime()
+int64_t TimeUtil::Now()
 {
     struct timeval tv;
     gettimeofday(&tv, nullptr);
