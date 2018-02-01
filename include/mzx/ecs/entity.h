@@ -65,14 +65,7 @@ public:
         delete iter_component->second;
         component_list_.erase(iter_component);
     }
-    void RemoveAllComponent()
-    {
-        for (auto iter_component : component_list_)
-        {
-            delete iter_component.second;
-        }
-        component_list_.clear();
-    }
+    void RemoveAllComponent();
 private:
     ID id_;
     std::map<ComponentBase::ClassIndexType, ComponentBase *> component_list_;

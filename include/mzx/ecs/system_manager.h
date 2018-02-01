@@ -21,6 +21,16 @@ public:
     SystemManager(const SystemManager &) = delete;
     SystemManager& operator=(const SystemManager &) = delete;
 public:
+    template <typename T>
+    T * GetSystem() const
+    {
+        auto iter_system = system_list_.find(T::CLASS_INDEX);
+        if (iter_system == system_list_.end())
+        {
+            return nullptr;
+        }
+        return static_cast<T *>(iter_system->second);
+    }
     template <typename T, typename ...Args>
     T * AddSystem(Args && ...args)
     {
