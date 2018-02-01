@@ -12,23 +12,23 @@ namespace ecs {
 class Entity
 {
 public:
-    typedef std::size_t IDType;
+    typedef std::size_t ID;
 public:
-    Entity(IDType id);
+    Entity(ID id);
     ~Entity();
     Entity(const Entity &) = delete;
     Entity & operator=(const Entity &) = delete;
 public:
-    IDType ID() const;
+    ID Id() const;
     template <typename T>
-    ComponentHandler<T> GetComponent() const
+    Component<T> * GetComponent() const
     {
         auto iter_component = component_list_.find(Component<T>::CLASS_INDEX);
         if (iter_component == component_list_.end())
         {
-            return ComponentHandler<T>(nullptr);
+            return nullptr;
         }
-        return ComponentHandler<T>(&(static_cast<Component<T> *>(iter_component->second))->Data());
+        return static_cast<Component<T> *>(iter_component->second);
     }
     template <typename T>
     bool HasComponent() const
@@ -41,18 +41,18 @@ public:
         return HasComponent<T>() && HasComponent<V, Args...>();
     }
     template <typename T, typename ...Args>
-    ComponentHandler<T> AddComponent(Args && ...args)
+    Component<T> * AddComponent(Args && ...args)
     {
         auto iter_component = component_list_.find(Component<T>::CLASS_INDEX);
         if (iter_component != component_list_.end())
         {
             Component<T> *component = static_cast<Component<T> *>(iter_component->second);
-            component->Data() = std::move(T(std::forward<Args>(args)...));
-            return ComponentHandler<T>(&component->Data());
+            *component = std::move(T(std::forward<Args>(args)...));
+            return component;
         }
         Component<T> *component = new Component<T>(std::forward<Args>(args)...);
         component_list_[Component<T>::CLASS_INDEX] = component;
-        return ComponentHandler<T>(&component->Data());
+        return component;
     }
     template <typename T>
     void RemoveComponent()
@@ -62,7 +62,7 @@ public:
         {
             return;
         }
-        delete iter_component.second;
+        delete iter_component->second;
         component_list_.erase(iter_component);
     }
     void RemoveAllComponent()
@@ -74,7 +74,7 @@ public:
         component_list_.clear();
     }
 private:
-    IDType id_;
+    ID id_;
     std::map<ComponentBase::ClassIndexType, ComponentBase *> component_list_;
 };
 

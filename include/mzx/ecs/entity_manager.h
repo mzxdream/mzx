@@ -17,9 +17,9 @@ public:
     EntityManager & operator=(const EntityManager &) = delete;
 public:
     Entity * CreateEntity();
-    void DestroyEntity(Entity::IDType id);
+    void DestroyEntity(Entity::ID id);
     void DestroyAllEntity();
-    Entity * GetEntity(Entity::IDType id);
+    Entity * GetEntity(Entity::ID id);
     template <typename T, typename ...Args>
     void ForeachEntity(const std::function<void (Entity *)> &cb)
     {
@@ -32,10 +32,10 @@ public:
             cb(iter_entity.second);
         }
     }
-    void ForeachAllEntity(const std::function<void (Entity *)> &cb);
+    void ForeachEntity(const std::function<void (Entity *)> &cb);
 private:
-    Entity::IDType next_entity_id_;
-    std::map<Entity::IDType, Entity *> entity_list_;
+    Entity::ID next_entity_id_;
+    std::map<Entity::ID, Entity *> entity_list_;
 };
 
 }

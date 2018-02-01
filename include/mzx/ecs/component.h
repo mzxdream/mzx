@@ -39,42 +39,16 @@ private:
     Component(const Component &) = delete;
     Component & operator=(const Component &) = delete;
 public:
-    T & Data() const
+    T * operator->() const
+    {
+        return &data_;
+    }
+    T & operator*() const
     {
         return data_;
     }
 private:
     T data_;
-};
-
-
-template <typename T>
-class ComponentHandler
-{
-public:
-    explicit ComponentHandler(T *component = nullptr)
-        : component_(component)
-    {
-    }
-public:
-    bool Valid() const
-    {
-        return !component_;
-    }
-    operator bool() const
-    {
-        return Valid();
-    }
-    T *operator->() const
-    {
-        return component_;
-    }
-    T &operator*() const
-    {
-        return *component_;
-    }
-private:
-    T *component_;
 };
 
 }

@@ -1,16 +1,17 @@
 #ifndef __MZX_ECS_SYSTEM_MANAGER_H__
 #define __MZX_ECS_SYSTEM_MANAGER_H__
 
-#include <vector>
 #include <cstdint>
 #include <utility>
+#include <map>
+
+#include <mzx/ecs/system.h>
 
 namespace mzx {
 namespace ecs {
 
 class EntityManager;
 class EventManager;
-class System;
 
 class SystemManager
 {
@@ -23,18 +24,45 @@ public:
     template <typename T, typename ...Args>
     T * AddSystem(Args && ...args)
     {
+        auto iter_system = system_list_.find(T::CLASS_INDEX);
+        if (iter_system != system_list_.end())
+        {
+            return nullptr;
+        }
         T *system = new T(std::forward(args)...);
-        system_list_.push_back(system);
+        system_list_[T::CLASS_INDEX] = system;
         system->Configure(entity_manager_, event_manager_);
         return system;
     }
-    void RemoveSystem(System *system);
+    template <typename T>
+    void RemoveSystem()
+    {
+        auto iter_system = system_list_.find(T::CLASS_INDEX);
+        if (iter_system == system_list_.end())
+        {
+            return;
+        }
+        auto system = iter_system->second;
+        system->Unconfigure(entity_manager_, event_manager_);
+        delete system;
+        system_list_.erase(iter_system);
+    }
     void RemoveAllSystem();
-    void Update(int64_t time_delta);
+    template <typename T>
+    void Update(int64_t time_delta)
+    {
+        auto iter_system = system_list_.find(T::CLASS_INDEX);
+        if (iter_system == system_list_.end())
+        {
+            return;
+        }
+        iter_system->second->Update(time_delta);
+    }
+    void UpdateAll(int64_t time_delta);
 private:
     EntityManager &entity_manager_;
     EventManager &event_manager_;
-    std::vector<System *> system_list_;
+    std::map<SystemBase::ClassIndexType, SystemBase *> system_list_;
 };
 
 }

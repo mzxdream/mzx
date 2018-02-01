@@ -20,7 +20,7 @@ public:
     EventManager & operator=(const EventManager &) = delete;
 public:
     template <typename T, typename EventType = Event<const T &> >
-    EventBase::IDType AddListener(const typename EventType::Listener &listener)
+    EventBase::ID AddListener(const typename EventType::Listener &listener)
     {
         auto iter_event = event_list_.find(EventType::CLASS_INDEX);
         if (iter_event == event_list_.end())
@@ -33,7 +33,7 @@ public:
         return event->AddListener(listener);
     }
     template <typename T, typename EventType = Event<const T &> >
-    void RemoveListener(EventBase::IDType id)
+    void RemoveListener(EventBase::ID id)
     {
         auto iter_event = event_list_.find(EventType::CLASS_INDEX);
         if (iter_event == event_list_.end())

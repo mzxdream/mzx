@@ -17,35 +17,21 @@ SystemManager::~SystemManager()
     RemoveAllSystem();
 }
 
-void SystemManager::RemoveSystem(System *system)
-{
-    for (auto iter_system = system_list_.begin(); iter_system != system_list_.end(); ++iter_system)
-    {
-        if (*iter_system == system)
-        {
-            system->Unconfigure(entity_manager_, event_manager_);
-            delete system;
-            system_list_.erase(iter_system);
-            return;
-        }
-    }
-}
-
 void SystemManager::RemoveAllSystem()
 {
     for (auto &iter_system : system_list_)
     {
-        iter_system->Unconfigure(entity_manager_, event_manager_);
-        delete iter_system;
+        iter_system.second->Unconfigure(entity_manager_, event_manager_);
+        delete iter_system.second;
     }
     system_list_.clear();
 }
 
-void SystemManager::Update(int64_t time_delta)
+void SystemManager::UpdateAll(int64_t time_delta)
 {
     for (auto &iter_system : system_list_)
     {
-        iter_system->Update(entity_manager_, event_manager_, time_delta);
+        iter_system.second->Update(entity_manager_, event_manager_, time_delta);
     }
 }
 

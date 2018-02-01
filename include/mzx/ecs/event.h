@@ -12,7 +12,7 @@ class EventBase
 {
 public:
     typedef std::size_t ClassIndexType;
-    typedef std::size_t IDType;
+    typedef std::size_t ID;
 public:
     virtual ~EventBase() = 0;
 protected:
@@ -33,14 +33,16 @@ public:
     virtual ~Event()
     {
     }
+    Event(const Event &) = delete;
+    Event & operator=(const Event &) = delete;
 public:
-    IDType AddListener(const Listener &listener)
+    ID AddListener(const Listener &listener)
     {
-        IDType id = ++next_id_;
+        ID id = ++next_id_;
         listener_list_[id] = listener;
         return id;
     }
-    void RemoveListener(IDType id)
+    void RemoveListener(ID id)
     {
         listener_list_.erase(id);
     }
@@ -56,12 +58,12 @@ public:
         }
     }
 private:
-    std::map<IDType, Listener> listener_list_;
-    static IDType next_id_;
+    std::map<ID, Listener> listener_list_;
+    static ID next_id_;
 };
 
 template <typename ...Args>
-typename Event<Args...>::IDType Event<Args...>::next_id_ = 0;
+typename Event<Args...>::ID Event<Args...>::next_id_ = 0;
 
 }
 }

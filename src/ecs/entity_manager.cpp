@@ -16,11 +16,11 @@ EntityManager::~EntityManager()
 Entity * EntityManager::CreateEntity()
 {
     Entity *entity = new Entity(++next_entity_id_);
-    entity_list_[entity->ID()] = entity;
+    entity_list_[entity->Id()] = entity;
     return entity;
 }
 
-void EntityManager::DestroyEntity(Entity::IDType id)
+void EntityManager::DestroyEntity(Entity::ID id)
 {
     auto iter_entity = entity_list_.find(id);
     if (iter_entity == entity_list_.end())
@@ -40,7 +40,7 @@ void EntityManager::DestroyAllEntity()
     entity_list_.clear();
 }
 
-Entity * EntityManager::GetEntity(Entity::IDType id)
+Entity * EntityManager::GetEntity(Entity::ID id)
 {
     auto iter_entity = entity_list_.find(id);
     if (iter_entity == entity_list_.end())
@@ -50,7 +50,7 @@ Entity * EntityManager::GetEntity(Entity::IDType id)
     return iter_entity->second;
 }
 
-void EntityManager::ForeachAllEntity(const std::function<void (Entity *)> &cb)
+void EntityManager::ForeachEntity(const std::function<void (Entity *)> &cb)
 {
     for (auto iter_entity : entity_list_)
     {
