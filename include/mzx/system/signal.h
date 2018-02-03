@@ -15,6 +15,7 @@ public:
 public:
     static void Hook(Type type, const Callback &callback);
     static void Unhook(Type type);
+    static void UnhookAll();
 private:
     static void OnSignal(Type type);
 private:

@@ -18,6 +18,15 @@ void Signal::Unhook(Signal::Type type)
     signal(type, 0);
 }
 
+void Signal::UnhookAll()
+{
+    for (auto &iter_callback : callback_list_)
+    {
+        signal(iter_callback.first, 0);
+    }
+    callback_list_.clear();
+}
+
 void Signal::OnSignal(Signal::Type type)
 {
     auto iter_callback = callback_list_.find(type);
