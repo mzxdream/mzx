@@ -9,6 +9,7 @@ class TimeUtil
 {
 public:
     static int64_t Now();
+    static void Sleep(int64_t ms);
 };
 
 }
