@@ -20,7 +20,8 @@ public:
     static void Stop();
     static void Regist(const std::string &cmd, const Callback &callback);
     static void Unregist(const std::string &cmd);
-    static void Excute();
+    static void UnregistAll();
+    static void Execute();
 private:
     class WorkThread
         : public Thread

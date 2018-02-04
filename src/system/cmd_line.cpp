@@ -30,7 +30,12 @@ void CmdLine::Unregist(const std::string &cmd)
     callback_list_.erase(cmd);
 }
 
-void CmdLine::Excute()
+void CmdLine::UnregistAll()
+{
+    callback_list_.clear();
+}
+
+void CmdLine::Execute()
 {
     std::list<std::string> cmd_list;
     {
