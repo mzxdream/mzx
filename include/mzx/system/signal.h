@@ -1,11 +1,9 @@
-#ifndef __MZX_SYSTEM_SIGNAL_H__
-#define __MZX_SYSTEM_SIGNAL_H__
+#ifndef __MZX_SIGNAL_H__
+#define __MZX_SIGNAL_H__
 
 #include <functional>
-#include <map>
 
 namespace mzx {
-namespace system {
 
 class Signal
 {
@@ -16,13 +14,8 @@ public:
     static void Hook(Type type, const Callback &callback);
     static void Unhook(Type type);
     static void UnhookAll();
-private:
-    static void OnSignal(Type type);
-private:
-    static std::map<Type, Callback> callback_list_;
 };
 
-}
 }
 
 #endif

@@ -1,5 +1,5 @@
-#ifndef __MZX_SYSTEM_CMD_LINE_H__
-#define __MZX_SYSTEM_CMD_LINE_H__
+#ifndef __MZX_CMD_LINE_H__
+#define __MZX_CMD_LINE_H__
 
 #include <functional>
 #include <string>
