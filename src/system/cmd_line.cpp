@@ -1,67 +1,82 @@
 #include <mzx/system/cmd_line.h>
 #include <cstdio>
 #include <unistd.h>
+#include <mutex>
+#include <list>
+#include <map>
+#include <mzx/thread.h>
 
 namespace mzx {
-namespace system {
 
-std::map<std::string, CmdLine::Callback> CmdLine::callback_list_;
-std::mutex CmdLine::cmd_mutex_;
-std::list<std::string> CmdLine::cmd_list_;
-CmdLine::WorkThread CmdLine::thread_;
+class CmdLineWorkThread
+    : public Thread
+{
+public:
+    virtual void _Run();
+};
+
+static std::map<std::string, CmdLine::Callback> cmd_callback_list;
+static CmdLine::Callback cmd_callback_default;
+static std::mutex cmd_mutex;
+static std::list<std::string> cmd_list;
+static CmdLineWorkThread cmd_thread;
 
 bool CmdLine::Start()
 {
-    return thread_.Start();
+    return cmd_thread.Start();
 }
 
 void CmdLine::Stop()
 {
-    thread_.StopAndJoin();
+    cmd_thread.StopAndJoin();
 }
 
 void CmdLine::Regist(const std::string &cmd, const CmdLine::Callback &callback)
 {
-    callback_list_[cmd] = callback;
+    cmd_callback_list[cmd] = callback;
 }
 
 void CmdLine::Unregist(const std::string &cmd)
 {
-    callback_list_.erase(cmd);
+    cmd_callback_list.erase(cmd);
 }
 
 void CmdLine::UnregistAll()
 {
-    callback_list_.clear();
+    cmd_callback_list.clear();
 }
 
 void CmdLine::Execute()
 {
-    std::list<std::string> cmd_list;
+    std::list<std::string> cmd_execute_list;
     {
-        std::lock_guard<std::mutex> lock(cmd_mutex_);
-        cmd_list.swap(cmd_list_);
+        std::lock_guard<std::mutex> lock(cmd_mutex);
+        cmd_execute_list.swap(cmd_list);
     }
-    for (auto &cmd : cmd_list)
+    for (auto &cmd : cmd_execute_list)
     {
-        auto iter_callback = callback_list_.find(cmd);
-        if (iter_callback == callback_list_.end())
+        auto iter_callback = cmd_callback_list.find(cmd);
+        if (iter_callback != cmd_callback_list.end())
         {
-            continue;
+            if (iter_callback->second)
+            {
+                (iter_callback->second)(cmd);
+                continue;
+            }
         }
-        if (iter_callback->second)
+        if (cmd_callback_default)
         {
-            (iter_callback->second)(cmd);
+            cmd_callback_default(cmd);
         }
     }
-    if (!cmd_list.empty())
+    if (!cmd_execute_list.empty())
     {
         printf("\ncmd>");
         fflush(stdout);
     }
 }
 
-int KeyBoardHitReturn()
+static int KeyBoardHitReturn()
 {
     struct timeval tv;
     tv.tv_sec = 0;
@@ -73,7 +88,7 @@ int KeyBoardHitReturn()
     return FD_ISSET(STDIN_FILENO, &fds);
 }
 
-void CmdLine::WorkThread::_Run()
+void CmdLineWorkThread::_Run()
 {
     printf("cmd>");
     char cmd_buf[1024] = {0};
@@ -105,8 +120,8 @@ void CmdLine::WorkThread::_Run()
                 continue;
             }
             {
-                std::lock_guard<std::mutex> lock(CmdLine::cmd_mutex_);
-                CmdLine::cmd_list_.push_back(cmd_str);
+                std::lock_guard<std::mutex> lock(cmd_mutex);
+                cmd_list.push_back(cmd_str);
             }
         }
         else if (feof(stdin))
@@ -116,5 +131,4 @@ void CmdLine::WorkThread::_Run()
     }
 }
 
-}
 }
