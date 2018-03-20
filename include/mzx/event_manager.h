@@ -1,10 +1,9 @@
-#ifndef __MZX_ECS_EVENT_MANAGER_H__
-#define __MZX_ECS_EVENT_MANAGER_H__
+#ifndef __MZX_EVENT_MANAGER_H__
+#define __MZX_EVENT_MANAGER_H__
 
-#include <mzx/ecs/event.h>
+#include <mzx/event.h>
 
 namespace mzx {
-namespace ecs {
 
 class EventManager
 {
@@ -66,7 +65,6 @@ private:
     std::map<EventBase::ClassIndexType, EventBase *> event_list_;
 };
 
-}
 }
 
 #endif

@@ -1,7 +1,6 @@
 #include <mzx/ecs/entity.h>
 
 namespace mzx {
-namespace ecs {
 
 Entity::Entity(Entity::ID id)
     : id_(id)
@@ -27,5 +26,4 @@ void Entity::RemoveAllComponent()
     component_list_.clear();
 }
 
-}
 }

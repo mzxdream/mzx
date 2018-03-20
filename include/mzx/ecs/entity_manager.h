@@ -1,12 +1,11 @@
-#ifndef __MZX_ECS_ENTITY_MANAGER_H__
-#define __MZX_ECS_ENTITY_MANAGER_H__
+#ifndef __MZX_ENTITY_MANAGER_H__
+#define __MZX_ENTITY_MANAGER_H__
 
 #include <functional>
 
 #include <mzx/ecs/entity.h>
 
 namespace mzx {
-namespace ecs {
 
 class EntityManager
 {
@@ -38,7 +37,6 @@ private:
     std::map<Entity::ID, Entity *> entity_list_;
 };
 
-}
 }
 
 #endif

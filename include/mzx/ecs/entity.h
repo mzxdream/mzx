@@ -1,5 +1,5 @@
-#ifndef __MZX_ECS_ENTITY_H__
-#define __MZX_ECS_ENTITY_H__
+#ifndef __MZX_ENTITY_H__
+#define __MZX_ENTITY_H__
 
 #include <cstddef>
 #include <map>
@@ -7,12 +7,12 @@
 #include <mzx/ecs/component.h>
 
 namespace mzx {
-namespace ecs {
 
 class Entity
 {
 public:
     typedef std::size_t ID;
+    const static ID ID_INVALID = (ID)-1;
 public:
     Entity(ID id);
     ~Entity();
@@ -21,14 +21,14 @@ public:
 public:
     ID Id() const;
     template <typename T>
-    Component<T> * GetComponent() const
+    ComponentHandle<T> GetComponent() const
     {
         auto iter_component = component_list_.find(Component<T>::CLASS_INDEX);
         if (iter_component == component_list_.end())
         {
-            return nullptr;
+            return ComponentHandle<T>();
         }
-        return static_cast<Component<T> *>(iter_component->second);
+        return ComponentHandle<T>(static_cast<Component<T> *>(iter_component->second)->Data());
     }
     template <typename T>
     bool HasComponent() const
@@ -41,18 +41,18 @@ public:
         return HasComponent<T>() && HasComponent<V, Args...>();
     }
     template <typename T, typename ...Args>
-    Component<T> * AddComponent(Args && ...args)
+    ComponentHandle<T> AddComponent(Args && ...args)
     {
         auto iter_component = component_list_.find(Component<T>::CLASS_INDEX);
         if (iter_component != component_list_.end())
         {
             Component<T> *component = static_cast<Component<T> *>(iter_component->second);
             *component = std::move(T(std::forward<Args>(args)...));
-            return component;
+            return ComponentHandle<T>(component->Data());
         }
         Component<T> *component = new Component<T>(std::forward<Args>(args)...);
         component_list_[Component<T>::CLASS_INDEX] = component;
-        return component;
+        return ComponentHandle<T>(component->Data());
     }
     template <typename T>
     void RemoveComponent()
@@ -71,7 +71,6 @@ private:
     std::map<ComponentBase::ClassIndexType, ComponentBase *> component_list_;
 };
 
-}
 }
 
 #endif

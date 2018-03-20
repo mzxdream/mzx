@@ -1,18 +1,18 @@
-#ifndef __MZX_ECS_EVENT_H__
-#define __MZX_ECS_EVENT_H__
+#ifndef __MZX_EVENT_H__
+#define __MZX_EVENT_H__
 
 #include <cstddef>
 #include <functional>
 #include <map>
 
 namespace mzx {
-namespace ecs {
 
 class EventBase
 {
 public:
     typedef std::size_t ClassIndexType;
     typedef std::size_t ID;
+    const static ID ID_INVALID = (ID)-1;
 public:
     virtual ~EventBase() = 0;
 protected:
@@ -50,11 +50,11 @@ public:
     {
         listener_list_.clear();
     }
-    void Invoke(Args && ...args) const
+    void Invoke(const Args & ...args) const
     {
         for (auto &iter_listener : listener_list_)
         {
-            (iter_listener.second)(std::forward(args)...);
+            (iter_listener.second)(args...);
         }
     }
 private:
@@ -63,9 +63,8 @@ private:
 };
 
 template <typename ...Args>
-typename Event<Args...>::ID Event<Args...>::next_id_ = 0;
+typename EventBase::ID Event<Args...>::next_id_ = 0;
 
-}
 }
 
 #endif

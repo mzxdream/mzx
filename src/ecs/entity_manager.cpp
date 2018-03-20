@@ -1,7 +1,6 @@
 #include <mzx/ecs/entity_manager.h>
 
 namespace mzx {
-namespace ecs {
 
 EntityManager::EntityManager()
     : next_entity_id_(0)
@@ -58,5 +57,4 @@ void EntityManager::ForeachEntity(const std::function<void (Entity *)> &cb)
     }
 }
 
-}
 }
