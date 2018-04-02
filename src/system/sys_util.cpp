@@ -3,7 +3,7 @@
 
 namespace mzx {
 
-int System::GetCPUCount()
+int SysUtil::GetCPUCount()
 {
     return sysconf(_SC_NPROCESSORS_ONLN);
 }

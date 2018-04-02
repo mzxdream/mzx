@@ -3,7 +3,7 @@
 
 namespace mzx {
 
-class System
+class SysUtil
 {
 public:
     static int GetCPUCount();

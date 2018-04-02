@@ -43,6 +43,17 @@ public:
         event->RemoveListener(id);
     }
     template <typename T, typename EventType = Event<const T &> >
+    void Invoke(const T &arg)
+    {
+        auto iter_event = event_list_.find(EventType::CLASS_INDEX);
+        if (iter_event == event_list_.end())
+        {
+            return;
+        }
+        auto event = static_cast<EventType *>(iter_event->second);
+        event->Invoke(arg);
+    }
+    template <typename T, typename EventType = Event<const T &> >
     void RemoveEvent()
     {
         auto iter_event = event_list_.find(EventType::CLASS_INDEX);
