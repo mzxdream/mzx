@@ -10,11 +10,20 @@ namespace mzx {
 using EventID = std::size_t;
 const static EventID EVENT_ID_INVALID = (EventID)-1;
 
-template <typename ...Args>
+template <typename T>
 class Event
 {
+private:
+    Event()
+    {
+    }
+};
+
+template <typename R, typename ...Args>
+class Event<R (Args...)>
+{
 public:
-    typedef std::function<void (Args...)> Listener;
+    using Listener = std::function<R (Args...)>;
 public:
     Event()
         : next_id_(0)
