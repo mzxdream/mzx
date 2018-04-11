@@ -14,7 +14,10 @@ class ComponentBase
 public:
     using ClassIndexType = std::size_t;
 public:
+    ComponentBase();
     virtual ~ComponentBase() = 0;
+    ComponentBase(const ComponentBase &) = delete;
+    ComponentBase & operator=(const ComponentBase &) = delete;
 protected:
     static ClassIndexType next_class_index_;
 };
@@ -34,6 +37,8 @@ public:
     virtual ~Component()
     {
     }
+    Component(const Component &) = delete;
+    Component & operator=(const Component &) = delete;
 public:
     T * Data() const
     {
@@ -170,6 +175,7 @@ class EntitySystemBase
 public:
     using ClassIndexType = std::size_t;
 public:
+    EntitySystemBase();
     virtual ~EntitySystemBase() = 0;
     EntitySystemBase(const EntitySystemBase &) = delete;
     EntitySystemBase & operator=(const EntitySystemBase &) = delete;
@@ -187,6 +193,15 @@ class EntitySystem
 {
 public:
     const static ClassIndexType CLASS_INDEX = ++EntitySystemBase::next_class_index_;
+public:
+    EntitySystem()
+    {
+    }
+    virtual ~EntitySystem()
+    {
+    }
+    EntitySystem(const EntitySystem &) = delete;
+    EntitySystem & operator=(const EntitySystem &) = delete;
 };
 
 class EntitySystemManager

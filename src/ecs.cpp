@@ -4,6 +4,14 @@ namespace mzx {
 
 ComponentBase::ClassIndexType ComponentBase::next_class_index_ = 0;
 
+ComponentBase::ComponentBase()
+{
+}
+
+ComponentBase::~ComponentBase()
+{
+}
+
 Entity::Entity(EntityID id)
     : id_(id)
 {
@@ -84,6 +92,16 @@ void EntityManager::ForeachEntity(const std::function<void (Entity *)> &cb)
 }
 
 EntitySystemBase::ClassIndexType EntitySystemBase::next_class_index_ = 0;
+
+EntitySystemBase::EntitySystemBase()
+{
+
+}
+
+EntitySystemBase::~EntitySystemBase()
+{
+
+}
 
 EntitySystemManager::EntitySystemManager()
 {
