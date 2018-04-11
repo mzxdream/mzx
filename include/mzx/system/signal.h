@@ -1,6 +1,7 @@
 #ifndef __MZX_SIGNAL_H__
 #define __MZX_SIGNAL_H__
 
+#include <signal.h>
 #include <functional>
 
 namespace mzx {

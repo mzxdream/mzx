@@ -1,5 +1,4 @@
 #include <mzx/system/signal.h>
-#include <signal.h>
 #include <map>
 
 namespace mzx {
