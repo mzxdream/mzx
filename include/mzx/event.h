@@ -17,6 +17,11 @@ private:
     Event()
     {
     }
+    ~Event()
+    {
+    }
+    Event(const Event &) = delete;
+    Event & operator=(const Event &) = delete;
 };
 
 template <typename R, typename ...Args>
@@ -54,7 +59,7 @@ public:
         auto iter_listener = listener_list_.begin();
         while (iter_listener != listener_list_.end())
         {
-            auto &listener = iter_listener.second;
+            auto &listener = iter_listener->second;
             ++iter_listener;
             if (listener)
             {
