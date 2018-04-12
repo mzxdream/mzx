@@ -31,9 +31,19 @@ void CmdLine::Stop()
     cmd_thread.StopAndJoin();
 }
 
+void CmdLine::Regist(const CmdLine::Callback &callback)
+{
+    cmd_callback_default = callback;
+}
+
 void CmdLine::Regist(const std::string &cmd, const CmdLine::Callback &callback)
 {
     cmd_callback_list[cmd] = callback;
+}
+
+void CmdLine::Unregist()
+{
+    cmd_callback_default = nullptr;
 }
 
 void CmdLine::Unregist(const std::string &cmd)
@@ -44,6 +54,7 @@ void CmdLine::Unregist(const std::string &cmd)
 void CmdLine::UnregistAll()
 {
     cmd_callback_list.clear();
+    cmd_callback_default = nullptr;
 }
 
 void CmdLine::Execute()

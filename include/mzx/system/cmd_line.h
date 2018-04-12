@@ -13,8 +13,9 @@ public:
 public:
     static bool Start();
     static void Stop();
-    static void SetDefaultCallback(const Callback &callback);
+    static void Regist(const Callback &callback);
     static void Regist(const std::string &cmd, const Callback &callback);
+    static void Unregist();
     static void Unregist(const std::string &cmd);
     static void UnregistAll();
     static void Execute();

@@ -6,14 +6,15 @@
 
 namespace mzx {
 
+using SignalType = int;
+
 class Signal
 {
 public:
-    using Type = int;
-    using Callback = std::function<void (Type)>;
+    using Callback = std::function<void (SignalType)>;
 public:
-    static void Hook(Type type, const Callback &callback);
-    static void Unhook(Type type);
+    static void Hook(SignalType type, const Callback &callback);
+    static void Unhook(SignalType type);
     static void UnhookAll();
 };
 
