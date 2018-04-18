@@ -180,9 +180,17 @@ public:
     EntitySystemBase(const EntitySystemBase &) = delete;
     EntitySystemBase & operator=(const EntitySystemBase &) = delete;
 public:
-    virtual bool Init() { return true; }
-    virtual void Uninit() {}
-    virtual void Update(int64_t time_delta) {}
+    bool Init();
+    void Uninit();
+    void Update(int64_t time_delta);
+    bool Configure();
+    void Unconfigure();
+private:
+    virtual bool _Init();
+    virtual void _Uninit();
+    virtual void _Update(int64_t time_delta);
+    virtual bool _Configure();
+    virtual void _Unconfigure();
 protected:
     static ClassIndexType next_class_index_;
 };
@@ -217,13 +225,17 @@ public:
     {
         static_assert(std::is_base_of<EntitySystem<T>, T>::value, "system must be extern EntitySystem<T>");
         T *system = new T(std::forward<Args>(args)...);
+        if (!system->Init())
+        {
+            delete system;
+            return nullptr;
+        }
         system_list_.push_back(system);
         return system;
     }
-    bool InitAllSystem();
-    void UninitAllSystem();
-    void UpdateAllSystem(int64_t time_delta);
-    void RemoveAllSystem();
+    bool Configure();
+    void Unconfigure();
+    void Update(int64_t time_delta);
 private:
     std::list<EntitySystemBase *> system_list_;
 };

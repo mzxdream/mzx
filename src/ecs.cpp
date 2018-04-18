@@ -103,6 +103,56 @@ EntitySystemBase::~EntitySystemBase()
 
 }
 
+bool EntitySystemBase::Init()
+{
+    return _Init();
+}
+
+void EntitySystemBase::Uninit()
+{
+    _Uninit();
+}
+
+void EntitySystemBase::Update(int64_t time_delta)
+{
+    _Update(time_delta);
+}
+
+bool EntitySystemBase::Configure()
+{
+    return _Configure();
+}
+
+void EntitySystemBase::Unconfigure()
+{
+    _Unconfigure();
+}
+
+bool EntitySystemBase::_Init()
+{
+    return true;
+}
+
+void EntitySystemBase::_Uninit()
+{
+
+}
+
+void EntitySystemBase::_Update(int64_t time_delta)
+{
+
+}
+
+bool EntitySystemBase::_Configure()
+{
+    return true;
+}
+
+void EntitySystemBase::_Unconfigure()
+{
+
+}
+
 EntitySystemManager::EntitySystemManager()
 {
 
@@ -110,14 +160,19 @@ EntitySystemManager::EntitySystemManager()
 
 EntitySystemManager::~EntitySystemManager()
 {
-    RemoveAllSystem();
+    for (auto &system : system_list_)
+    {
+        system->Uninit();
+        delete system;
+    }
+    system_list_.clear();
 }
 
-bool EntitySystemManager::InitAllSystem()
+bool EntitySystemManager::Configure()
 {
     for (auto &system : system_list_)
     {
-        if (!system->Init())
+        if (!system->Configure())
         {
             return false;
         }
@@ -125,29 +180,20 @@ bool EntitySystemManager::InitAllSystem()
     return true;
 }
 
-void EntitySystemManager::UninitAllSystem()
+void EntitySystemManager::Unconfigure()
 {
     for (auto &system : system_list_)
     {
-        system->Uninit();
+        system->Unconfigure();
     }
 }
 
-void EntitySystemManager::UpdateAllSystem(int64_t time_delta)
+void EntitySystemManager::Update(int64_t time_delta)
 {
     for (auto &system : system_list_)
     {
         system->Update(time_delta);
     }
-}
-
-void EntitySystemManager::RemoveAllSystem()
-{
-    for (auto &system : system_list_)
-    {
-        delete system;
-    }
-    system_list_.clear();
 }
 
 }
