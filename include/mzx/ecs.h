@@ -153,8 +153,12 @@ public:
     void DestroyAllEntity();
     Entity * GetEntity(EntityID id);
     template <typename T, typename ...Args>
-    void ForeachEntity(const std::function<void (Entity *)> &cb)
+    void ForeachEntity(std::function<void (Entity *)> cb)
     {
+        if (!cb)
+        {
+            return;
+        }
         for (auto &iter_entity : entity_list_)
         {
             if (!iter_entity.second->HasComponent<T, Args...>())
@@ -164,7 +168,7 @@ public:
             cb(iter_entity.second);
         }
     }
-    void ForeachEntity(const std::function<void (Entity *)> &cb);
+    void ForeachEntity(std::function<void (Entity *)> cb);
 private:
     EntityID next_entity_id_;
     std::map<EntityID, Entity *> entity_list_;

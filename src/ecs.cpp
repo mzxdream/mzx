@@ -83,8 +83,12 @@ Entity * EntityManager::GetEntity(EntityID id)
     return iter_entity->second;
 }
 
-void EntityManager::ForeachEntity(const std::function<void (Entity *)> &cb)
+void EntityManager::ForeachEntity(std::function<void (Entity *)> cb)
 {
+    if (!cb)
+    {
+        return;
+    }
     for (auto iter_entity : entity_list_)
     {
         cb(iter_entity.second);
