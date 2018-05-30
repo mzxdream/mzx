@@ -78,7 +78,7 @@ private:
 };
 
 using EntityID = int64_t;
-const static EntityID ENTITY_ID_INVALID = (EntityID)-1;
+constexpr EntityID ENTITY_ID_INVALID = (EntityID)-1;
 
 class Entity
 {
