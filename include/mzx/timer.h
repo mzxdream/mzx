@@ -21,7 +21,7 @@ public:
     Timer(const Timer &) = delete;
     Timer & operator=(const Timer &) = delete;
 public:
-    TimerID SetTimer(std::function<void ()> cb, int64_t delay = -1, int64_t interval = 0);
+    TimerID SetTimer(std::function<void ()> cb, int64_t delay = 0, int64_t interval = 0);
     void DelTimer(TimerID id);
     int64_t ExpireTime(TimerID id);
     int64_t LeftTime(TimerID id);

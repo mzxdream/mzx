@@ -22,6 +22,8 @@ constexpr std::size_t CalculateTimerWheelOffset(std::size_t i)
     return i == 0 ? 0 : TIMER_WHEEL_BITS[i - 1] + CalculateTimerWheelOffset(i - 1);
 }
 constexpr auto TIMER_WHEEL_OFFSET = MakeArray<TIMER_WHEEL_COUNT>(CalculateTimerWheelOffset);
+constexpr std::size_t TIMER_ID_COUNT_BIT = 16;
+constexpr std::size_t TIMER_ID_COUNT_MASK = (static_cast<std::size_t>(1) << TIMER_ID_COUNT_BIT) - 1;
 
 struct TimerBase
 {
@@ -43,6 +45,7 @@ struct TimerBase
 
 static void ListTimerInsertTail(TimerBase *timer, TimerBase *head)
 {
+    assert(timer != nullptr && head != nullptr && "timer or head is null");
     timer->next = head;
     timer->prev = head->prev;
     head->prev->next = timer;
@@ -55,12 +58,12 @@ static TimerBase * ListTimerPopFront(TimerBase *head)
     {
         return nullptr;
     }
-    auto p = head->next;
-    p->next->prev = head;
-    head->next = p->next;
-    p->prev = nullptr;
-    p->next = nullptr;
-    return p;
+    auto timer = head->next;
+    timer->next->prev = head;
+    head->next = timer->next;
+    timer->prev = nullptr;
+    timer->next = nullptr;
+    return timer;
 }
 
 Timer::Timer(int64_t cur_time)
@@ -103,11 +106,11 @@ TimerBase * Timer::GetFreeTimer()
     {
         TimerBase *timer = timer_free_list_.front();
         timer_free_list_.pop_front();
-        timer->id |= static_cast<TimerID>((timer->id + 1) & 0xFFFFFFFF);
+        timer->id = static_cast<TimerID>((timer->id & ~TIMER_ID_COUNT_MASK) | ((timer->id + 1) & TIMER_ID_COUNT_MASK));
         return timer;
     }
     TimerBase *timer = new TimerBase();
-    timer->id = static_cast<TimerID>(timer_list_.size() << 32);
+    timer->id = static_cast<TimerID>(timer_list_.size() << TIMER_ID_COUNT_BIT);
     timer_list_.push_back(timer);
     return timer;
 }
@@ -118,7 +121,7 @@ TimerBase * Timer::FindTimer(TimerID id)
     {
         return nullptr;
     }
-    std::size_t i = id >> 32;
+    std::size_t i = static_cast<std::size_t>(id >> TIMER_ID_COUNT_BIT);
     if (i >= timer_list_.size())
     {
         return nullptr;
@@ -243,7 +246,7 @@ void Timer::CascadeTimer(std::size_t i)
 
 void Timer::Update(int64_t now_time)
 {
-    while (cur_time_ < now_time)
+    while (cur_time_ <= now_time)
     {
         auto index = cur_time_ & TIMER_WHEEL_MASK[0];
         if (index == 0)
