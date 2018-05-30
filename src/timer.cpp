@@ -17,15 +17,11 @@ constexpr std::size_t CalculateTimerWheelMask(std::size_t i)
     return TIMER_WHEEL_SIZE[i] - 1;
 }
 constexpr auto TIMER_WHEEL_MASK = MakeArray<TIMER_WHEEL_COUNT>(CalculateTimerWheelMask);
-const static std::size_t CalculateTimerWheelOffset(std::size_t i)
+constexpr std::size_t CalculateTimerWheelOffset(std::size_t i)
 {
-    if (i == 0)
-    {
-        return 0;
-    }
-    return TIMER_WHEEL_BITS[i - 1] + CalculateTimerWheelOffset(i - 1);
+    return i == 0 ? 0 : TIMER_WHEEL_BITS[i - 1] + CalculateTimerWheelOffset(i - 1);
 }
-const static auto TIMER_WHEEL_OFFSET = MakeArray<TIMER_WHEEL_COUNT>(CalculateTimerWheelOffset);
+constexpr auto TIMER_WHEEL_OFFSET = MakeArray<TIMER_WHEEL_COUNT>(CalculateTimerWheelOffset);
 
 struct TimerBase
 {
