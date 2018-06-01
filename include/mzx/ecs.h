@@ -6,6 +6,7 @@
 #include <cstddef>
 #include <utility>
 #include <functional>
+#include <mzx/event.h>
 
 namespace mzx {
 
@@ -66,18 +67,48 @@ private:
 using EntityID = int64_t;
 constexpr EntityID ENTITY_ID_INVALID = (EntityID)-1;
 
-class Entity
+class EntityManager
 {
 public:
-    Entity(EntityID id);
+    EntityManager();
+    ~EntityManager();
+    EntityManager(const EntityManager &) = delete;
+    EntityManager & operator=(const EntityManager &) = delete;
+public:
+    Entity * GetEntity(EntityID id);
+    Entity * AddEntity();
+    void RemoveEntity(EntityID id);
+    void RemoveAllEntity();
+    void ForeachEntity(std::function<void (Entity *)> cb);
+    Event<void (Entity *, ComponentBase *)> & AddComponentEvent();
+    Event<void (Entity *, ComponentBase *)> & RemoveComponentEvent();
+    Event<void (Entity *, ComponentBase *)> & ReplaceComponentEvent();
+    Event<void (Entity *)> & AddEntityEvent();
+    Event<void (Entity *)> & RemoveEntityEvent();
+public:
+    void OnAddComponent(Entity *, ComponentBase *);
+    void OnRemoveComponent(Entity *, ComponentBase *);
+    void OnReplaceComponent(Entity *, ComponentBase *);
+private:
+    EntityID next_entity_id_;
+    std::map<EntityID, Entity *> entity_list_;
+    Event<void (Entity *, ComponentBase *)> add_component_event_;
+    Event<void (Entity *, ComponentBase *)> remove_component_event_;
+    Event<void (Entity *, ComponentBase *)> replace_component_event_;
+    Event<void (Entity *)> add_entity_event_;
+    Event<void (Entity *)> remove_entity_event_;
+};
+
+class Entity
+{
+    friend EntityManager;
+private:
+    Entity(EntityID id, EntityManager &entity_manager);
     ~Entity();
     Entity(const Entity &) = delete;
     Entity & operator=(const Entity &) = delete;
 public:
     EntityID Id() const;
-    void SetAddComponentCallback(std::function<void (Entity *, ComponentBase *)> cb);
-    void SetRemoveComponentCallback(std::function<void (Entity *, ComponentBase *)> cb);
-    void SetReplaceComponentCallback(std::function<void (Entity *, ComponentBase *)> cb);
     template <typename T>
     Component<T> * GetComponent() const
     {
@@ -106,18 +137,12 @@ public:
         {
             auto component = static_cast<Component<T> *>(iter_component->second);
             component->Get() = std::move(T(std::forward<Args>(args)...));
-            if (replace_component_cb_)
-            {
-                replace_component_cb_(this, component);
-            }
+            entity_manager_.OnReplaceComponent(this, component);
             return component->GetPtr();
         }
         auto component = new Component<T>(std::forward<Args>(args)...);
         component_list_[Component<T>::CLASS_INDEX] = component;
-        if (add_component_cb_)
-        {
-            add_component_cb_(this, component);
-        }
+        entity_manager_.OnAddComponent(this, component);
         return component->GetPtr();
     }
     template <typename T>
@@ -128,54 +153,15 @@ public:
         {
             return;
         }
-        if (remove_component_cb_)
-        {
-            remove_component_cb_(this, iter_component->second);
-        }
+        entity_manager_.OnRemoveComponent(this, iter_component->second);
         delete iter_component->second;
         component_list_.erase(iter_component);
     }
     void RemoveAllComponent();
 private:
     EntityID id_;
+    EntityManager &entity_manager_;
     std::map<ComponentBase::ClassIndexType, ComponentBase *> component_list_;
-    std::function<void (Entity *, ComponentBase *)> add_component_cb_;
-    std::function<void (Entity *, ComponentBase *)> remove_component_cb_;
-    std::function<void (Entity *, ComponentBase *)> replace_component_cb_;
-};
-
-class EntityManager
-{
-public:
-    EntityManager();
-    ~EntityManager();
-    EntityManager(const EntityManager &) = delete;
-    EntityManager & operator=(const EntityManager &) = delete;
-public:
-    Entity * CreateEntity();
-    void DestroyEntity(EntityID id);
-    void DestroyAllEntity();
-    Entity * GetEntity(EntityID id);
-    template <typename T, typename ...Args>
-    void ForeachEntity(std::function<void (Entity *)> cb)
-    {
-        if (!cb)
-        {
-            return;
-        }
-        for (auto &iter_entity : entity_list_)
-        {
-            if (!iter_entity.second->HasComponent<T, Args...>())
-            {
-                continue;
-            }
-            cb(iter_entity.second);
-        }
-    }
-    void ForeachEntity(std::function<void (Entity *)> cb);
-private:
-    EntityID next_entity_id_;
-    std::map<EntityID, Entity *> entity_list_;
 };
 
 class EntitySystemBase
@@ -190,17 +176,20 @@ public:
 public:
     bool Init();
     void Uninit();
-    void Update(int64_t time_delta);
+    void Update(int64_t now_time);
     bool Configure();
     void Unconfigure();
 private:
     virtual bool _Init();
     virtual void _Uninit();
-    virtual void _Update(int64_t time_delta);
+    virtual void _Update(int64_t now_time);
     virtual bool _Configure();
     virtual void _Unconfigure();
+public:
+    static ClassIndexType ClassIndexCount();
+    virtual ClassIndexType ClassIndex() = 0;
 protected:
-    static ClassIndexType next_class_index_;
+    static ClassIndexType class_index_counter_;
 };
 
 template <typename T>
@@ -208,7 +197,7 @@ class EntitySystem
     : public EntitySystemBase
 {
 public:
-    const static ClassIndexType CLASS_INDEX = ++EntitySystemBase::next_class_index_;
+    const static ClassIndexType CLASS_INDEX = EntitySystemBase::class_index_counter_++;
 public:
     EntitySystem()
     {
@@ -218,6 +207,11 @@ public:
     }
     EntitySystem(const EntitySystem &) = delete;
     EntitySystem & operator=(const EntitySystem &) = delete;
+public:
+    virtual ClassIndexType ClassIndex() override
+    {
+        return CLASS_INDEX;
+    }
 };
 
 class EntitySystemManager
@@ -243,7 +237,7 @@ public:
     }
     bool Configure();
     void Unconfigure();
-    void Update(int64_t time_delta);
+    void Update(int64_t now_time);
 private:
     std::list<EntitySystemBase *> system_list_;
 };

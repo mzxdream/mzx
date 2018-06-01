@@ -17,49 +17,6 @@ ComponentBase::ClassIndexType ComponentBase::ClassIndexCount()
     return class_index_counter_;
 }
 
-Entity::Entity(EntityID id)
-    : id_(id)
-{
-}
-
-Entity::~Entity()
-{
-    RemoveAllComponent();
-}
-
-EntityID Entity::Id() const
-{
-    return id_;
-}
-
-void Entity::SetAddComponentCallback(std::function<void (Entity *, ComponentBase *)> cb)
-{
-    add_component_cb_ = cb;
-}
-
-void Entity::SetRemoveComponentCallback(std::function<void (Entity *, ComponentBase *)> cb)
-{
-    remove_component_cb_ = cb;
-}
-
-void Entity::SetReplaceComponentCallback(std::function<void (Entity *, ComponentBase *)> cb)
-{
-    replace_component_cb_ = cb;
-}
-
-void Entity::RemoveAllComponent()
-{
-    for (auto iter_component : component_list_)
-    {
-        if (remove_component_cb_)
-        {
-            remove_component_cb_(this, iter_component.second);
-        }
-        delete iter_component.second;
-    }
-    component_list_.clear();
-}
-
 EntityManager::EntityManager()
     : next_entity_id_(0)
 {
@@ -67,34 +24,7 @@ EntityManager::EntityManager()
 
 EntityManager::~EntityManager()
 {
-    DestroyAllEntity();
-}
-
-Entity * EntityManager::CreateEntity()
-{
-    Entity *entity = new Entity(++next_entity_id_);
-    entity_list_[entity->Id()] = entity;
-    return entity;
-}
-
-void EntityManager::DestroyEntity(EntityID id)
-{
-    auto iter_entity = entity_list_.find(id);
-    if (iter_entity == entity_list_.end())
-    {
-        return;
-    }
-    delete iter_entity->second;
-    entity_list_.erase(iter_entity);
-}
-
-void EntityManager::DestroyAllEntity()
-{
-    for (auto iter_entity : entity_list_)
-    {
-        delete iter_entity.second;
-    }
-    entity_list_.clear();
+    RemoveAllEntity();
 }
 
 Entity * EntityManager::GetEntity(EntityID id)
@@ -105,6 +35,36 @@ Entity * EntityManager::GetEntity(EntityID id)
         return nullptr;
     }
     return iter_entity->second;
+}
+
+Entity * EntityManager::AddEntity()
+{
+    Entity *entity = new Entity(++next_entity_id_, *this);
+    entity_list_[entity->Id()] = entity;
+    add_entity_event_.Invoke(entity);
+    return entity;
+}
+
+void EntityManager::RemoveEntity(EntityID id)
+{
+    auto iter_entity = entity_list_.find(id);
+    if (iter_entity == entity_list_.end())
+    {
+        return;
+    }
+    remove_entity_event_.Invoke(iter_entity->second);
+    delete iter_entity->second;
+    entity_list_.erase(iter_entity);
+}
+
+void EntityManager::RemoveAllEntity()
+{
+    for (auto iter_entity : entity_list_)
+    {
+        remove_entity_event_.Invoke(iter_entity.second);
+        delete iter_entity.second;
+    }
+    entity_list_.clear();
 }
 
 void EntityManager::ForeachEntity(std::function<void (Entity *)> cb)
@@ -119,7 +79,58 @@ void EntityManager::ForeachEntity(std::function<void (Entity *)> cb)
     }
 }
 
-EntitySystemBase::ClassIndexType EntitySystemBase::next_class_index_ = 0;
+Event<void (Entity *, ComponentBase *)> & EntityManager::AddComponentEvent()
+{
+    return add_component_event_;
+}
+
+Event<void (Entity *, ComponentBase *)> & EntityManager::RemoveComponentEvent()
+{
+    return remove_component_event_;
+}
+
+Event<void (Entity *, ComponentBase *)> & EntityManager::ReplaceComponentEvent()
+{
+    return replace_component_event_;
+}
+
+Event<void (Entity *)> & EntityManager::AddEntityEvent()
+{
+    return add_entity_event_;
+}
+
+Event<void (Entity *)> & EntityManager::RemoveEntityEvent()
+{
+    return remove_entity_event_;
+}
+
+Entity::Entity(EntityID id, EntityManager &entity_manager)
+    : id_(id)
+    , entity_manager_(entity_manager)
+{
+}
+
+Entity::~Entity()
+{
+    RemoveAllComponent();
+}
+
+EntityID Entity::Id() const
+{
+    return id_;
+}
+
+void Entity::RemoveAllComponent()
+{
+    for (auto iter_component : component_list_)
+    {
+        entity_manager_.OnRemoveComponent(this, iter_component.second);
+        delete iter_component.second;
+    }
+    component_list_.clear();
+}
+
+EntitySystemBase::ClassIndexType EntitySystemBase::class_index_counter_ = 0;
 
 EntitySystemBase::EntitySystemBase()
 {
@@ -141,9 +152,9 @@ void EntitySystemBase::Uninit()
     _Uninit();
 }
 
-void EntitySystemBase::Update(int64_t time_delta)
+void EntitySystemBase::Update(int64_t now_time)
 {
-    _Update(time_delta);
+    _Update(now_time);
 }
 
 bool EntitySystemBase::Configure()
@@ -166,7 +177,7 @@ void EntitySystemBase::_Uninit()
 
 }
 
-void EntitySystemBase::_Update(int64_t time_delta)
+void EntitySystemBase::_Update(int64_t now_time)
 {
 
 }
@@ -179,6 +190,11 @@ bool EntitySystemBase::_Configure()
 void EntitySystemBase::_Unconfigure()
 {
 
+}
+
+EntitySystemBase::ClassIndexType EntitySystemBase::ClassIndexCount()
+{
+    return class_index_counter_;
 }
 
 EntitySystemManager::EntitySystemManager()
@@ -216,11 +232,11 @@ void EntitySystemManager::Unconfigure()
     }
 }
 
-void EntitySystemManager::Update(int64_t time_delta)
+void EntitySystemManager::Update(int64_t now_time)
 {
     for (auto &system : system_list_)
     {
-        system->Update(time_delta);
+        system->Update(now_time);
     }
 }
 
