@@ -9,29 +9,36 @@
 
 namespace mzx {
 
+class Entity;
+
 class ComponentBase
 {
+    friend Entity;
 public:
     using ClassIndexType = std::size_t;
-public:
+protected:
     ComponentBase();
-    virtual ~ComponentBase() = 0;
     ComponentBase(const ComponentBase &) = delete;
     ComponentBase & operator=(const ComponentBase &) = delete;
+    virtual ~ComponentBase() = 0;
+public:
+    virtual ClassIndexType ClassIndex() = 0;
+    static ClassIndexType ClassIndexCount();
 protected:
-    static ClassIndexType next_class_index_;
+    static ClassIndexType class_index_counter_;
 };
 
 template <typename T>
 class Component
     : public ComponentBase
 {
+    friend Entity;
 public:
-    const static ClassIndexType CLASS_INDEX = ++ComponentBase::next_class_index_;
-public:
+    const static ClassIndexType CLASS_INDEX = ComponentBase::class_index_counter_++;
+protected:
     template <typename ...Args>
     explicit Component(Args && ...args)
-        : data_(std::forward<Args>(args)...)
+        : raw_data_(std::forward<Args>(args)...)
     {
     }
     virtual ~Component()
@@ -40,41 +47,20 @@ public:
     Component(const Component &) = delete;
     Component & operator=(const Component &) = delete;
 public:
-    T * Data() const
+    T & Get()
     {
-        return &data_;
+        return raw_data_;
+    }
+    T * GetPtr()
+    {
+        return &raw_data_;
+    }
+    virtual ClassIndexType ClassIndex() override
+    {
+        return CLASS_INDEX;
     }
 private:
-    T data_;
-};
-
-template <typename T>
-class ComponentHandle
-{
-public:
-    explicit ComponentHandle(T *component = nullptr)
-        : component_(component)
-    {
-    }
-public:
-    T * operator->() const
-    {
-        return component_;
-    }
-    operator bool() const
-    {
-        return IsValid();
-    }
-    bool IsValid() const
-    {
-        return component_ != nullptr;
-    }
-    T & Data() const
-    {
-        return *component_;
-    }
-private:
-    T *component_;
+    T raw_data_;
 };
 
 using EntityID = int64_t;
@@ -89,15 +75,18 @@ public:
     Entity & operator=(const Entity &) = delete;
 public:
     EntityID Id() const;
+    void SetAddComponentCallback(std::function<void (Entity *, ComponentBase *)> cb);
+    void SetRemoveComponentCallback(std::function<void (Entity *, ComponentBase *)> cb);
+    void SetReplaceComponentCallback(std::function<void (Entity *, ComponentBase *)> cb);
     template <typename T>
-    ComponentHandle<T> GetComponent() const
+    Component<T> * GetComponent() const
     {
         auto iter_component = component_list_.find(Component<T>::CLASS_INDEX);
         if (iter_component == component_list_.end())
         {
-            return ComponentHandle<T>();
+            return nullptr;
         }
-        return ComponentHandle<T>(static_cast<Component<T> *>(iter_component->second)->Data());
+        return static_cast<Component<T> *>(iter_component->second);
     }
     template <typename T>
     bool HasComponent() const
@@ -110,18 +99,26 @@ public:
         return HasComponent<T>() && HasComponent<V, Args...>();
     }
     template <typename T, typename ...Args>
-    ComponentHandle<T> AddComponent(Args && ...args)
+    Component<T> * AddComponent(Args && ...args)
     {
         auto iter_component = component_list_.find(Component<T>::CLASS_INDEX);
         if (iter_component != component_list_.end())
         {
-            Component<T> *component = static_cast<Component<T> *>(iter_component->second);
-            *component = std::move(T(std::forward<Args>(args)...));
-            return ComponentHandle<T>(component->Data());
+            auto component = static_cast<Component<T> *>(iter_component->second);
+            component->Get() = std::move(T(std::forward<Args>(args)...));
+            if (replace_component_cb_)
+            {
+                replace_component_cb_(this, component);
+            }
+            return component->GetPtr();
         }
-        Component<T> *component = new Component<T>(std::forward<Args>(args)...);
+        auto component = new Component<T>(std::forward<Args>(args)...);
         component_list_[Component<T>::CLASS_INDEX] = component;
-        return ComponentHandle<T>(component->Data());
+        if (add_component_cb_)
+        {
+            add_component_cb_(this, component);
+        }
+        return component->GetPtr();
     }
     template <typename T>
     void RemoveComponent()
@@ -131,6 +128,10 @@ public:
         {
             return;
         }
+        if (remove_component_cb_)
+        {
+            remove_component_cb_(this, iter_component->second);
+        }
         delete iter_component->second;
         component_list_.erase(iter_component);
     }
@@ -138,6 +139,9 @@ public:
 private:
     EntityID id_;
     std::map<ComponentBase::ClassIndexType, ComponentBase *> component_list_;
+    std::function<void (Entity *, ComponentBase *)> add_component_cb_;
+    std::function<void (Entity *, ComponentBase *)> remove_component_cb_;
+    std::function<void (Entity *, ComponentBase *)> replace_component_cb_;
 };
 
 class EntityManager

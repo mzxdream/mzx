@@ -2,7 +2,7 @@
 
 namespace mzx {
 
-ComponentBase::ClassIndexType ComponentBase::next_class_index_ = 0;
+ComponentBase::ClassIndexType ComponentBase::class_index_counter_ = 0;
 
 ComponentBase::ComponentBase()
 {
@@ -10,6 +10,11 @@ ComponentBase::ComponentBase()
 
 ComponentBase::~ComponentBase()
 {
+}
+
+ComponentBase::ClassIndexType ComponentBase::ClassIndexCount()
+{
+    return class_index_counter_;
 }
 
 Entity::Entity(EntityID id)
@@ -27,10 +32,29 @@ EntityID Entity::Id() const
     return id_;
 }
 
+void Entity::SetAddComponentCallback(std::function<void (Entity *, ComponentBase *)> cb)
+{
+    add_component_cb_ = cb;
+}
+
+void Entity::SetRemoveComponentCallback(std::function<void (Entity *, ComponentBase *)> cb)
+{
+    remove_component_cb_ = cb;
+}
+
+void Entity::SetReplaceComponentCallback(std::function<void (Entity *, ComponentBase *)> cb)
+{
+    replace_component_cb_ = cb;
+}
+
 void Entity::RemoveAllComponent()
 {
     for (auto iter_component : component_list_)
     {
+        if (remove_component_cb_)
+        {
+            remove_component_cb_(this, iter_component.second);
+        }
         delete iter_component.second;
     }
     component_list_.clear();
