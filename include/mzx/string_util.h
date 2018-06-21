@@ -3,6 +3,7 @@
 
 #include <string>
 #include <sstream>
+#include <vector>
 
 namespace mzx {
 
@@ -16,42 +17,11 @@ public:
         ConcatBase(ss, args...);
         return ss.str();
     }
-
-    static std::string TrimLeft(const std::string &str, const std::string &trim)
-    {
-        std::size_t pos = str.find_first_not_of(trim);
-        if (pos != std::string::npos)
-        {
-            return str.substr(pos);
-        }
-        return "";
-    }
-
-    static std::string TrimRight(const std::string &str, const std::string &trim)
-    {
-        std::size_t pos = str.find_last_not_of(trim);
-        if (pos != std::string::npos)
-        {
-            return str.substr(0, pos + 1);
-        }
-        return "";
-    }
-
-    static std::string Trim(const std::string &str, const std::string &trim)
-    {
-        std::size_t begin_pos = str.find_first_not_of(trim);
-        if (begin_pos == std::string::npos)
-        {
-            return "";
-        }
-        std::size_t end_pos = str.find_last_not_of(trim);
-        if (end_pos == std::string::npos
-            || begin_pos >= end_pos)
-        {
-            return "";
-        }
-        return str.substr(begin_pos, end_pos + 1);
-    }
+    static std::string TrimLeft(const std::string &str, const std::string &trim);
+    static std::string TrimRight(const std::string &str, const std::string &trim);
+    static std::string Trim(const std::string &str, const std::string &trim);
+    static std::vector<std::string> Split(const std::string &str, char delimiter);
+    static std::vector<std::string> Split(const std::string &str, const std::string &delimiter);
 private:
     template <typename O>
     static void ConcatBase(O &os)

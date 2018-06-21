@@ -1,5 +1,5 @@
-#ifndef __M_NULL_TYPE_H__
-#define __M_NULL_TYPE_H__
+#ifndef __MZX_NULL_TYPE_H__
+#define __MZX_NULL_TYPE_H__
 
 namespace mzx {
 
