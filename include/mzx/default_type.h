@@ -7,16 +7,11 @@ template <typename T>
 class DefaultType
 {
 public:
-    static const T & Value()
-    {
-        return val_;
-    }
-private:
-    static const T val_;
+    static const T Value;
 };
 
 template <typename T>
-const T DefaultType<T>::val_;
+const T DefaultType<T>::Value;
 
 }
 

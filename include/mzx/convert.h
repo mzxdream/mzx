@@ -3,29 +3,32 @@
 
 #include <sstream>
 #include <string>
-
 #include <mzx/logger.h>
 
 namespace mzx {
 
 template <typename Target, typename Source>
-inline Target ConvertTo(const Source &src, const Target &def_tgt)
+bool ConvertTo(const Source &src, Target *tgt)
 {
     std::stringstream ss;
-    Target tgt;
-    if (!(ss << src) || !(ss >> tgt))
+    Target tmp;
+    if (!(ss << src) || !(ss >> tmp) || !ss.eof())
     {
-        return def_tgt;
+        return false;
     }
-    return tgt;
+    if (tgt)
+    {
+        *tgt = tmp;
+    }
+    return true;
 }
 
 template <typename Target, typename Source>
-inline Target ConvertTo(const Source &src)
+Target ConvertTo(const Source &src)
 {
     std::stringstream ss;
     Target tgt;
-    if (!(ss << src) || !(ss >> tgt))
+    if (!(ss << src) || !(ss >> tgt) || !ss.eof())
     {
         MZX_FATAL("convert failed");
     }
