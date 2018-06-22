@@ -94,7 +94,7 @@ std::size_t Utf8String::Length() const
     return offset_list_.size();
 }
 
-const std::string & Utf8String::Str() const
+const std::string & Utf8String::Data() const
 {
     return str_;
 }
@@ -122,7 +122,7 @@ Utf8String Utf8String::operator+(const std::string &str) const
 
 Utf8String Utf8String::operator+(const Utf8String &str) const
 {
-    return Utf8String(str_ + str.Str());
+    return Utf8String(str_ + str.Data());
 }
 
 std::size_t Utf8String::Length(const std::string &str)
