@@ -52,19 +52,39 @@ static uint64_t CalculateUtf8Value(const char *str, std::size_t len)
 
 bool IsChineseUtf8Char(const char *str, std::size_t len)
 {
-    if (!str || len == 0)
+    if (!str || len != 3)
     {
         return false;
     }
     auto val = CalculateUtf8Value(str, len);
-    if (val >= 0xE4B880)
-    {
+    return val >= 0xE4B880 && val <= 0xE9BEA5;
+}
 
-    }
-    if (len == 3)// ~ 0xE9BEA5
+bool IsEngLishUtf8Char(const char *str, std::size_t len)
+{
+    if (!str || len != 1)
     {
+        return false;
     }
-    return false;
+    return (str[0] >= 'a' && str[0] <= 'z') || (str[0] >= 'A' && str[0] <= 'z');
+}
+
+bool IsNumberUtf8Char(const char *str, std::size_t len)
+{
+    if (!str || len != 1)
+    {
+        return false;
+    }
+    return str[0] >= '0' && str[0] <= '9';
+}
+
+bool IsAsciiUtf8Char(const char *str, std::size_t len)
+{
+    if (!str || len != 1)
+    {
+        return false;
+    }
+    return str[0] <= 0x7F;
 }
 
 }
