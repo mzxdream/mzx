@@ -11,10 +11,10 @@ class StringUtil
 {
 public:
     template <typename ...Args>
-    static std::string Concat(const Args& ...args)
+    static std::string Concat(Args && ...args)
     {
         std::stringstream ss;
-        ConcatBase(ss, args...);
+        ConcatBase(ss, std::forward<Args>(args)...);
         return ss.str();
     }
     static std::string TrimLeft(const std::string &str, const std::string &trim);
@@ -29,10 +29,10 @@ private:
     }
 
     template <typename O, typename T, typename ...Args>
-    static void ConcatBase(O &os, const T &val, const Args& ...args)
+    static void ConcatBase(O &os, T &&val, Args && ...args)
     {
-        os << val;
-        ConcatBase(os, args...);
+        os << std::forward<T>(val);
+        ConcatBase(os, std::forward<Args>(args)...);
     }
 };
 
