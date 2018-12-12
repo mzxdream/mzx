@@ -1,19 +1,15 @@
-#ifndef __MZX_ENUM_UTIL_H_
-#define __MZX_ENUM_UTIL_H_
+#ifndef __MZX_ENUM_UTIL_H__
+#define __MZX_ENUM_UTIL_H__
 
 #include <type_traits>
 
 namespace mzx {
 
-class EnumUtil
+template<typename E>
+typename std::underlying_type<E>::type EnumToValue(E e)
 {
-public:
-    template<typename E>
-    static typename std::underlying_type<E>::type ToValue(E e)
-    {
-        return static_cast<typename std::underlying_type<E>::type>(e);
-    }
-};
+    return static_cast<typename std::underlying_type<E>::type>(e);
+}
 
 }
 
