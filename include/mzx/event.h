@@ -11,18 +11,7 @@ using EventID = std::size_t;
 constexpr static EventID EVENT_ID_INVALID = (EventID)-1;
 
 template <typename T>
-class Event
-{
-private:
-    Event()
-    {
-    }
-    ~Event()
-    {
-    }
-    Event(const Event &) = delete;
-    Event & operator=(const Event &) = delete;
-};
+class Event;
 
 template <typename R, typename ...Args>
 class Event<R (Args...)>
@@ -69,17 +58,11 @@ public:
     }
 private:
     std::map<EventID, Listener> listener_list_;
-    EventID next_id_;
+    EventID next_id_{ 0 };
 };
 
 template <typename T, typename O>
-class Events
-{
-private:
-    Events()
-    {
-    }
-};
+class Events;
 
 template <typename T, typename R, typename ...Args>
 class Events<T, R (Args...)>

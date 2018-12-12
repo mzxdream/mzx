@@ -2,10 +2,10 @@
 #define __MZX_MEM_TRACER_H__
 
 #include <mutex>
-#include <cmalloc>
+#include <cstdlib>
 #include <map>
 #include <string>
-#include <iostream>
+#include <cstdio>
 
 namespace mzx {
 
@@ -32,10 +32,10 @@ struct MemTracerAllocator
     {
     }
 
-    pointer allocate(size_type size, std::allocator<void>::const_pointer = 0)
+    pointer allocate(size_type size, std::allocator<void>::const_pointer = nullptr)
     {
         void *p = ::malloc(size * sizeof(T));
-        if (p == 0)
+        if (p == nullptr)
         {
             throw std::bad_alloc();
         }
@@ -50,9 +50,18 @@ struct MemTracerAllocator
 
 struct MemTracerInfo
 {
-    const char *file;
-    int line;
-    std::size_t size;
+    MemTracerInfo() = default;
+    explicit MemTracerInfo(const char *f, int l, void *m, std::size_t s)
+        : file(f)
+        , line(l)
+        , memory(m)
+        , size(s)
+    {
+    }
+    const char *file{ nullptr };
+    int line{ 0 };
+    void *memory{ nullptr };
+    std::size_t size{ 0 };
 };
 
 class MemTracerExit;
@@ -60,19 +69,26 @@ class MemTracerExit;
 class MemTracer
 {
 public:
-    typedef std::map<void *, MemTracerInfo, std::less<void *>, MemTracerAllocator<std::pair<const char *, MemTracerInfo> > > MemoryListType;
+    using MemoryListType = std::map<void *, MemTracerInfo, std::less<void *>, MemTracerAllocator<std::pair<void *, MemTracerInfo> > >;
+    using DumpHandler = std::function<void (MemTracerInfo)>;
+    using ExitHandler = std::function<void ()>;
 private:
     MemTracer(const MemTracer &);
     MemTracer& operator=(const MemTracer &);
 public:
+    static void SetExitHandler(ExitHandler handler)
+    {
+        exit_handler_ = handler;
+    }
+
     static void Add(void *memory, const char *file, int line, std::size_t size)
     {
         std::lock_guard<std::mutex> lock(mtx_);
-        MemTracerInfo info;
-        info.file = file;
-        info.line = line;
-        info.size = size;
-        memory_list_[memory] = info;
+        if (memory_list_.find(memory) != memory_list_.end())
+        {
+            std::abort();
+        }
+        memory_list_.emplace(memory, MemTracerInfo(file, line, memory, size));
     }
 
     static void Remove(void *memory)
@@ -81,17 +97,30 @@ public:
         memory_list_.erase(memory);
     }
 
-    static void Dump()
+    static void Dump(DumpHandler handler)
     {
-        for (auto &iter_memory : memory_list_)
+        if (!handler)
         {
-            std::cerr << "memory leaks at file:" << it->second.file << " line:" << it->second.line << " size:" << it->second.size << std::endl;
+            return;
+        }
+        std::lock_guard<std::mutex> lock(mtx_);
+        for (auto &it : memory_list_)
+        {
+            handler(it.second);
         }
     }
 
+    static void OnExit()
+    {
+        if (exit_handler_)
+        {
+            exit_handler_();
+        }
+    }
 private:
     static MemoryListType memory_list_;
     static std::mutex mtx_;
+    static ExitHandler exit_handler_;
     static MemTracerExit exit_;
 };
 
@@ -100,13 +129,9 @@ class MemTracerExit
 public:
     ~MemTracerExit()
     {
-        MemTracer::Dump();
+        MemTracer::OnExit();
     }
 };
-
-MemTracer::MemoryListType MemTracer::memory_list_;
-std::mutex MemTracer::mtx_;
-MemTracerExit MemTracer::exit_;
 
 }
 
@@ -215,7 +240,7 @@ inline void* _realloc(void *memory, size_t size, const char *file, int line)
     memory = ::realloc(memory, size);
     if (memory)
     {
-        MemTracer::Add(memory, file, line, size);
+        mzx::MemTracer::Add(memory, file, line, size);
     }
     return memory;
 }

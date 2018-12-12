@@ -10,7 +10,7 @@ static void LogPrint(Logger::Level level, const char *file_name, int line, const
 {
     const static char *level_names[] = {"DEBUG", "INFO", "WARN", "ERROR", "FATAL"};
     fprintf(stderr, "[mzx %s %s:%d %s] %s\n"
-            , level_names[EnumToValue(level)], file_name, line, func_name, message.c_str());
+        , level_names[EnumToValue(level)], file_name, line, func_name, message.c_str());
     fflush(stderr);
 }
 
