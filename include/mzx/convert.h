@@ -30,7 +30,7 @@ Target ConvertTo(const Source &src)
     Target tgt;
     if (!(ss << src) || !(ss >> tgt) || !ss.eof())
     {
-        MZX_FATAL("convert failed");
+        MZX_CHECK(false, "convert failed");
     }
     return tgt;
 }

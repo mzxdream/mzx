@@ -8,7 +8,7 @@
 namespace mzx {
 
 using EventID = std::size_t;
-const static EventID EVENT_ID_INVALID = (EventID)-1;
+constexpr static EventID EVENT_ID_INVALID = (EventID)-1;
 
 template <typename T>
 class Event
@@ -73,29 +73,29 @@ private:
 };
 
 template <typename T, typename O>
-class EventManager
+class Events
 {
 private:
-    EventManager()
+    Events()
     {
     }
 };
 
 template <typename T, typename R, typename ...Args>
-class EventManager<T, R (Args...)>
+class Events<T, R (Args...)>
 {
 public:
     using EventType = Event<R (Args...)>;
     using Listener = typename EventType::Listener;
 public:
-    EventManager()
+    Events()
     {
     }
-    ~EventManager()
+    ~Events()
     {
     }
-    EventManager(const EventManager &) = delete;
-    EventManager & operator=(const EventManager &) = delete;
+    Events(const Events &) = delete;
+    Events & operator=(const Events &) = delete;
 public:
     EventID AddListener(T type, const Listener &listener)
     {
