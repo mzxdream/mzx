@@ -79,6 +79,6 @@ private:
 #define MZX_FATAL(args...) MZX_LOG(mzx::Logger::Level::Fatal, args)
 #define MZX_FATAL_IF(condition, args...) MZX_LOG_IF(mzx::Logger::Level::Fatal, condition, args)
 
-#define MZX_CHECK(EXPRESSION) MZX_LOG_IF(mzx::Logger::Level::Fatal, !(EXPRESSION), #EXPRESSION)
+#define MZX_CHECK(EXPRESSION, args...) MZX_LOG_IF(mzx::Logger::Level::Fatal, !(EXPRESSION), "CHECK failed:" #EXPRESSION ": ", args)
 
 #endif
