@@ -1,3 +1,4 @@
+#if 0
 #include <mzx/logger.h>
 #include <mzx/enum_util.h>
 #include <iostream>
@@ -17,3 +18,4 @@ void LogPrint(Logger::Level level, const char *file_name, int line, const std::s
 Logger::Printer Logger::printer_ = LogPrint;
 
 }
+#endif

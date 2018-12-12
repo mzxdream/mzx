@@ -1,3 +1,4 @@
+#if 0
 #ifndef __MZX_LOGGER_H__
 #define __MZX_LOGGER_H__
 
