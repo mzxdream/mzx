@@ -70,7 +70,7 @@ class MemTracer
 {
 public:
     using MemoryListType = std::map<void *, MemTracerInfo, std::less<void *>, MemTracerAllocator<std::pair<void *, MemTracerInfo> > >;
-    using DumpHandler = std::function<void (MemTracerInfo)>;
+    using DumpHandler = std::function<void (const MemTracerInfo &)>;
     using ExitHandler = std::function<void ()>;
 private:
     MemTracer(const MemTracer &);
