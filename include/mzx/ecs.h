@@ -7,6 +7,7 @@
 #include <utility>
 #include <functional>
 #include <mzx/event.h>
+#include <mzx/logger.h>
 
 namespace mzx {
 
@@ -67,37 +68,7 @@ private:
 using EntityID = int64_t;
 constexpr EntityID ENTITY_ID_INVALID = (EntityID)-1;
 
-class EntityManager
-{
-public:
-    EntityManager();
-    ~EntityManager();
-    EntityManager(const EntityManager &) = delete;
-    EntityManager & operator=(const EntityManager &) = delete;
-public:
-    Entity * GetEntity(EntityID id);
-    Entity * AddEntity();
-    void RemoveEntity(EntityID id);
-    void RemoveAllEntity();
-    void ForeachEntity(std::function<void (Entity *)> cb);
-    Event<void (Entity *, ComponentBase *)> & AddComponentEvent();
-    Event<void (Entity *, ComponentBase *)> & RemoveComponentEvent();
-    Event<void (Entity *, ComponentBase *)> & ReplaceComponentEvent();
-    Event<void (Entity *)> & AddEntityEvent();
-    Event<void (Entity *)> & RemoveEntityEvent();
-public:
-    void OnAddComponent(Entity *, ComponentBase *);
-    void OnRemoveComponent(Entity *, ComponentBase *);
-    void OnReplaceComponent(Entity *, ComponentBase *);
-private:
-    EntityID next_entity_id_;
-    std::map<EntityID, Entity *> entity_list_;
-    Event<void (Entity *, ComponentBase *)> add_component_event_;
-    Event<void (Entity *, ComponentBase *)> remove_component_event_;
-    Event<void (Entity *, ComponentBase *)> replace_component_event_;
-    Event<void (Entity *)> add_entity_event_;
-    Event<void (Entity *)> remove_entity_event_;
-};
+class EntityManager;
 
 class Entity
 {
@@ -112,17 +83,16 @@ public:
     template <typename T>
     Component<T> * GetComponent() const
     {
-        auto iter_component = component_list_.find(Component<T>::CLASS_INDEX);
-        if (iter_component == component_list_.end())
-        {
-            return nullptr;
-        }
-        return static_cast<Component<T> *>(iter_component->second);
+        auto index = Component<T>::CLASS_INDEX;
+        MZX_CHECK(index >= 0 && index < component_list_.size());
+        return static_cast<Component<T> *>(component_list_[index]);
     }
     template <typename T>
     bool HasComponent() const
     {
-        return component_list_.find(Component<T>::CLASS_INDEX) != component_list_.end();
+        auto index = Component<T>::CLASS_INDEX;
+        MZX_CHECK(index >= 0 && index < component_list_.size());
+        return component_list_[index] != nullptr;
     }
     template <typename T, typename V, typename ...Args>
     bool HasComponent() const
@@ -132,15 +102,10 @@ public:
     template <typename T, typename ...Args>
     Component<T> * AddComponent(Args && ...args)
     {
-        auto iter_component = component_list_.find(Component<T>::CLASS_INDEX);
-        if (iter_component != component_list_.end())
-        {
-            auto component = static_cast<Component<T> *>(iter_component->second);
-            component->Get() = std::move(T(std::forward<Args>(args)...));
-            entity_manager_.OnReplaceComponent(this, component);
-            return component->GetPtr();
-        }
-        auto component = new Component<T>(std::forward<Args>(args)...);
+        auto index = Component<T>::CLASS_INDEX;
+        MZX_CHECK(index >= 0 && index < component_list_.size());
+        MZX_CHECK(component_list_[index] == nullptr);
+        auto *component = new Component<T>(std::forward<Args>(args)...);
         component_list_[Component<T>::CLASS_INDEX] = component;
         entity_manager_.OnAddComponent(this, component);
         return component->GetPtr();
@@ -148,20 +113,68 @@ public:
     template <typename T>
     void RemoveComponent()
     {
-        auto iter_component = component_list_.find(Component<T>::CLASS_INDEX);
-        if (iter_component == component_list_.end())
+        auto index = Component<T>::CLASS_INDEX;
+        MZX_CHECK(index >= 0 && index < component_list_.size());
+        auto *component = component_list_[index];
+        if (component == nullptr)
         {
             return;
         }
-        entity_manager_.OnRemoveComponent(this, iter_component->second);
-        delete iter_component->second;
-        component_list_.erase(iter_component);
+        component_list_[index] = nullptr;
+        entity_manager_.OnRemoveComponent(this, component);
+        delete component;
     }
     void RemoveAllComponent();
 private:
     EntityID id_;
     EntityManager &entity_manager_;
-    std::map<ComponentBase::ClassIndexType, ComponentBase *> component_list_;
+    std::vector<ComponentBase *> component_list_;
+};
+
+class EntityManager
+{
+public:
+    using ComponentAddEvent = Event<void (Entity *, ComponentBase *)>;
+    using ComponentRemoveEvent = Event<void (Entity *, ComponentBase *)>;
+    using EntityAddEvent = Event<void (Entity *)>;
+    using EntityRemoveEvent = Event<void (Entity *)>;
+public:
+    EntityManager();
+    ~EntityManager();
+    EntityManager(const EntityManager &) = delete;
+    EntityManager & operator=(const EntityManager &) = delete;
+public:
+    Entity * GetEntity(EntityID id);
+    Entity * AddEntity();
+    void RemoveEntity(EntityID id);
+    void RemoveAllEntity();
+    void ForeachEntity(std::function<void (Entity *)> cb);
+public:
+    ComponentAddEvent & AddComponentEvent();
+    ComponentRemoveEvent & RemoveComponentEvent();
+    EntityAddEvent & AddEntityEvent();
+    EntityRemoveEvent & RemoveEntityEvent();
+public:
+    void OnAddComponent(Entity *, ComponentBase *);
+    void OnRemoveComponent(Entity *, ComponentBase *);
+private:
+    struct EntityBlock
+    {
+        EntityBlock(std::size_t size)
+            : entities(size)
+        {
+        }
+        std::vector<Entity *> entities;
+        std::vector<std::size_t> free_seat;
+    };
+private:
+    ComponentAddEvent add_component_event_;
+    ComponentRemoveEvent remove_component_event_;
+    EntityAddEvent add_entity_event_;
+    EntityRemoveEvent remove_entity_event_;
+    std::vector<EntityBlock *> entity_blocks_;
+    std::set<std::size_t> free_blocks_;
+    int increment_id_{ 0 };
 };
 
 class EntitySystemBase

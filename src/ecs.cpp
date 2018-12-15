@@ -17,6 +17,38 @@ ComponentBase::ClassIndexType ComponentBase::ClassIndexCount()
     return class_index_counter_;
 }
 
+Entity::Entity(EntityID id, EntityManager &entity_manager)
+    : id_(id)
+    , entity_manager_(entity_manager)
+    , component_list_(ComponentBase::ClassIndexCount())
+{
+}
+
+Entity::~Entity()
+{
+    RemoveAllComponent();
+}
+
+EntityID Entity::Id() const
+{
+    return id_;
+}
+
+void Entity::RemoveAllComponent()
+{
+    for (std::size_t i = 0; i < component_list_.size(); ++i)
+    {
+        auto *component = component_list_[i];
+        if (!component)
+        {
+            continue;
+        }
+        component_list[i] = nullptr;
+        entity_manager_.OnRemoveComponent(this, component);
+        delete component;
+    }
+}
+
 EntityManager::EntityManager()
     : next_entity_id_(0)
 {
@@ -102,32 +134,6 @@ Event<void (Entity *)> & EntityManager::AddEntityEvent()
 Event<void (Entity *)> & EntityManager::RemoveEntityEvent()
 {
     return remove_entity_event_;
-}
-
-Entity::Entity(EntityID id, EntityManager &entity_manager)
-    : id_(id)
-    , entity_manager_(entity_manager)
-{
-}
-
-Entity::~Entity()
-{
-    RemoveAllComponent();
-}
-
-EntityID Entity::Id() const
-{
-    return id_;
-}
-
-void Entity::RemoveAllComponent()
-{
-    for (auto iter_component : component_list_)
-    {
-        entity_manager_.OnRemoveComponent(this, iter_component.second);
-        delete iter_component.second;
-    }
-    component_list_.clear();
 }
 
 EntitySystemBase::ClassIndexType EntitySystemBase::class_index_counter_ = 0;
