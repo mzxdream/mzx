@@ -19,6 +19,5 @@ int main(int argc, char *argv[])
     event.AddListener(std::bind(PrintNum, 3));
     event.Invoke();
     std::cout << std::endl;
-
     return 0;
 }
