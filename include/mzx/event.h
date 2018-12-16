@@ -3,7 +3,9 @@
 
 #include <cstddef>
 #include <functional>
-#include <map>
+#include <unordered_map>
+#include <cassert>
+#include <mzx/list.h>
 
 namespace mzx {
 
@@ -18,47 +20,100 @@ class Event<R (Args...)>
 {
 public:
     using Listener = std::function<R (Args...)>;
+private:
+    struct ListenerNode
+    {
+        ListenerNode(Listener l)
+            : listener(l)
+            , ref_count(1)
+        {
+            assert(listener != nullptr);
+            MZX_INIT_LIST_HEAD(&list_link);
+        }
+        ~ListenerNode()
+        {
+            assert(listener == nullptr && ref_count == 0);
+            MZX_LIST_REMOVE(&list_link);
+        }
+        void IncrRef()
+        {
+            ++ref_count;
+        }
+        void DecrRef()
+        {
+            assert(ref_count > 0);
+            if (--ref_count == 0)
+            {
+                delete this;
+            }
+        }
+        void SelfRemove()
+        {
+            if (listener != nullptr)
+            {
+                listener = nullptr;
+                DecrRef();
+            }
+        }
+        Listener listener;
+        int ref_count{ 0 };
+        ListHead list_link;
+    };
 public:
     Event()
-        : next_id_(0)
     {
+        MZX_INIT_LIST_HEAD(&listener_list_);
     }
     ~Event()
     {
+        RemoveAllListener();
     }
     Event(const Event &) = delete;
     Event & operator=(const Event &) = delete;
 public:
     EventID AddListener(const Listener &listener)
     {
-        EventID id = ++next_id_;
-        listener_list_[id] = listener;
-        return id;
+        static_assert(sizeof(ListenerNode *) == sizeof(EventID));
+        auto *node = new ListenerNode(listener);
+        MZX_LIST_PUSH_BACK(&node->list_link, &listener_list_);
+        return (EventID)node;
     }
     void RemoveListener(EventID id)
     {
-        listener_list_.erase(id);
-    }
-    void RemoveAllListener()
-    {
-        listener_list_.clear();
-    }
-    void Invoke(Args ...args) const
-    {
-        auto iter_listener = listener_list_.begin();
-        while (iter_listener != listener_list_.end())
+        MZX_LIST_FOREACH(it, &listener_list_)
         {
-            auto &listener = iter_listener->second;
-            ++iter_listener;
-            if (listener)
+            auto *node = MZX_LIST_ENTRY(it, ListenerNode, list_link);
+            if ((EventID)node == id)
             {
-                listener(args...);
+                node->SelfRemove();
+                break;
             }
         }
     }
+    void RemoveAllListener()
+    {
+        MZX_LIST_FOREACH_SAFE(it, &listener_list_)
+        {
+            auto *node = MZX_LIST_ENTRY(it, ListenerNode, list_link);
+            node->SelfRemove();
+        }
+    }
+    void Invoke(Args ...args) const
+    {
+        for (auto it = MZX_LIST_BEGIN(&listener_list_); it != MZX_LIST_END(&listener_list_);) 
+        {
+            auto *node = MZX_LIST_ENTRY(it, ListenerNode, list_link);
+            node->IncrRef();
+            if (node->listener)
+            {
+                (node->listener)(args...);
+            }
+            it = MZX_LIST_NEXT(it);
+            node->DecrRef();
+        }
+    }
 private:
-    std::map<EventID, Listener> listener_list_;
-    EventID next_id_{ 0 };
+    ListHead listener_list_;
 };
 
 template <typename T, typename O>
@@ -76,6 +131,7 @@ public:
     }
     ~Events()
     {
+        RemoveAllEvent();
     }
     Events(const Events &) = delete;
     Events & operator=(const Events &) = delete;
@@ -85,7 +141,7 @@ public:
         auto iter_event = event_list_.find(type);
         if (iter_event == event_list_.end())
         {
-            auto event = new EventType();
+            auto *event = new EventType();
             event_list_[type] = event;
             return event->AddListener(listener);
         }
@@ -107,16 +163,17 @@ public:
         {
             return;
         }
-        delete iter_event->second;
+        auto *event = iter_event->second;
         event_list_.erase(iter_event);
+        delete event;
     }
     void RemoveAllEvent()
     {
-        auto iter_event = event_list_.begin();
-        while (iter_event != event_list_.end())
+        for (auto iter_event = event_list_.begin(); iter_event != event_list_.end(); iter_event = event_list_.begin())
         {
-            delete iter_event->second;
-            iter_event = event_list_.erase(iter_event);
+            auto *event = iter_event->second;
+            event_list_.erase(iter_event);
+            delete event;
         }
     }
     void Invoke(T type, Args ...args) const
@@ -126,10 +183,10 @@ public:
         {
             return;
         }
-        iter_event->second->Invoke(args...);
+        iter_event->second->Invoke(std::forward<Args>(args)...);
     }
 public:
-    std::map<T, EventType *> event_list_;
+    std::unordered_map<T, EventType *> event_list_;
 };
 
 }

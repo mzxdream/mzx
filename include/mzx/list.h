@@ -68,6 +68,15 @@ struct ListHead
 #define MZX_LIST_EMPTY(head) \
     ((head)->next == (head))
 
+#define MZX_LIST_BEGIN(head) \
+    ((head)->next)
+
+#define MZX_LIST_END(head) \
+    (head)
+
+#define MZX_LIST_NEXT(node) \
+    ((node)->next)
+
 }
 
 #endif
