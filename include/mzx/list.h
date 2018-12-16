@@ -56,8 +56,17 @@ struct ListHead
 #define MZX_LIST_FOREACH(it, head) \
     for (decltype(head) it = (head)->next; it != (head); it = it->next) 
 
+#define MZX_LIST_FOREACH_SAFE(it, head) \
+    for (decltype(head) it = (head)->next, _n = it->next; it != (head); it = _n, _n = it->next)
+
 #define MZX_LIST_FOREACH_REVERSE(it, head) \
     for (decltype(head) it = (head)->prev; it != (head); it = it->prev) 
+
+#define MZX_LIST_FOREACH_REVERSE_SAFE(it, head) \
+    for (decltype(head) it = (head)->prev, _n = it->prev; it != (head); it = _n, _n = it->prev)
+
+#define MZX_LIST_EMPTY(head) \
+    ((head)->next == (head))
 
 }
 
