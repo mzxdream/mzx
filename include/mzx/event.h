@@ -160,12 +160,17 @@ public:
         auto iter_event = event_list_.find(type);
         if (iter_event != event_list_.end())
         {
+            iter_event->second->RemoveAllListener();
             event_list_.erase(iter_event);
         }
     }
     void RemoveAllEvent()
     {
-        event_list_.clear();
+        for(auto iter_event = event_list_.begin(); iter_event != event_list_.end();)
+        {
+            iter_event->second->RemoveAllListener();
+            iter_event = event_list_.erase(iter_event);
+        }
     }
     void Invoke(T type, Args &&...args) const
     {
@@ -174,7 +179,8 @@ public:
         {
             return;
         }
-        iter_event->second->Invoke(std::forward<Args>(args)...);
+        auto event = iter_event->second;
+        event->Invoke(std::forward<Args>(args)...);
     }
 public:
     std::unordered_map<T, std::shared_ptr<EventType> > event_list_;
