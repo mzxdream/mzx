@@ -4,6 +4,7 @@
 #include <cstddef>
 #include <functional>
 #include <unordered_map>
+#include <memory>
 #include <mzx/list.h>
 #include <mzx/logger.h>
 
@@ -98,7 +99,7 @@ public:
             node->SelfRemove();
         }
     }
-    void Invoke(Args ...args) const
+    void Invoke(Args &&...args) const
     {
         for (auto it = MZX_LIST_BEGIN(&listener_list_); it != MZX_LIST_END(&listener_list_);)
         {
@@ -114,6 +115,69 @@ public:
     }
 private:
     ListHead listener_list_;
+};
+
+template <typename T, typename O>
+class EventManager;
+
+template <typename T, typename R, typename ...Args>
+class EventManager<T, R (Args...)>
+{
+    using EventType = Event<R (Args...)>;
+    using Listener = typename EventType::Listener;
+public:
+    EventManager()
+    {
+    }
+    ~EventManager()
+    {
+        RemoveAllEvent();
+    }
+    EventManager(const EventManager &) = delete;
+    EventManager & operator=(const EventManager &) = delete;
+public:
+    EventID AddListener(T type, const Listener &listener)
+    {
+        auto iter_event = event_list_.find(type);
+        if (iter_event == event_list_.end())
+        {
+            std::shared_ptr<EventType> event(new EventType());
+            event_list_[type] = event;
+            return event->AddListener(listener);
+        }
+        return iter_event->second->AddListener(listener);
+    }
+    void RemoveListener(T type, EventID id)
+    {
+        auto iter_event = event_list_.find(type);
+        if (iter_event != event_list_.end())
+        {
+            return iter_event->second->RemoveListener(id);
+        }
+    }
+    void RemoveEvent(T type)
+    {
+        auto iter_event = event_list_.find(type);
+        if (iter_event != event_list_.end())
+        {
+            event_list_.erase(iter_event);
+        }
+    }
+    void RemoveAllEvent()
+    {
+        event_list_.clear();
+    }
+    void Invoke(T type, Args &&...args) const
+    {
+        auto iter_event = event_list_.find(type);
+        if (iter_event == event_list_.end())
+        {
+            return;
+        }
+        iter_event->second->Invoke(std::forward<Args>(args)...);
+    }
+public:
+    std::unordered_map<T, std::shared_ptr<EventType> > event_list_;
 };
 
 }
