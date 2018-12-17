@@ -4,8 +4,8 @@
 #include <cstddef>
 #include <functional>
 #include <unordered_map>
-#include <cassert>
 #include <mzx/list.h>
+#include <mzx/logger.h>
 
 namespace mzx {
 
@@ -27,12 +27,12 @@ private:
             : listener(l)
             , ref_count(1)
         {
-            assert(listener != nullptr);
+            MZX_CHECK(listener != nullptr);
             MZX_INIT_LIST_HEAD(&list_link);
         }
         ~ListenerNode()
         {
-            assert(listener == nullptr && ref_count == 0);
+            MZX_CHECK(listener == nullptr && ref_count == 0);
             MZX_LIST_REMOVE(&list_link);
         }
         void IncrRef()
@@ -41,7 +41,7 @@ private:
         }
         void DecrRef()
         {
-            assert(ref_count > 0);
+            MZX_CHECK(ref_count > 0);
             if (--ref_count == 0)
             {
                 delete this;
@@ -73,7 +73,7 @@ public:
 public:
     EventID AddListener(const Listener &listener)
     {
-        static_assert(sizeof(ListenerNode *) == sizeof(EventID));
+        MZX_CHECK_STATIC(sizeof(ListenerNode *) == sizeof(EventID));
         auto *node = new ListenerNode(listener);
         MZX_LIST_PUSH_BACK(&node->list_link, &listener_list_);
         return (EventID)node;
@@ -100,7 +100,7 @@ public:
     }
     void Invoke(Args ...args) const
     {
-        for (auto it = MZX_LIST_BEGIN(&listener_list_); it != MZX_LIST_END(&listener_list_);) 
+        for (auto it = MZX_LIST_BEGIN(&listener_list_); it != MZX_LIST_END(&listener_list_);)
         {
             auto *node = MZX_LIST_ENTRY(it, ListenerNode, list_link);
             node->IncrRef();
