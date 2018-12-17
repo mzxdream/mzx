@@ -99,7 +99,7 @@ public:
             node->SelfRemove();
         }
     }
-    void Invoke(Args &&...args) const
+    void Invoke(Args ...args) const
     {
         for (auto it = MZX_LIST_BEGIN(&listener_list_); it != MZX_LIST_END(&listener_list_);)
         {
@@ -172,7 +172,7 @@ public:
             iter_event = event_list_.erase(iter_event);
         }
     }
-    void Invoke(T type, Args &&...args) const
+    void Invoke(T type, Args ...args) const
     {
         auto iter_event = event_list_.find(type);
         if (iter_event == event_list_.end())

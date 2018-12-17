@@ -40,7 +40,7 @@ public:
     const static ClassIndexType CLASS_INDEX = ComponentBase::class_index_counter_++;
 protected:
     template <typename ...Args>
-    explicit Component(Args && ...args)
+    explicit Component(Args ...args)
         : raw_data_(std::forward<Args>(args)...)
     {
     }
@@ -69,7 +69,40 @@ private:
 using EntityID = int64_t;
 constexpr EntityID ENTITY_ID_INVALID = (EntityID)-1;
 
-class EntityManager;
+class EntityManager
+{
+    friend Entity;
+public:
+    using ComponentChangedEvent = Event<void (Entity *, ComponentBase *)>;
+    using EntityChangedEvent = Event<void (Entity *)>;
+public:
+    EntityManager();
+    ~EntityManager();
+    EntityManager(const EntityManager &) = delete;
+    EntityManager & operator=(const EntityManager &) = delete;
+public:
+    ComponentChangedEvent & ComponentAddEvent();
+    ComponentChangedEvent & ComponentRemoveEvent();
+    EntityChangedEvent & EntityAddEvent();
+    EntityChangedEvent & EntityRemoveEvent();
+
+    Entity * GetEntity(EntityID id);
+    Entity * AddEntity();
+    void RemoveEntity(EntityID id);
+    void RemoveAllEntity();
+    void ForeachEntity(std::function<bool (Entity *)> cb);
+private:
+    void OnAddComponent(Entity *, ComponentBase *);
+    void OnRemoveComponent(Entity *, ComponentBase *);
+private:
+    ComponentChangedEvent component_add_event_;
+    ComponentChangedEvent component_remove_event_;
+    EntityChangedEvent entity_add_event_;
+    EntityChangedEvent entity_remove_event_;
+    std::unordered_map<EntityID, Entity *> entities_;
+    ListHead entity_list_;
+    EntityID next_entity_id_{ 0 };
+};
 
 class Entity
 {
@@ -97,7 +130,7 @@ public:
         return HasComponent<T>() && HasComponent<V, Args...>();
     }
     template <typename T, typename ...Args>
-    Component<T> * AddComponent(Args && ...args)
+    Component<T> * AddComponent(Args ...args)
     {
         MZX_CHECK(component_list_[Component<T>::CLASS_INDEX] == nullptr);
         auto *component = new Component<T>(std::forward<Args>(args)...);
@@ -129,41 +162,6 @@ private:
     bool invalid_{ false };
     int ref_count_{ 0 };
     ListHead list_link_;
-};
-
-class EntityManager
-{
-public:
-    using ComponentChangedEvent = Event<void (Entity *, ComponentBase *)>;
-    using EntityChangedEvent = Event<void (Entity *)>;
-public:
-    EntityManager();
-    ~EntityManager();
-    EntityManager(const EntityManager &) = delete;
-    EntityManager & operator=(const EntityManager &) = delete;
-public:
-    ComponentChangedEvent & ComponentAddEvent();
-    ComponentChangedEvent & ComponentRemoveEvent();
-
-    EntityChangedEvent & EntityAddEvent();
-    EntityChangedEvent & EntityRemoveEvent();
-public:
-    Entity * GetEntity(EntityID id);
-    Entity * AddEntity();
-    void RemoveEntity(EntityID id);
-    void RemoveAllEntity();
-    void ForeachEntity(std::function<bool (Entity *)> cb);
-
-    void OnAddComponent(Entity *, ComponentBase *);
-    void OnRemoveComponent(Entity *, ComponentBase *);
-private:
-    ComponentChangedEvent component_add_event_;
-    ComponentChangedEvent component_remove_event_;
-    EntityChangedEvent entity_add_event_;
-    EntityChangedEvent entity_remove_event_;
-    std::unordered_map<EntityID, Entity *> entities_;
-    ListHead entity_list_;
-    EntityID next_entity_id_{ 0 };
 };
 
 class EntitySystemBase
@@ -225,7 +223,7 @@ public:
     EntitySystemManager & operator=(const EntitySystemManager &) = delete;
 public:
     template <typename T, typename ...Args>
-    T * AddSystem(Args && ...args)
+    T * AddSystem(Args ...args)
     {
         static_assert(std::is_base_of<EntitySystem<T>, T>::value, "system must be extern EntitySystem<T>");
         T *system = new T(std::forward<Args>(args)...);
