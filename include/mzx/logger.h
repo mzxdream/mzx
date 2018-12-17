@@ -61,24 +61,24 @@ private:
 
 }
 
-#define MZX_LOG(level, args...) mzx::Logger::Print(level, __FILE__, __LINE__, __func__, args)
-#define MZX_LOG_IF(level, condition, args...) !(condition) ? (void)0 : MZX_LOG(level, args)
+#define MZX_LOG(level, ...) mzx::Logger::Print(level, __FILE__, __LINE__, __func__, ##__VA_ARGS__)
+#define MZX_LOG_IF(level, condition, ...) !(condition) ? (void)0 : MZX_LOG(level, ##__VA_ARGS__)
 
-#define MZX_DEBUG(args...) MZX_LOG(mzx::Logger::Level::Debug, args)
-#define MZX_DEBUG_IF(condition, args...) MZX_LOG_IF(mzx::Logger::Level::Debug, condition, args)
+#define MZX_DEBUG(...) MZX_LOG(mzx::Logger::Level::Debug, ##__VA_ARGS__)
+#define MZX_DEBUG_IF(condition, ...) MZX_LOG_IF(mzx::Logger::Level::Debug, condition, ##__VA_ARGS__)
 
-#define MZX_INFO(args...) MZX_LOG(mzx::Logger::Level::Info, args)
-#define MZX_INFO_IF(condition, args...) MZX_LOG_IF(mzx::Logger::Level::Info, condition, args)
+#define MZX_INFO(...) MZX_LOG(mzx::Logger::Level::Info, ##__VA_ARGS__)
+#define MZX_INFO_IF(condition, ...) MZX_LOG_IF(mzx::Logger::Level::Info, condition, ##__VA_ARGS__)
 
-#define MZX_WARN(args...) MZX_LOG(mzx::Logger::Level::Warn, args)
-#define MZX_WARN_IF(condition, args...) MZX_LOG_IF(mzx::Logger::Level::Warn, condition, args)
+#define MZX_WARN(...) MZX_LOG(mzx::Logger::Level::Warn, ##__VA_ARGS__)
+#define MZX_WARN_IF(condition, ...) MZX_LOG_IF(mzx::Logger::Level::Warn, condition, ##__VA_ARGS__)
 
-#define MZX_ERR(args...) MZX_LOG(mzx::Logger::Level::Error, args)
-#define MZX_ERR_IF(condition, args...) MZX_LOG_IF(mzx::Logger::Level::Error, condition, args)
+#define MZX_ERR(...) MZX_LOG(mzx::Logger::Level::Error, ##__VA_ARGS__)
+#define MZX_ERR_IF(condition, ...) MZX_LOG_IF(mzx::Logger::Level::Error, condition, ##__VA_ARGS__)
 
-#define MZX_FATAL(args...) MZX_LOG(mzx::Logger::Level::Fatal, args)
-#define MZX_FATAL_IF(condition, args...) MZX_LOG_IF(mzx::Logger::Level::Fatal, condition, args)
+#define MZX_FATAL(...) MZX_LOG(mzx::Logger::Level::Fatal, ##__VA_ARGS__)
+#define MZX_FATAL_IF(condition, ...) MZX_LOG_IF(mzx::Logger::Level::Fatal, condition, ##__VA_ARGS__)
 
-#define MZX_CHECK(EXPRESSION, args...) MZX_LOG_IF(mzx::Logger::Level::Fatal, !(EXPRESSION), "CHECK failed:" #EXPRESSION ": ", args)
+#define MZX_CHECK(EXPRESSION, ...) MZX_LOG_IF(mzx::Logger::Level::Fatal, !(EXPRESSION), "CHECK failed:" #EXPRESSION " ", ##__VA_ARGS__)
 
 #endif
