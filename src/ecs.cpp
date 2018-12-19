@@ -232,7 +232,6 @@ EntitySystemBase::ClassIndexType EntitySystemBase::class_index_counter_ = 0;
 
 EntitySystemBase::EntitySystemBase()
 {
-
 }
 
 EntitySystemBase::~EntitySystemBase()
@@ -250,19 +249,9 @@ void EntitySystemBase::Uninit()
     _Uninit();
 }
 
-void EntitySystemBase::Update(int64_t now_time)
+void EntitySystemBase::Update()
 {
-    _Update(now_time);
-}
-
-bool EntitySystemBase::Configure()
-{
-    return _Configure();
-}
-
-void EntitySystemBase::Unconfigure()
-{
-    _Unconfigure();
+    _Update();
 }
 
 bool EntitySystemBase::_Init()
@@ -275,17 +264,7 @@ void EntitySystemBase::_Uninit()
 
 }
 
-void EntitySystemBase::_Update(int64_t now_time)
-{
-
-}
-
-bool EntitySystemBase::_Configure()
-{
-    return true;
-}
-
-void EntitySystemBase::_Unconfigure()
+void EntitySystemBase::_Update()
 {
 
 }
@@ -296,45 +275,38 @@ EntitySystemBase::ClassIndexType EntitySystemBase::ClassIndexCount()
 }
 
 EntitySystemManager::EntitySystemManager()
+    : system_index_(EntitySystemBase::ClassIndexCount())
 {
-
+    MZX_INIT_LIST_HEAD(&system_list_);
 }
 
 EntitySystemManager::~EntitySystemManager()
 {
-    for (auto &system : system_list_)
-    {
-        system->Uninit();
-        delete system;
-    }
-    system_list_.clear();
+    RemoveAllSystem();
 }
 
-bool EntitySystemManager::Configure()
+void EntitySystemManager::RemoveAllSystem()
 {
-    for (auto &system : system_list_)
+    for (auto it = MZX_LIST_BEGIN(&system_list_); it != MZX_LIST_END(&system_list_); it = MZX_LIST_BEGIN(&system_list_))
     {
-        if (!system->Configure())
+        auto *node = MZX_LIST_ENTRY(it, SystemNode, list_link);
+        node->SelfRemove();
+    }
+}
+
+void EntitySystemManager::UpdateAll()
+{
+    auto it = MZX_LIST_BEGIN(&system_list_);
+    while (it != MZX_LIST_END(&system_list_))
+    {
+        auto *node = MZX_LIST_ENTRY(it, SystemNode, list_link);
+        node->IncrRef();
+        if (node->system)
         {
-            return false;
+            node->system->Update();
         }
-    }
-    return true;
-}
-
-void EntitySystemManager::Unconfigure()
-{
-    for (auto &system : system_list_)
-    {
-        system->Unconfigure();
-    }
-}
-
-void EntitySystemManager::Update(int64_t now_time)
-{
-    for (auto &system : system_list_)
-    {
-        system->Update(now_time);
+        it = MZX_LIST_NEXT(it);
+        node->DecrRef();
     }
 }
 

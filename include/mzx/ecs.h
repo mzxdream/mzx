@@ -7,6 +7,7 @@
 #include <utility>
 #include <functional>
 #include <unordered_map>
+#include <type_traits>
 #include <mzx/event.h>
 #include <mzx/logger.h>
 
@@ -176,15 +177,11 @@ public:
 public:
     bool Init();
     void Uninit();
-    void Update(int64_t now_time);
-    bool Configure();
-    void Unconfigure();
+    void Update();
 private:
     virtual bool _Init();
     virtual void _Uninit();
-    virtual void _Update(int64_t now_time);
-    virtual bool _Configure();
-    virtual void _Unconfigure();
+    virtual void _Update();
 public:
     static ClassIndexType ClassIndexCount();
     virtual ClassIndexType ClassIndex() = 0;
@@ -216,6 +213,45 @@ public:
 
 class EntitySystemManager
 {
+    struct SystemNode
+    {
+        SystemNode(EntitySystemBase *sys)
+            : system(sys)
+            , ref_count(1)
+        {
+            MZX_CHECK(sys != nullptr);
+            MZX_INIT_LIST_HEAD(&list_link);
+        }
+        ~SystemNode()
+        {
+            MZX_CHECK(system == nullptr && ref_count == 0);
+        }
+        void IncrRef()
+        {
+            ++ref_count;
+        }
+        void DecrRef()
+        {
+            MZX_CHECK(ref_count > 0);
+            if (--ref_count == 0)
+            {
+                delete this;
+            }
+        }
+        void SelfRemove()
+        {
+            if (system != nullptr)
+            {
+                system->Uninit();
+                delete system;
+                system = nullptr;
+                DecrRef();
+            }
+        }
+        EntitySystemBase *system{ nullptr };
+        int ref_count{ 0 };
+        ListHead list_link;
+    };
 public:
     EntitySystemManager();
     ~EntitySystemManager();
@@ -225,21 +261,45 @@ public:
     template <typename T, typename ...Args>
     T * AddSystem(Args ...args)
     {
-        static_assert(std::is_base_of<EntitySystem<T>, T>::value, "system must be extern EntitySystem<T>");
-        T *system = new T(std::forward<Args>(args)...);
+        MZX_CHECK_STATIC((std::is_base_of<T, int>::value));
+        MZX_CHECK(system_index_[T::CLASS_INDEX] == nullptr);
+        auto *system = new T(std::forward<Args>(args)...);
         if (!system->Init())
         {
             delete system;
             return nullptr;
         }
-        system_list_.push_back(system);
+        auto *node = new SystemNode(system);
+        MZX_LIST_PUSH_BACK(&node->list_link, &system_list_);
+        system_list_[T::CLASS_INDEX] = system;
         return system;
     }
-    bool Configure();
-    void Unconfigure();
-    void Update(int64_t now_time);
+    template <typename T>
+    void RemoveSystem()
+    {
+        MZX_CHECK_STATIC((std::is_base_of<EntitySystem<T>, T>::value));
+        auto *node = system_list_[T::CLASS_INDEX];
+        if (node)
+        {
+            system_list_[T::CLASS_INDEX] = nullptr;
+            node->SelfRemove();
+        }
+    }
+    void RemoveAllSystem();
+    template <typename T>
+    void Update()
+    {
+        MZX_CHECK_STATIC((std::is_base_of<EntitySystem<T>, T>::value));
+        auto *node = system_list_[T::CLASS_INDEX];
+        if (node && node->system)
+        {
+            node->system->Update();
+        }
+    }
+    void UpdateAll();
 private:
-    std::list<EntitySystemBase *> system_list_;
+    ListHead system_list_;
+    std::vector<SystemNode *> system_index_;
 };
 
 }

@@ -93,7 +93,7 @@ public:
     }
     void RemoveAllListener()
     {
-        MZX_LIST_FOREACH_SAFE(it, &listener_list_)
+        for (auto it = MZX_LIST_BEGIN(&listener_list_); it != MZX_LIST_END(&listener_list_); it = MZX_LIST_BEGIN(&listener_list_))
         {
             auto *node = MZX_LIST_ENTRY(it, ListenerNode, list_link);
             node->SelfRemove();
