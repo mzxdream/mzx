@@ -18,7 +18,6 @@ ComponentBase::ClassIndexType ComponentBase::ClassIndexCount()
 }
 
 EntityManager::EntityManager()
-    : next_entity_id_(0)
 {
     MZX_INIT_LIST_HEAD(&entity_list_);
 }
@@ -40,10 +39,19 @@ Entity * EntityManager::GetEntity(EntityID id)
 
 Entity * EntityManager::AddEntity()
 {
-    auto *entity = new Entity(++next_entity_id_, *this);
+    MZX_CHECK_STATIC(sizeof(Entity *) == sizeof(EventID));
+    Entity *entity = new Entity(*this);
+    entity->SetID((EntityID)entity);
     entities_[entity->ID()] = entity;
     MZX_LIST_PUSH_BACK(&entity->list_link_, &entity_list_);
+    entity->IncrRef();
     entity_add_event_.Invoke(entity);
+    if (entity->invalid_)
+    {
+        entity->DecrRef();
+        return nullptr;
+    }
+    entity->DecrRef();
     return entity;
 }
 
@@ -136,9 +144,8 @@ void EntityManager::OnRemoveComponent(Entity *entity, ComponentBase *component)
     component_remove_event_.Invoke(entity, component);
 }
 
-Entity::Entity(EntityID id, EntityManager &entity_manager)
-    : id_(id)
-    , entity_manager_(entity_manager)
+Entity::Entity(EntityManager &entity_manager)
+    : entity_manager_(entity_manager)
     , component_list_(ComponentBase::ClassIndexCount())
     , invalid_(false)
     , ref_count_(1)
@@ -190,6 +197,11 @@ void Entity::ForeachComponent(std::function<bool (ComponentBase *)> cb)
             return;
         }
     }
+}
+
+void Entity::SetID(EntityID id)
+{
+    id_ = id;
 }
 
 void Entity::IncrRef()

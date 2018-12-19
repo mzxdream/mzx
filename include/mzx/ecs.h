@@ -101,14 +101,13 @@ private:
     EntityChangedEvent entity_remove_event_;
     std::unordered_map<EntityID, Entity *> entities_;
     ListHead entity_list_;
-    EntityID next_entity_id_{ 0 };
 };
 
 class Entity
 {
     friend EntityManager;
 private:
-    Entity(EntityID id, EntityManager &entity_manager);
+    Entity(EntityManager &entity_manager);
     ~Entity();
     Entity(const Entity &) = delete;
     Entity & operator=(const Entity &) = delete;
@@ -152,11 +151,12 @@ public:
     void RemoveAllComponent();
     void ForeachComponent(std::function<bool (ComponentBase *)> cb);
 private:
+    void SetID(EntityID id);
     void IncrRef();
     void DecrRef();
     void SelfRemove();
 private:
-    EntityID id_;
+    EntityID id_{ 0 };
     EntityManager &entity_manager_;
     std::vector<ComponentBase *> component_list_;
     bool invalid_{ false };
