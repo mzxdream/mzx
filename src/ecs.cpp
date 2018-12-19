@@ -222,6 +222,7 @@ void Entity::SelfRemove()
 {
     if (!invalid_)
     {
+        RemoveAllComponent();
         invalid_ = true;
         DecrRef();
     }
