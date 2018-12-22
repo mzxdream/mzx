@@ -27,5 +27,8 @@ int main(int argc, char *argv[])
         fprintf(stderr, "exit dump end \n");
         fflush(stderr);
     });
+    std::map<int, int *> a;
+    a[0] = new int(10);
+    DumpMemory();
     return 0;
 }
