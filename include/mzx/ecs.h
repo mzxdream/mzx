@@ -73,6 +73,46 @@ constexpr EntityID ENTITY_ID_INVALID = (EntityID)-1;
 class EntityManager
 {
     friend Entity;
+    struct EntityNode
+    {
+        EntityNode(Entity *e)
+            : entity(e)
+            , ref_count(1)
+        {
+            MZX_CHECK(e != nullptr);
+            MZX_INIT_LIST_HEAD(&list_link);
+        }
+        ~EntityNode()
+        {
+            MZX_CHECK(entity == nullptr && ref_count == 0);
+        }
+        void IncrRef()
+        {
+            ++ref_count;
+        }
+        void DecrRef()
+        {
+            MZX_CHECK(ref_count > 0);
+            if (--ref_count == 0)
+            {
+                delete this;
+            }
+        }
+        Entity * DetachEntity()
+        {
+            if (entity != nullptr)
+            {
+                Entity *ret_entity = entity;
+                entity = nullptr;
+                DecrRef();
+                return ret_entity;
+            }
+            return nullptr;
+        }
+        Entity *entity{ nullptr };
+        int ref_count{ 0 };
+        ListHead list_link;
+    };
 public:
     using ComponentChangedEvent = Event<void (Entity *, ComponentBase *)>;
     using EntityChangedEvent = Event<void (Entity *)>;
@@ -100,7 +140,7 @@ private:
     ComponentChangedEvent component_remove_event_;
     EntityChangedEvent entity_add_event_;
     EntityChangedEvent entity_remove_event_;
-    std::unordered_map<EntityID, Entity *> entities_;
+    std::unordered_map<EntityID, EntityNode *> entities_;
     ListHead entity_list_;
 };
 
@@ -112,6 +152,8 @@ private:
     ~Entity();
     Entity(const Entity &) = delete;
     Entity & operator=(const Entity &) = delete;
+private:
+    void SetID(EntityID id);
 public:
     EntityID ID() const;
     template <typename T>
@@ -152,17 +194,9 @@ public:
     void RemoveAllComponent();
     void ForeachComponent(std::function<bool (ComponentBase *)> cb);
 private:
-    void SetID(EntityID id);
-    void IncrRef();
-    void DecrRef();
-    void SelfRemove();
-private:
     EntityID id_{ 0 };
     EntityManager &entity_manager_;
     std::vector<ComponentBase *> component_list_;
-    bool invalid_{ false };
-    int ref_count_{ 0 };
-    ListHead list_link_;
 };
 
 class EntitySystemBase

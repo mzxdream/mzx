@@ -34,24 +34,21 @@ Entity * EntityManager::GetEntity(EntityID id)
     {
         return nullptr;
     }
-    return iter_entity->second;
+    return iter_entity->second->entity;
 }
 
 Entity * EntityManager::AddEntity()
 {
     MZX_CHECK_STATIC(sizeof(Entity *) == sizeof(EventID));
-    Entity *entity = new Entity(*this);
+    auto *entity = new Entity(*this);
     entity->SetID((EntityID)entity);
-    entities_[entity->ID()] = entity;
-    MZX_LIST_PUSH_BACK(&entity->list_link_, &entity_list_);
-    entity->IncrRef();
-    entity_add_event_.Invoke(entity);
-    if (entity->invalid_)
-    {
-        entity->DecrRef();
-        return nullptr;
-    }
-    entity->DecrRef();
+    auto *node = new EntityNode(entity);
+    MZX_LIST_PUSH_BACK(&node->list_link, &entity_list_);
+    entities_[entity->ID()] = node;
+    node->IncrRef();
+    entity_add_event_.Invoke(node->entity);
+    entity = node->entity;
+    node->DecrRef();
     return entity;
 }
 
@@ -62,55 +59,57 @@ void EntityManager::RemoveEntity(EntityID id)
     {
         return;
     }
-    auto *entity = iter_entity->second;
+    auto *node = iter_entity->second;
     entities_.erase(iter_entity);
-    entity->IncrRef();
-    entity->SelfRemove();
-    entity_remove_event_.Invoke(entity);
-    entity->DecrRef();
+    auto *entity = node->DetachEntity();
+    if (entity)
+    {
+        entity->RemoveAllComponent();
+        entity_remove_event_.Invoke(entity);
+        delete entity;
+    }
 }
 
 void EntityManager::RemoveAllEntity()
 {
     for (auto iter = MZX_LIST_BEGIN(&entity_list_); iter != MZX_LIST_END(&entity_list_);)
     {
-        auto *entity = MZX_LIST_ENTRY(iter, Entity, list_link_);
-        if (entity->invalid_)
+        auto *node = MZX_LIST_ENTRY(iter, EntityNode, list_link);
+        if (!node->entity)
         {
             iter = MZX_LIST_NEXT(iter);
             continue;
         }
+        node->IncrRef();
+        auto *entity = node->DetachEntity();
         entities_.erase(entity->ID());
-        entity->IncrRef();
-        entity->SelfRemove();
+        entity->RemoveAllComponent();
         entity_remove_event_.Invoke(entity);
+        delete entity;
         iter = MZX_LIST_NEXT(iter);
-        entity->DecrRef();
+        node->DecrRef();
     }
 }
 
 void EntityManager::ForeachEntity(std::function<bool (Entity *)> cb)
 {
-    if (!cb)
-    {
-        return;
-    }
+    MZX_CHECK(cb != nullptr);
     for (auto iter = MZX_LIST_BEGIN(&entity_list_); iter != MZX_LIST_END(&entity_list_);)
     {
-        auto *entity = MZX_LIST_ENTRY(iter, Entity, list_link_);
-        if (entity->invalid_)
+        auto *node = MZX_LIST_ENTRY(iter, EntityNode, list_link);
+        if (!node->entity)
         {
             iter = MZX_LIST_NEXT(iter);
             continue;
         }
-        entity->IncrRef();
-        if (!cb(entity))
+        node->IncrRef();
+        if (!cb(node->entity))
         {
-            entity->DecrRef();
+            node->DecrRef();
             return;
         }
         iter = MZX_LIST_NEXT(iter);
-        entity->DecrRef();
+        node->DecrRef();
     }
 }
 
@@ -147,17 +146,17 @@ void EntityManager::OnRemoveComponent(Entity *entity, ComponentBase *component)
 Entity::Entity(EntityManager &entity_manager)
     : entity_manager_(entity_manager)
     , component_list_(ComponentBase::ClassIndexCount())
-    , invalid_(false)
-    , ref_count_(1)
 {
-    MZX_INIT_LIST_HEAD(&list_link_);
 }
 
 Entity::~Entity()
 {
-    MZX_CHECK(invalid_ && ref_count_ == 0);
     RemoveAllComponent();
-    MZX_LIST_REMOVE(&list_link_);
+}
+
+void Entity::SetID(EntityID id)
+{
+    id_ = id;
 }
 
 EntityID Entity::ID() const
@@ -196,35 +195,6 @@ void Entity::ForeachComponent(std::function<bool (ComponentBase *)> cb)
         {
             return;
         }
-    }
-}
-
-void Entity::SetID(EntityID id)
-{
-    id_ = id;
-}
-
-void Entity::IncrRef()
-{
-    ++ref_count_;
-}
-
-void Entity::DecrRef()
-{
-    MZX_CHECK(ref_count_ > 0);
-    if (--ref_count_ == 0)
-    {
-        delete this;
-    }
-}
-
-void Entity::SelfRemove()
-{
-    if (!invalid_)
-    {
-        RemoveAllComponent();
-        invalid_ = true;
-        DecrRef();
     }
 }
 
