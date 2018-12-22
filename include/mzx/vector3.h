@@ -19,14 +19,30 @@ public:
         , z_()
     {
     }
-    ~Vector3()
+public:
+    T X() const
     {
+        return x_;
     }
-    Vector3(const Vector3<T> &v)
+    T Y() const
     {
-        x_ = v.x_;
-        y_ = v.y_;
-        z_ = v.z_;
+        return y_;
+    }
+    T Z() const
+    {
+        return z_;
+    }
+    void X(T x)
+    {
+        x_ = x;
+    }
+    void Y(T y)
+    {
+        y_ = y;
+    }
+    void Z(T z)
+    {
+        z_ = z;
     }
 public:
     bool operator==(const Vector3<T> &v) const
@@ -81,7 +97,6 @@ public:
     {
         return Vector3<T>(x_ * v.x_, y_ * v.y_, z_ * v.z_);
     }
-
     Vector3<T> & operator*=(T d)
     {
         x_ *= d;
