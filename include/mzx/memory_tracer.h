@@ -6,6 +6,7 @@
 #include <map>
 #include <string>
 #include <cstdio>
+#include <functional>
 
 namespace mzx {
 

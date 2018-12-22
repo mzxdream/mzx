@@ -2,18 +2,15 @@
 #include <array>
 #include <iostream>
 
-template <
-
-
-template <std::size_t N>
-const auto MakeArray() -> std::array<std::size_t, N>
+template <std::size_t ...I>
+const auto MakeArray(mzx::Sequence<I...>) -> std::array<std::size_t, sizeof...(I)>
 {
-    return std::array<std::size_t, N>{mzx::MakeSequence<N>{}};
+    return std::array<std::size_t, sizeof...(I)>{(I + 1)...};
 }
 
 int main(int argc, char *argv[])
 {
-    auto arr = MakeArray<10>();
+    auto arr = MakeArray(mzx::MakeSequence<10>{});
     for (auto &i : arr)
     {
         std::cout << i << ",";
