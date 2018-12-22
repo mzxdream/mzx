@@ -1,6 +1,8 @@
 #ifndef __MZX_MAKE_SEQUENCE_H__
 #define __MZX_MAKE_SEQUENCE_H__
 
+#include <cstddef>
+
 namespace mzx {
 
 template <std::size_t ...I>
