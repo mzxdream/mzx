@@ -27,7 +27,6 @@ private:
     static void ConcatBase(O &os)
     {
     }
-
     template <typename O, typename T, typename ...Args>
     static void ConcatBase(O &os, T &&val, Args && ...args)
     {

@@ -1,6 +1,7 @@
 #include <mzx/string_util.h>
 
 namespace mzx {
+
 std::string StringUtil::TrimLeft(const std::string &str, const std::string &trim)
 {
     auto pos = str.find_first_not_of(trim);

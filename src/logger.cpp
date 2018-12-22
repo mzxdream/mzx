@@ -1,5 +1,5 @@
 #include <mzx/logger.h>
-#include <mzx/enum_util.h>
+#include <mzx/util.h>
 #include <cstdio>
 #include <cstdlib>
 #include <utility>
