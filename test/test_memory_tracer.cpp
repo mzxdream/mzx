@@ -3,11 +3,11 @@
 
 static void DumpMemory()
 {
-    fprintf(stderr, "dump memory begin");
+    fprintf(stderr, "dump memory begin\n");
     mzx::MemTracer::Dump([](const mzx::MemTracerInfo &info){
         fprintf(stderr, "[%s:%d] %p->%zu \n", info.file, info.line, info.memory, info.size);
     });
-    fprintf(stderr, "dump memory end");
+    fprintf(stderr, "dump memory end\n");
     fflush(stderr);
 }
 
@@ -18,6 +18,7 @@ int main(int argc, char *argv[])
     DumpMemory();
     delete[] p;
     DumpMemory();
+    int *c = (int*)malloc(sizeof(int));
     mzx::MemTracer::SetExitHandler([](){
         fprintf(stderr, "exit dump: \n");
         mzx::MemTracer::Dump([](const mzx::MemTracerInfo &info){
