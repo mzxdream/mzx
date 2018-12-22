@@ -30,3 +30,4 @@
 # director
 build/*
 out_lib/*
+test/test
