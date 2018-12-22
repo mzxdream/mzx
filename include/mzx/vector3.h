@@ -7,14 +7,16 @@ template <typename T>
 class Vector3
 {
 public:
-    Vector3(T x, T y, T z)
+    explicit Vector3(T x, T y, T z)
         : x_(x)
         , y_(y)
         , z_(z)
     {
     }
     Vector3()
-        : Vector3(0, 0, 0)
+        : x_()
+        , y_()
+        , z_()
     {
     }
     ~Vector3()
