@@ -27,7 +27,7 @@ inline std::string Concat(Args && ...args)
     return ss.str();
 }
 
-inline std::string TrimLeft(const std::string &str, char trim = ' ');
+inline std::string TrimLeft(const std::string &str, char trim = ' ')
 {
     auto pos = str.find_first_not_of(trim);
     if (pos != std::string::npos)
@@ -37,7 +37,7 @@ inline std::string TrimLeft(const std::string &str, char trim = ' ');
     return std::string();
 }
 
-inline std::string TrimLeft(const std::string &str, const char *trim);
+inline std::string TrimLeft(const std::string &str, const char *trim)
 {
     auto pos = str.find_first_not_of(trim);
     if (pos != std::string::npos)
@@ -67,14 +67,14 @@ inline std::string TrimRight(const std::string &str, const char *trim)
     return std::string();
 }
 
-inline std::string StringUtil::Trim(const std::string &str, char trim)
+inline std::string Trim(const std::string &str, char trim)
 {
     auto begin_pos = str.find_first_not_of(trim);
     if (begin_pos == std::string::npos)
     {
         return std::string();
     }
-    auto end_pos = str.find_last_not_of(trim, begin_pos);
+    auto end_pos = str.find_last_not_of(trim);
     if (end_pos == std::string::npos || begin_pos > end_pos)
     {
         return std::string();
@@ -82,14 +82,14 @@ inline std::string StringUtil::Trim(const std::string &str, char trim)
     return str.substr(begin_pos, end_pos + 1 - begin_pos);
 }
 
-inline std::string StringUtil::Trim(const std::string &str, const char *trim)
+inline std::string Trim(const std::string &str, const char *trim)
 {
     auto begin_pos = str.find_first_not_of(trim);
     if (begin_pos == std::string::npos)
     {
         return std::string();
     }
-    auto end_pos = str.find_last_not_of(trim, begin_pos);
+    auto end_pos = str.find_last_not_of(trim);
     if (end_pos == std::string::npos || begin_pos > end_pos)
     {
         return std::string();
