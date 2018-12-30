@@ -38,10 +38,10 @@ class Component
 {
     friend Entity;
 public:
-    const static ClassIndexType CLASS_INDEX = ComponentBase::class_index_counter_++;
+    static ClassIndexType CLASS_INDEX;
 protected:
     template <typename ...Args>
-    explicit Component(Args ...args)
+    explicit Component(Args &&...args)
         : raw_data_(std::forward<Args>(args)...)
     {
     }
@@ -51,11 +51,7 @@ protected:
     Component(const Component &) = delete;
     Component & operator=(const Component &) = delete;
 public:
-    T & Get()
-    {
-        return raw_data_;
-    }
-    T * GetPtr()
+    T * Get()
     {
         return &raw_data_;
     }
@@ -66,6 +62,9 @@ public:
 private:
     T raw_data_;
 };
+
+template <typename T>
+ComponentBase::ClassIndexType Component<T>::CLASS_INDEX = ComponentBase::class_index_counter_++;
 
 using EntityID = int64_t;
 constexpr EntityID ENTITY_ID_INVALID = (EntityID)-1;
@@ -157,9 +156,14 @@ private:
 public:
     EntityID ID() const;
     template <typename T>
-    Component<T> * GetComponent() const
+    T * GetComponent() const
     {
-        return static_cast<Component<T> *>(component_list_[Component<T>::CLASS_INDEX]);
+        auto *component = component_list_[Component<T>::CLASS_INDEX];
+        if (!component)
+        {
+            return nullptr;
+        }
+        return static_cast<Component<T> *>(component)->Get();
     }
     template <typename T>
     bool HasComponent() const
@@ -172,13 +176,13 @@ public:
         return HasComponent<T>() && HasComponent<V, Args...>();
     }
     template <typename T, typename ...Args>
-    Component<T> * AddComponent(Args ...args)
+    T * AddComponent(Args &&...args)
     {
         MZX_CHECK(component_list_[Component<T>::CLASS_INDEX] == nullptr);
         auto *component = new Component<T>(std::forward<Args>(args)...);
         component_list_[Component<T>::CLASS_INDEX] = component;
         entity_manager_.OnAddComponent(this, component);
-        return component->GetPtr();
+        return component->Get();
     }
     template <typename T>
     void RemoveComponent()
@@ -228,7 +232,7 @@ class EntitySystem
     : public EntitySystemBase
 {
 public:
-    const static ClassIndexType CLASS_INDEX = EntitySystemBase::class_index_counter_++;
+    static ClassIndexType CLASS_INDEX;
 public:
     EntitySystem()
     {
@@ -244,6 +248,9 @@ public:
         return CLASS_INDEX;
     }
 };
+
+template <typename T>
+EntitySystemBase::ClassIndexType EntitySystem<T>::CLASS_INDEX = EntitySystemBase::class_index_counter_++;
 
 class EntitySystemManager
 {
@@ -293,9 +300,9 @@ public:
     EntitySystemManager & operator=(const EntitySystemManager &) = delete;
 public:
     template <typename T, typename ...Args>
-    T * AddSystem(Args ...args)
+    T * AddSystem(Args &&...args)
     {
-        MZX_CHECK_STATIC((std::is_base_of<T, int>::value));
+        MZX_CHECK_STATIC((std::is_base_of<EntitySystem<T>, T>::value));
         MZX_CHECK(system_index_[T::CLASS_INDEX] == nullptr);
         auto *system = new T(std::forward<Args>(args)...);
         if (!system->Init())
@@ -305,17 +312,17 @@ public:
         }
         auto *node = new SystemNode(system);
         MZX_LIST_PUSH_BACK(&node->list_link, &system_list_);
-        system_list_[T::CLASS_INDEX] = system;
+        system_index_[T::CLASS_INDEX] = node;
         return system;
     }
     template <typename T>
     void RemoveSystem()
     {
         MZX_CHECK_STATIC((std::is_base_of<EntitySystem<T>, T>::value));
-        auto *node = system_list_[T::CLASS_INDEX];
+        auto *node = system_index_[T::CLASS_INDEX];
         if (node)
         {
-            system_list_[T::CLASS_INDEX] = nullptr;
+            system_index_[T::CLASS_INDEX] = nullptr;
             node->SelfRemove();
         }
     }
@@ -324,7 +331,7 @@ public:
     void Update()
     {
         MZX_CHECK_STATIC((std::is_base_of<EntitySystem<T>, T>::value));
-        auto *node = system_list_[T::CLASS_INDEX];
+        auto *node = system_index_[T::CLASS_INDEX];
         if (node && node->system)
         {
             node->system->Update();
