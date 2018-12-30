@@ -5,21 +5,11 @@
 
 namespace mzx {
 
-using TimeType = int64_t;
-
 class Time
 {
 public:
-    Time();
-    explicit Time(TimeType t);
-    ~Time();
-public:
-    TimeType GetTime() const;
-public:
-    static TimeType Now();
-    static void Sleep(TimeType time);
-private:
-    TimeType time_{ 0 };
+    static int64_t Now();
+    static void Sleep(int64_t time);
 };
 
 }

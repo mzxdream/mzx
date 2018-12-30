@@ -5,16 +5,6 @@
 
 namespace mzx {
 
-Time::Time()
-    : time_(Time::Now())
-{
-}
-
-Time::Time(int64_t t)
-    : time_(t)
-{
-}
-
 int64_t Time::Now()
 {
     struct timeval tv;
@@ -26,7 +16,7 @@ int64_t Time::Now()
 void Time::Sleep(int64_t time)
 {
     MZX_CHECK(time > 0);
-    usleep(static_cast<unsigned int>(time * 1000));
+    usleep(static_cast<unsigned>(time * 1000));
 }
 
 }
