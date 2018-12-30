@@ -72,9 +72,10 @@ public:
     Event(const Event &) = delete;
     Event & operator=(const Event &) = delete;
 public:
-    EventID AddListener(const Listener &listener)
+    EventID AddListener(Listener listener)
     {
         MZX_CHECK_STATIC(sizeof(ListenerNode *) == sizeof(EventID));
+        MZX_CHECK(listener != nullptr);
         auto *node = new ListenerNode(listener);
         MZX_LIST_PUSH_BACK(&node->list_link, &listener_list_);
         return (EventID)node;
@@ -136,7 +137,7 @@ public:
     EventManager(const EventManager &) = delete;
     EventManager & operator=(const EventManager &) = delete;
 public:
-    EventID AddListener(T type, const Listener &listener)
+    EventID AddListener(T type, Listener listener)
     {
         auto iter_event = event_list_.find(type);
         if (iter_event == event_list_.end())
