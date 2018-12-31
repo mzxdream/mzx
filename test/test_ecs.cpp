@@ -69,6 +69,7 @@ private:
         world_.GetEntityManager().ComponentRemoveEvent().AddListener([](mzx::Entity *entity, mzx::ComponentBase *component){
             std::cout << "entity:" << entity->ID() << " remove component" << component->ClassIndex() << std::endl;
         });
+        return true;
     }
     virtual void _Uninit() override
     {
@@ -105,6 +106,7 @@ private:
         world_.GetEventManager().AddListener(1, [this](){
             std::cout << "this is test system2 id:" << ClassIndex() << std::endl;
         });
+        return true;
     }
     virtual void _Uninit() override
     {
@@ -131,7 +133,7 @@ int main(int argc, char *argv[])
 {
     World world;
     world.GetSystemManager().AddSystem<TestSystem>(world);
-    world.GetSystemManager().AddSystem<TestSystem>(world);
+    world.GetSystemManager().AddSystem<TestSystem2>(world);
     auto *e1 = world.GetEntityManager().AddEntity();
     e1->AddComponent<TestComponent>(123);
     auto *e2 = world.GetEntityManager().AddEntity();

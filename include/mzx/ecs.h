@@ -266,6 +266,7 @@ class EntitySystemManager
         ~SystemNode()
         {
             MZX_CHECK(system == nullptr && ref_count == 0);
+            MZX_LIST_REMOVE(&list_link);
         }
         void IncrRef()
         {
