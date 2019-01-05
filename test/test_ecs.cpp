@@ -143,6 +143,10 @@ int main(int argc, char *argv[])
     e3->AddComponent<TestComponent>(456);
     e3->AddComponent<TestComponent2>();
     e3->GetComponent<TestComponent2>()->a = 789;
+    std::cout << "======================" << std::endl;
     world.GetSystemManager().UpdateAll();
+    std::cout << "======================" << std::endl;
+    world.GetSystemManager().Update<TestSystem>();
+    std::cout << "======================" << std::endl;
     return 0;
 }
