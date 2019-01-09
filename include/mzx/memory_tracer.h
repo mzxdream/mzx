@@ -255,7 +255,8 @@ inline void _free(void *memory)
     }
 }
 
-#define new            new(__FILE__, __LINE__)
+#define MZX_NEW        new(__FILE__, __LINE__)
+#define new            MZX_NEW
 #define malloc(s)      _malloc(s, __FILE__, __LINE__)
 #define calloc(n, s)   _calloc(n, s, __FILE__, __LINE__)
 #define realloc(p, s)  _realloc(p, s, __FILE__, __LINE__)

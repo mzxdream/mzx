@@ -1,5 +1,6 @@
 #include <mzx/memory_tracer.h>
 #include <cstdio>
+#include <vector>
 
 static void DumpMemory()
 {
@@ -29,6 +30,7 @@ int main(int argc, char *argv[])
     });
     std::map<int, int *> a;
     a[0] = new int(10);
+    std::vector<int> b;
     DumpMemory();
     return 0;
 }
