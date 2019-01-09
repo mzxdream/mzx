@@ -5,33 +5,32 @@
 
 namespace mzx {
 
-class ListHead final
+class ListNode final
 {
 public:
-    ListHead()
+    ListNode()
     {
         prev_ = this;
         next_ = this;
     }
-    ~ListHead()
+    ~ListNode()
     {
         Unlink();
     }
 public:
-    inline bool Empty() const
+    inline bool IsLinked() const
     {
         return next_ == this;
     }
-    inline ListHead * Prev() const
+    inline ListNode * Prev() const
     {
         return prev_;
     }
-    inline ListHead * Next() const
+    inline ListNode * Next() const
     {
         return next_;
     }
-public:
-    inline void InsertInto(ListHead *prev, ListHead *next)
+    inline void InsertInto(ListNode *prev, ListNode *next)
     {
         MZX_CHECK(prev != nullptr && next != nullptr);
         prev_ = prev;
@@ -39,26 +38,28 @@ public:
         next->prev_ = this;
         prev->next_ = this;
     }
-    inline void PushIntoFront(ListHead *head)
+    inline void PushFront(ListNode *node)
     {
-        MZX_CHECK(head != nullptr);
-        InsertInto(head, head->next_);
+        MZX_CHECK(node != nullptr);
+        node->InsertInto(this, next_);
     }
-    inline void PushIntoBack(ListHead *head)
+    inline void PushBack(ListNode *node)
     {
-        MZX_CHECK(head != nullptr);
-        InsertInto(head->prev_, head);
+        MZX_CHECK(node != nullptr);
+        node->InsertInto(prev_, this);
     }
-    inline void Unlink()
+    inline ListNode * Unlink()
     {
+        auto *next = next_;
         next_->prev_ = prev_;
         prev_->next_ = next_;
         prev_ = this;
         next_ = this;
+        return next;
     }
 private:
-    ListHead *prev_;
-    ListHead *next_;
+    ListNode *prev_{ nullptr };
+    ListNode *next_{ nullptr };
 };
 
 #define MZX_LIST_ENTRY(node, type, member) \
