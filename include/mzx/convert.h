@@ -8,23 +8,15 @@
 namespace mzx {
 
 template <typename Target, typename Source>
-bool ConvertTo(const Source &src, Target *tgt)
+inline bool ConvertTo(const Source &src, Target *tgt)
 {
+    MZX_CHECK(tgt != nullptr);
     std::stringstream ss;
-    Target tmp;
-    if (!(ss << src) || !(ss >> tmp) || !ss.eof())
-    {
-        return false;
-    }
-    if (tgt)
-    {
-        *tgt = tmp;
-    }
-    return true;
+    return (ss << src) && (ss >> tgt) && ss.eof();
 }
 
 template <typename Target, typename Source>
-Target ConvertTo(const Source &src)
+inline Target ConvertTo(const Source &src)
 {
     std::stringstream ss;
     Target tgt;
