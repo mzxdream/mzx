@@ -29,18 +29,16 @@ private:
             , ref_count(1)
         {
             MZX_CHECK(listener != nullptr);
-            MZX_INIT_LIST_HEAD(&list_link);
         }
         ~ListenerNode()
         {
             MZX_CHECK(listener == nullptr && ref_count == 0);
-            MZX_LIST_REMOVE(&list_link);
         }
-        void IncrRef()
+        inline void IncrRef()
         {
             ++ref_count;
         }
-        void DecrRef()
+        inline void DecrRef()
         {
             MZX_CHECK(ref_count > 0);
             if (--ref_count == 0)
@@ -48,7 +46,7 @@ private:
                 delete this;
             }
         }
-        void SelfRemove()
+        inline void SelfRemove()
         {
             if (listener != nullptr)
             {
@@ -58,12 +56,11 @@ private:
         }
         Listener listener;
         int ref_count{ 0 };
-        ListHead list_link;
+        ListNode list_link;
     };
 public:
     Event()
     {
-        MZX_INIT_LIST_HEAD(&listener_list_);
     }
     ~Event()
     {
@@ -77,45 +74,45 @@ public:
         MZX_CHECK_STATIC(sizeof(ListenerNode *) == sizeof(EventID));
         MZX_CHECK(listener != nullptr);
         auto *node = new ListenerNode(listener);
-        MZX_LIST_PUSH_BACK(&node->list_link, &listener_list_);
+        listener_list_.PushBack(&node->list_link);
         return (EventID)node;
     }
     void RemoveListener(EventID id)
     {
-        MZX_LIST_FOREACH(it, &listener_list_)
+        for (auto *node = listener_list_.Next(); node != &listener_list_; node = node->Next())
         {
-            auto *node = MZX_LIST_ENTRY(it, ListenerNode, list_link);
-            if ((EventID)node == id)
+            auto *entry = MZX_LIST_ENTRY(node, ListenerNode, list_link);
+            if ((EventID)entry == id)
             {
-                node->SelfRemove();
+                entry->SelfRemove();
                 break;
             }
         }
     }
     void RemoveAllListener()
     {
-        for (auto it = MZX_LIST_BEGIN(&listener_list_); it != MZX_LIST_END(&listener_list_); it = MZX_LIST_BEGIN(&listener_list_))
+        for (auto *node = listener_list_.Next(); node != &listener_list_; node = listener_list_.Next())
         {
-            auto *node = MZX_LIST_ENTRY(it, ListenerNode, list_link);
-            node->SelfRemove();
+            auto *entry = MZX_LIST_ENTRY(node, ListenerNode, list_link);
+            entry->SelfRemove();
         }
     }
     void Invoke(Args ...args) const
     {
-        for (auto it = MZX_LIST_BEGIN(&listener_list_); it != MZX_LIST_END(&listener_list_);)
+        for (auto *node = listener_list_.Next(); node != &listener_list_; )
         {
-            auto *node = MZX_LIST_ENTRY(it, ListenerNode, list_link);
-            node->IncrRef();
-            if (node->listener)
+            auto *entry = MZX_LIST_ENTRY(node, ListenerNode, list_link);
+            entry->IncrRef();
+            if (entry->listener)
             {
-                (node->listener)(args...);
+                (entry->listener)(args...);
             }
-            it = MZX_LIST_NEXT(it);
-            node->DecrRef();
+            node = node->Next();
+            entry->DecrRef();
         }
     }
 private:
-    ListHead listener_list_;
+    ListNode listener_list_;
 };
 
 template <typename T, typename O>
