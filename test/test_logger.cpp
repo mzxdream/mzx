@@ -16,7 +16,7 @@ int main(int argc, char *argv[])
     std::cout << "==================" << std::endl;
     MZX_WARN("test warn:", "tt", 123, "44");
     std::cout << "==================" << std::endl;
-    MZX_FATAL("test fatal");
+    //MZX_FATAL("test fatal");
     MZX_CHECK(a != 2, "ffdfdfdfdfdf");
     std::cout << "==================" << std::endl;
 }
