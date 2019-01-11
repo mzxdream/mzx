@@ -30,7 +30,7 @@ public:
     static void SetFatalHandler(FatalHandler handler);
 public:
     template <typename ...Args>
-    static void Print(Level level, const char *file_name, int line, const char *func_name, Args && ...args)
+    static void Print(Level level, const char *file_name, int line, const char *func_name, Args &&...args)
     {
         if (level >= level_ && print_handler_)
         {
@@ -45,7 +45,7 @@ public:
     }
 private:
     template <typename T, typename ...Args>
-    static void ReadArgs(std::ostringstream &stream, T &&arg, Args && ...args)
+    static void ReadArgs(std::ostringstream &stream, T &&arg, Args &&...args)
     {
         stream << std::forward<T>(arg);
         ReadArgs(stream, std::forward<Args>(args)...);

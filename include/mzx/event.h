@@ -34,11 +34,11 @@ private:
         {
             MZX_CHECK(listener == nullptr && ref_count == 0);
         }
-        inline void IncrRef()
+        void IncrRef()
         {
             ++ref_count;
         }
-        inline void DecrRef()
+        void DecrRef()
         {
             MZX_CHECK(ref_count > 0);
             if (--ref_count == 0)
@@ -46,7 +46,7 @@ private:
                 delete this;
             }
         }
-        inline void SelfRemove()
+        void SelfRemove()
         {
             if (listener != nullptr)
             {
