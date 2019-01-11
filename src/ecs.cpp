@@ -19,7 +19,6 @@ ComponentBase::ClassIndexType ComponentBase::ClassIndexCount()
 
 EntityManager::EntityManager()
 {
-    MZX_INIT_LIST_HEAD(&entity_list_);
 }
 
 EntityManager::~EntityManager()
@@ -43,7 +42,7 @@ Entity * EntityManager::AddEntity()
     auto *entity = new Entity(*this);
     entity->SetID((EntityID)entity);
     auto *node = new EntityNode(entity);
-    MZX_LIST_PUSH_BACK(&node->list_link, &entity_list_);
+    entity_list_.PushBack(&node->list_link);
     entities_[entity->ID()] = node;
     node->IncrRef();
     entity_add_event_.Invoke(node->entity);
@@ -72,44 +71,39 @@ void EntityManager::RemoveEntity(EntityID id)
 
 void EntityManager::RemoveAllEntity()
 {
-    for (auto iter = MZX_LIST_BEGIN(&entity_list_); iter != MZX_LIST_END(&entity_list_);)
+    for (auto *node = entity_list_.Next(); node != &entity_list_; node = entity_list_.Next())
     {
-        auto *node = MZX_LIST_ENTRY(iter, EntityNode, list_link);
-        if (!node->entity)
+        auto *entry = MZX_LIST_ENTRY(node, EntityNode, list_link);
+        auto *entity = entry->DetachEntity();
+        if (entity)
         {
-            iter = MZX_LIST_NEXT(iter);
-            continue;
+            entities_.erase(entity->ID());
+            entity->RemoveAllComponent();
+            entity_remove_event_.Invoke(entity);
+            delete entity;
         }
-        node->IncrRef();
-        auto *entity = node->DetachEntity();
-        entities_.erase(entity->ID());
-        entity->RemoveAllComponent();
-        entity_remove_event_.Invoke(entity);
-        delete entity;
-        iter = MZX_LIST_NEXT(iter);
-        node->DecrRef();
     }
 }
 
 void EntityManager::ForeachEntity(std::function<bool (Entity *)> cb)
 {
     MZX_CHECK(cb != nullptr);
-    for (auto iter = MZX_LIST_BEGIN(&entity_list_); iter != MZX_LIST_END(&entity_list_);)
+    for (auto *node = entity_list_.Next(); node != &entity_list_; )
     {
-        auto *node = MZX_LIST_ENTRY(iter, EntityNode, list_link);
-        if (!node->entity)
+        auto *entry = MZX_LIST_ENTRY(node, EntityNode, list_link);
+        if (!entry->entity)
         {
-            iter = MZX_LIST_NEXT(iter);
+            node = node->Next();
             continue;
         }
-        node->IncrRef();
-        if (!cb(node->entity))
+        entry->IncrRef();
+        if (!cb(entry->entity))
         {
-            node->DecrRef();
+            entry->DecrRef();
             return;
         }
-        iter = MZX_LIST_NEXT(iter);
-        node->DecrRef();
+        node = node->Next();
+        entry->DecrRef();
     }
 }
 
@@ -245,9 +239,8 @@ EntitySystemBase::ClassIndexType EntitySystemBase::ClassIndexCount()
 }
 
 EntitySystemManager::EntitySystemManager()
-    : system_index_(EntitySystemBase::ClassIndexCount())
+    : systems_(EntitySystemBase::ClassIndexCount())
 {
-    MZX_INIT_LIST_HEAD(&system_list_);
 }
 
 EntitySystemManager::~EntitySystemManager()
@@ -257,26 +250,29 @@ EntitySystemManager::~EntitySystemManager()
 
 void EntitySystemManager::RemoveAllSystem()
 {
-    for (auto it = MZX_LIST_BEGIN(&system_list_); it != MZX_LIST_END(&system_list_); it = MZX_LIST_BEGIN(&system_list_))
+    for (auto *node = system_list_.Next(); node != &system_list_; node = system_list_.Next())
     {
-        auto *node = MZX_LIST_ENTRY(it, SystemNode, list_link);
-        node->SelfRemove();
+        auto *entry = MZX_LIST_ENTRY(node, SystemNode, list_link);
+        if (entry->system)
+        {
+            systems_[entry->system->ClassIndex()] = nullptr;
+        }
+        entry->SelfRemove();
     }
 }
 
 void EntitySystemManager::UpdateAll()
 {
-    auto it = MZX_LIST_BEGIN(&system_list_);
-    while (it != MZX_LIST_END(&system_list_))
+    for (auto *node = system_list_.Next(); node != &system_list_; )
     {
-        auto *node = MZX_LIST_ENTRY(it, SystemNode, list_link);
-        node->IncrRef();
-        if (node->system)
+        auto *entry = MZX_LIST_ENTRY(node, SystemNode, list_link);
+        entry->IncrRef();
+        if (entry->system)
         {
-            node->system->Update();
+            entry->system->Update();
         }
-        it = MZX_LIST_NEXT(it);
-        node->DecrRef();
+        node = node->Next();
+        entry->DecrRef();
     }
 }
 

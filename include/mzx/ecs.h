@@ -26,7 +26,7 @@ protected:
     ComponentBase & operator=(const ComponentBase &) = delete;
     virtual ~ComponentBase() = 0;
 public:
-    virtual ClassIndexType ClassIndex() = 0;
+    virtual ClassIndexType ClassIndex() const = 0;
     static ClassIndexType ClassIndexCount();
 protected:
     static ClassIndexType class_index_counter_;
@@ -38,7 +38,7 @@ class Component
 {
     friend Entity;
 public:
-    static ClassIndexType CLASS_INDEX;
+    const static ClassIndexType CLASS_INDEX;
 protected:
     template <typename ...Args>
     explicit Component(Args &&...args)
@@ -55,7 +55,11 @@ public:
     {
         return &raw_data_;
     }
-    virtual ClassIndexType ClassIndex() override
+    const T * Get() const
+    {
+        return &raw_data_;
+    }
+    virtual ClassIndexType ClassIndex() const override
     {
         return CLASS_INDEX;
     }
@@ -64,7 +68,7 @@ private:
 };
 
 template <typename T>
-ComponentBase::ClassIndexType Component<T>::CLASS_INDEX = ComponentBase::class_index_counter_++;
+const ComponentBase::ClassIndexType Component<T>::CLASS_INDEX = ComponentBase::class_index_counter_++;
 
 using EntityID = int64_t;
 constexpr EntityID ENTITY_ID_INVALID = (EntityID)-1;
@@ -79,7 +83,6 @@ class EntityManager
             , ref_count(1)
         {
             MZX_CHECK(e != nullptr);
-            MZX_INIT_LIST_HEAD(&list_link);
         }
         ~EntityNode()
         {
@@ -101,16 +104,16 @@ class EntityManager
         {
             if (entity != nullptr)
             {
-                Entity *ret_entity = entity;
+                auto *ret = entity;
                 entity = nullptr;
                 DecrRef();
-                return ret_entity;
+                return ret;
             }
             return nullptr;
         }
         Entity *entity{ nullptr };
         int ref_count{ 0 };
-        ListHead list_link;
+        ListNode list_link;
     };
 public:
     using ComponentChangedEvent = Event<void (Entity *, ComponentBase *)>;
@@ -140,7 +143,7 @@ private:
     EntityChangedEvent entity_add_event_;
     EntityChangedEvent entity_remove_event_;
     std::unordered_map<EntityID, EntityNode *> entities_;
-    ListHead entity_list_;
+    ListNode entity_list_;
 };
 
 class Entity
@@ -222,7 +225,7 @@ private:
     virtual void _Update();
 public:
     static ClassIndexType ClassIndexCount();
-    virtual ClassIndexType ClassIndex() = 0;
+    virtual ClassIndexType ClassIndex() const = 0;
 protected:
     static ClassIndexType class_index_counter_;
 };
@@ -232,7 +235,7 @@ class EntitySystem
     : public EntitySystemBase
 {
 public:
-    static ClassIndexType CLASS_INDEX;
+    const static ClassIndexType CLASS_INDEX;
 public:
     EntitySystem()
     {
@@ -243,14 +246,14 @@ public:
     EntitySystem(const EntitySystem &) = delete;
     EntitySystem & operator=(const EntitySystem &) = delete;
 public:
-    virtual ClassIndexType ClassIndex() override
+    virtual ClassIndexType ClassIndex() const override
     {
         return CLASS_INDEX;
     }
 };
 
 template <typename T>
-EntitySystemBase::ClassIndexType EntitySystem<T>::CLASS_INDEX = EntitySystemBase::class_index_counter_++;
+const EntitySystemBase::ClassIndexType EntitySystem<T>::CLASS_INDEX = EntitySystemBase::class_index_counter_++;
 
 class EntitySystemManager
 {
@@ -261,12 +264,10 @@ class EntitySystemManager
             , ref_count(1)
         {
             MZX_CHECK(sys != nullptr);
-            MZX_INIT_LIST_HEAD(&list_link);
         }
         ~SystemNode()
         {
             MZX_CHECK(system == nullptr && ref_count == 0);
-            MZX_LIST_REMOVE(&list_link);
         }
         void IncrRef()
         {
@@ -292,7 +293,7 @@ class EntitySystemManager
         }
         EntitySystemBase *system{ nullptr };
         int ref_count{ 0 };
-        ListHead list_link;
+        ListNode list_link;
     };
 public:
     EntitySystemManager();
@@ -304,7 +305,7 @@ public:
     T * AddSystem(Args &&...args)
     {
         MZX_CHECK_STATIC((std::is_base_of<EntitySystem<T>, T>::value));
-        MZX_CHECK(system_index_[T::CLASS_INDEX] == nullptr);
+        MZX_CHECK(systems_[T::CLASS_INDEX] == nullptr);
         auto *system = new T(std::forward<Args>(args)...);
         if (!system->Init())
         {
@@ -312,18 +313,18 @@ public:
             return nullptr;
         }
         auto *node = new SystemNode(system);
-        MZX_LIST_PUSH_BACK(&node->list_link, &system_list_);
-        system_index_[T::CLASS_INDEX] = node;
+        system_list_.PushBack(&node->list_link);
+        systems_[T::CLASS_INDEX] = node;
         return system;
     }
     template <typename T>
     void RemoveSystem()
     {
         MZX_CHECK_STATIC((std::is_base_of<EntitySystem<T>, T>::value));
-        auto *node = system_index_[T::CLASS_INDEX];
+        auto *node = systems_[T::CLASS_INDEX];
         if (node)
         {
-            system_index_[T::CLASS_INDEX] = nullptr;
+            systems_[T::CLASS_INDEX] = nullptr;
             node->SelfRemove();
         }
     }
@@ -332,7 +333,7 @@ public:
     void Update()
     {
         MZX_CHECK_STATIC((std::is_base_of<EntitySystem<T>, T>::value));
-        auto *node = system_index_[T::CLASS_INDEX];
+        auto *node = systems_[T::CLASS_INDEX];
         if (node && node->system)
         {
             node->system->Update();
@@ -340,8 +341,8 @@ public:
     }
     void UpdateAll();
 private:
-    ListHead system_list_;
-    std::vector<SystemNode *> system_index_;
+    ListNode system_list_;
+    std::vector<SystemNode *> systems_;
 };
 
 }
