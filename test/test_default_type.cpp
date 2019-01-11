@@ -31,9 +31,10 @@ int main(int argc, char *argv[])
     Test t;
     t.test_list[1] = Test1(1);
     t.test_list[3] = Test1(3);
-    for (int i = 1; i <= 3; ++i)
+    for (int i = 1; i <= 5; ++i)
     {
-        std::cout << t.GetValue(i).a << ",";
+        auto &tmp = t.GetValue(i).a;
+        std::cout << tmp << " address:" << &tmp << std::endl;
     }
     std::cout << std::endl;
     return 0;
