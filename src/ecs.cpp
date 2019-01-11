@@ -71,17 +71,22 @@ void EntityManager::RemoveEntity(EntityID id)
 
 void EntityManager::RemoveAllEntity()
 {
-    for (auto *node = entity_list_.Next(); node != &entity_list_; node = entity_list_.Next())
+    for (auto *node = entity_list_.Next(); node != &entity_list_; )
     {
         auto *entry = MZX_LIST_ENTRY(node, EntityNode, list_link);
-        auto *entity = entry->DetachEntity();
-        if (entity)
+        if (!entry->entity)
         {
-            entities_.erase(entity->ID());
-            entity->RemoveAllComponent();
-            entity_remove_event_.Invoke(entity);
-            delete entity;
+            node = node->Next();
+            continue;
         }
+        entry->IncrRef();
+        auto *entity = entry->DetachEntity();
+        entities_.erase(entity->ID());
+        entity->RemoveAllComponent();
+        entity_remove_event_.Invoke(entity);
+        delete entity;
+        node = node->Next();
+        entry->DecrRef();
     }
 }
 
@@ -250,14 +255,19 @@ EntitySystemManager::~EntitySystemManager()
 
 void EntitySystemManager::RemoveAllSystem()
 {
-    for (auto *node = system_list_.Next(); node != &system_list_; node = system_list_.Next())
+    for (auto *node = system_list_.Next(); node != &system_list_; )
     {
         auto *entry = MZX_LIST_ENTRY(node, SystemNode, list_link);
-        if (entry->system)
+        if (!entry->system)
         {
-            systems_[entry->system->ClassIndex()] = nullptr;
+            node = node->Next();
+            continue;
         }
+        entry->IncrRef();
+        systems_[entry->system->ClassIndex()] = nullptr;
         entry->SelfRemove();
+        node = node->Next();
+        entry->DecrRef();
     }
 }
 
