@@ -13,7 +13,27 @@ void BuddleSort(RandIt begin, RandIt end, Compare comp)
     MZX_CHECK_STATIC((std::is_same<std::random_access_iterator_tag
             , typename std::iterator_traits<RandIt>::iterator_category>::value));
     MZX_CHECK(end > begin);
-    std::sort(begin, end, comp);
+    auto len = end - begin;
+    auto sort_len = len - 1;
+    int count = 0;
+    for (decltype(len) i = 0; i < len - 1; ++i)
+    {
+        auto cur_len = sort_len;
+        for (decltype(len) j = 0; j < cur_len; ++j)
+        {
+            ++count;
+            if (!comp(*(begin + j), *(begin + j + 1)))
+            {
+                std::iter_swap(begin + j, begin + j + 1);
+                sort_len = j;
+            }
+        }
+        if (sort_len == 0)
+        {
+            break;
+        }
+    }
+    MZX_WARN("===============:", count);
 }
 
 template <typename RandIt>
