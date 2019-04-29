@@ -14,26 +14,24 @@ void BuddleSort(RandIt begin, RandIt end, Compare comp)
             , typename std::iterator_traits<RandIt>::iterator_category>::value));
     MZX_CHECK(end > begin);
     auto len = end - begin;
-    auto sort_len = len - 1;
-    int count = 0;
+    auto iter_flag = begin;
     for (decltype(len) i = 0; i < len - 1; ++i)
     {
-        auto cur_len = sort_len;
-        for (decltype(len) j = 0; j < cur_len; ++j)
+        auto iter_tmp = end - 1;
+        for (auto iter = end - 1; iter != iter_flag; --iter)
         {
-            ++count;
-            if (!comp(*(begin + j), *(begin + j + 1)))
+            if (comp(*iter, *(iter - 1)))
             {
-                std::iter_swap(begin + j, begin + j + 1);
-                sort_len = j;
+                std::iter_swap(iter, iter - 1);
+                iter_tmp = iter;
             }
         }
-        if (sort_len == 0)
+        if (iter_tmp == end - 1)
         {
             break;
         }
+        iter_flag = iter_tmp;
     }
-    MZX_WARN("===============:", count);
 }
 
 template <typename RandIt>

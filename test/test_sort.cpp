@@ -21,7 +21,7 @@ int main(int argc, char *argv[])
         std::cout << num << ",";
     }
     std::cout << std::endl;
-    std::array<int, 10> test1;
+    std::array<int, 10> test1{};
     mzx::BuddleSort(test1.begin(), test1.end());
     std::list<int> test2;
 //    mzx::BuddleSort(test2.begin(), test2.end());
