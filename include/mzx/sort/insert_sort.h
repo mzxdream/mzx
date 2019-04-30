@@ -13,14 +13,17 @@ void InsertSort(RandIt begin, RandIt end, Compare comp)
     MZX_CHECK(end > begin);
     for (auto iter = begin + 1; iter != end; ++iter)
     {
-        for (auto iter_check = iter; iter_check != begin; --iter_check)
+        auto tmp = std::move(*iter);
+        auto iter_insert = iter;
+        for (; iter_insert != begin; --iter_insert)
         {
-            if (!comp(*iter_check, *(iter_check - 1)))
+            if (!comp(tmp, *(iter_insert - 1)))
             {
                 break;
             }
-            std::iter_swap(iter_check, iter_check - 1);
+            *iter_insert = std::move(*(iter_insert - 1));
         }
+        *iter_insert = std::move(tmp);
     }
 }
 
