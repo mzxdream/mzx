@@ -7,6 +7,7 @@
 #include <mzx/algorithm/sort/select_sort.h>
 #include <mzx/algorithm/sort/insert_sort.h>
 #include <mzx/algorithm/sort/shell_sort.h>
+#include <mzx/algorithm/sort/merge_sort.h>
 
 void PrintInfo(const std::vector<int> &sort_list)
 {
@@ -35,5 +36,6 @@ int main(int argc, char *argv[])
     TEST_SORT(InsertSort);
     TEST_SORT(SelectSort);
     TEST_SORT(ShellSort);
+    TEST_SORT(MergeSort);
     return 0;
 }
