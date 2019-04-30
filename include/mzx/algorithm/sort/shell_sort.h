@@ -13,13 +13,13 @@ void ShellSort(RandIt begin, RandIt end, Compare comp)
     MZX_CHECK(end > begin);
     for (auto gap = (end - begin) / 2; gap > 0; gap >>= 1)
     {
-        for (auto iter = begin + gap; iter < end; iter += gap)
+        for (auto iter = begin + gap; iter != end; ++iter)
         {
             auto tmp = std::move(*iter);
             auto iter_insert = iter;
-            for (; iter_insert > begin; iter_insert -= gap)
+            for (; iter_insert >= begin + gap; iter_insert -= gap)
             {
-                if (!comp(*iter_insert, *(iter_insert - gap)))
+                if (!comp(tmp, *(iter_insert - gap)))
                 {
                     break;
                 }
