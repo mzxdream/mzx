@@ -27,6 +27,12 @@ void InsertSort(RandIt begin, RandIt end, Compare comp)
     }
 }
 
+template <typename RandIt>
+void InsertSort(RandIt begin, RandIt end)
+{
+    InsertSort(begin, end, std::less<decltype(*begin)>());
+}
+
 }
 
 #endif

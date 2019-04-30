@@ -13,13 +13,15 @@ void SelectSort(RandIt begin, RandIt end, Compare comp)
     MZX_CHECK(end > begin);
     for (auto iter = begin; iter != end - 1; ++iter)
     {
-        for (auto iter_sel = iter + 1; iter_sel != end; ++iter_sel)
+        auto iter_sel = iter;
+        for (auto iter_tmp = iter + 1; iter_tmp != end; ++iter_tmp)
         {
-            if (comp(*iter_sel, *iter))
+            if (comp(*iter_tmp, *iter_sel))
             {
-                std::iter_swap(iter_sel, iter);
+                iter_sel = iter_tmp;
             }
         }
+        std::iter_swap(iter, iter_sel);
     }
 }
 
