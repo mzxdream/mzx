@@ -8,6 +8,7 @@
 #include <mzx/algorithm/sort/insert_sort.h>
 #include <mzx/algorithm/sort/shell_sort.h>
 #include <mzx/algorithm/sort/merge_sort.h>
+#include <mzx/algorithm/sort/quick_sort.h>
 
 void PrintInfo(const std::vector<int> &sort_list)
 {
@@ -31,11 +32,17 @@ void PrintInfo(const std::vector<int> &sort_list)
 int main(int argc, char *argv[])
 {
     std::srand(time(0));
-    std::vector<int> test{-1, 1, 3, 5, 6, 4, 4, 10, -2};
+    std::vector<int> test;
+    int len = std::rand() % 6 + 5;
+    for (int i = 0; i < len; ++i)
+    {
+        test.emplace_back(std::rand() % 20);
+    }
     TEST_SORT(BuddleSort);
     TEST_SORT(InsertSort);
     TEST_SORT(SelectSort);
     TEST_SORT(ShellSort);
     TEST_SORT(MergeSort);
+    TEST_SORT(QuickSort);
     return 0;
 }
