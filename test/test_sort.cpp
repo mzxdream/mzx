@@ -12,7 +12,8 @@
 #include <mzx/algorithm/sort/heap_sort.h>
 #include <mzx/algorithm/sort/count_sort.h>
 
-void PrintInfo(const std::vector<int> &sort_list)
+template <typename T>
+void PrintInfo(const T &sort_list)
 {
     std::cout << "[";
     for (auto &num : sort_list)
