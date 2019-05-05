@@ -10,6 +10,7 @@
 #include <mzx/algorithm/sort/merge_sort.h>
 #include <mzx/algorithm/sort/quick_sort.h>
 #include <mzx/algorithm/sort/heap_sort.h>
+#include <mzx/algorithm/sort/count_sort.h>
 
 void PrintInfo(const std::vector<int> &sort_list)
 {
@@ -46,5 +47,6 @@ int main(int argc, char *argv[])
     TEST_SORT(MergeSort);
     TEST_SORT(QuickSort);
     TEST_SORT(HeapSort);
+    TEST_SORT(CountSort);
     return 0;
 }
