@@ -55,8 +55,8 @@
         MZX_HAS_COMMA(__VA_ARGS__), \
         MZX_HAS_COMMA(MZX_COMMA __VA_ARGS__ ()), \
         MZX_ARG_N_HELPER(__VA_ARGS__, MZX_RSEQ_N()))
-#define MZX_VA_SIZE_HELPER1(a, b, N) MZX_VA_SIZE_HELPER2(a, b, N) 
-#define MZX_VA_SIZE_HELPER2(a, b, N) MZX_VA_SIZE_HELPER3_ ## a ## b(N) 
+#define MZX_VA_SIZE_HELPER1(x, y, N) MZX_VA_SIZE_HELPER2(x, y, N)
+#define MZX_VA_SIZE_HELPER2(x, y, N) MZX_VA_SIZE_HELPER3_ ## x ## y(N)
 #define MZX_VA_SIZE_HELPER3_01(N) 0 
 #define MZX_VA_SIZE_HELPER3_00(N) 1 
 #define MZX_VA_SIZE_HELPER3_11(N) N
