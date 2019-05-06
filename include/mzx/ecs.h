@@ -304,7 +304,7 @@ public:
     template <typename T, typename ...Args>
     T * AddSystem(Args &&...args)
     {
-        MZX_CHECK_STATIC((std::is_base_of<EntitySystem<T>, T>::value));
+        MZX_CHECK_STATIC(std::is_base_of<EntitySystem<T>, T>::value);
         MZX_CHECK(systems_[T::CLASS_INDEX] == nullptr);
         auto *system = new T(std::forward<Args>(args)...);
         if (!system->Init())
@@ -320,7 +320,7 @@ public:
     template <typename T>
     void RemoveSystem()
     {
-        MZX_CHECK_STATIC((std::is_base_of<EntitySystem<T>, T>::value));
+        MZX_CHECK_STATIC(std::is_base_of<EntitySystem<T>, T>::value);
         auto *node = systems_[T::CLASS_INDEX];
         if (node)
         {
@@ -332,7 +332,7 @@ public:
     template <typename T>
     void Update()
     {
-        MZX_CHECK_STATIC((std::is_base_of<EntitySystem<T>, T>::value));
+        MZX_CHECK_STATIC(std::is_base_of<EntitySystem<T>, T>::value);
         auto *node = systems_[T::CLASS_INDEX];
         if (node && node->system)
         {
