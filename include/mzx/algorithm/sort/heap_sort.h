@@ -29,8 +29,8 @@ void __AdjustHeap(RandIt begin, RandIt end, Index idx, Compare comp)
 template <typename RandIt, typename Compare>
 void HeapSort(RandIt begin, RandIt end, Compare comp)
 {
-    MZX_CHECK_STATIC((std::is_same<std::random_access_iterator_tag
-            , typename std::iterator_traits<RandIt>::iterator_category>::value));
+    MZX_CHECK_STATIC(std::is_same<std::random_access_iterator_tag
+            , typename std::iterator_traits<RandIt>::iterator_category>::value);
     MZX_CHECK(end > begin);
     auto len = end - begin;
     for (auto i = (len - 1) >> 1; i >= 0; --i)

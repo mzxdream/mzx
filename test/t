@@ -1,0 +1,136 @@
+In file included from ../include/mzx/logger.h:6:0,
+                 from ../include/mzx/algorithm/sort/buddle_sort.h:4,
+                 from test_sort.cpp:6:
+../include/mzx/algorithm/sort/insert_sort.h: In instantiation of ‘void mzx::InsertSort(RandIt, RandIt, Compare) [with RandIt = __gnu_cxx::__normal_iterator<int*, std::vector<int> >; Compare = std::less<int&>]’:
+../include/mzx/algorithm/sort/insert_sort.h:33:15:   required from ‘void mzx::InsertSort(RandIt, RandIt) [with RandIt = __gnu_cxx::__normal_iterator<int*, std::vector<int> >]’
+test_sort.cpp:45:5:   required from here
+../include/mzx/macro_util.h:49:76: error: ‘MZX_CHECK_STATIC_0’ was not declared in this scope
+ #define MZX_VA_SELECT(NAME, ...) MZX_CAT(NAME##_, MZX_VA_SIZE(__VA_ARGS__))(__VA_ARGS__)
+../include/mzx/logger.h:87:31: note: in expansion of macro ‘MZX_VA_SELECT’
+ #define MZX_CHECK_STATIC(...) MZX_VA_SELECT(MZX_CHECK_STATIC, __VA_ARGS__)
+                               ^~~~~~~~~~~~~
+../include/mzx/algorithm/sort/insert_sort.h:11:5: note: in expansion of macro ‘MZX_CHECK_STATIC’
+     MZX_CHECK_STATIC((std::is_same<std::random_access_iterator_tag
+     ^~~~~~~~~~~~~~~~
+../include/mzx/macro_util.h:49:76: note: suggested alternative: ‘MZX_CHECK_STATIC_2’
+ #define MZX_VA_SELECT(NAME, ...) MZX_CAT(NAME##_, MZX_VA_SIZE(__VA_ARGS__))(__VA_ARGS__)
+../include/mzx/logger.h:87:31: note: in expansion of macro ‘MZX_VA_SELECT’
+ #define MZX_CHECK_STATIC(...) MZX_VA_SELECT(MZX_CHECK_STATIC, __VA_ARGS__)
+                               ^~~~~~~~~~~~~
+../include/mzx/algorithm/sort/insert_sort.h:11:5: note: in expansion of macro ‘MZX_CHECK_STATIC’
+     MZX_CHECK_STATIC((std::is_same<std::random_access_iterator_tag
+     ^~~~~~~~~~~~~~~~
+../include/mzx/algorithm/sort/select_sort.h: In instantiation of ‘void mzx::SelectSort(RandIt, RandIt, Compare) [with RandIt = __gnu_cxx::__normal_iterator<int*, std::vector<int> >; Compare = std::less<int&>]’:
+../include/mzx/algorithm/sort/select_sort.h:31:15:   required from ‘void mzx::SelectSort(RandIt, RandIt) [with RandIt = __gnu_cxx::__normal_iterator<int*, std::vector<int> >]’
+test_sort.cpp:46:5:   required from here
+../include/mzx/macro_util.h:49:76: error: ‘MZX_CHECK_STATIC_0’ was not declared in this scope
+ #define MZX_VA_SELECT(NAME, ...) MZX_CAT(NAME##_, MZX_VA_SIZE(__VA_ARGS__))(__VA_ARGS__)
+../include/mzx/logger.h:87:31: note: in expansion of macro ‘MZX_VA_SELECT’
+ #define MZX_CHECK_STATIC(...) MZX_VA_SELECT(MZX_CHECK_STATIC, __VA_ARGS__)
+                               ^~~~~~~~~~~~~
+../include/mzx/algorithm/sort/select_sort.h:11:5: note: in expansion of macro ‘MZX_CHECK_STATIC’
+     MZX_CHECK_STATIC((std::is_same<std::random_access_iterator_tag
+     ^~~~~~~~~~~~~~~~
+../include/mzx/macro_util.h:49:76: note: suggested alternative: ‘MZX_CHECK_STATIC_2’
+ #define MZX_VA_SELECT(NAME, ...) MZX_CAT(NAME##_, MZX_VA_SIZE(__VA_ARGS__))(__VA_ARGS__)
+../include/mzx/logger.h:87:31: note: in expansion of macro ‘MZX_VA_SELECT’
+ #define MZX_CHECK_STATIC(...) MZX_VA_SELECT(MZX_CHECK_STATIC, __VA_ARGS__)
+                               ^~~~~~~~~~~~~
+../include/mzx/algorithm/sort/select_sort.h:11:5: note: in expansion of macro ‘MZX_CHECK_STATIC’
+     MZX_CHECK_STATIC((std::is_same<std::random_access_iterator_tag
+     ^~~~~~~~~~~~~~~~
+../include/mzx/algorithm/sort/shell_sort.h: In instantiation of ‘void mzx::ShellSort(RandIt, RandIt, Compare) [with RandIt = __gnu_cxx::__normal_iterator<int*, std::vector<int> >; Compare = std::less<int&>]’:
+../include/mzx/algorithm/sort/shell_sort.h:36:14:   required from ‘void mzx::ShellSort(RandIt, RandIt) [with RandIt = __gnu_cxx::__normal_iterator<int*, std::vector<int> >]’
+test_sort.cpp:47:5:   required from here
+../include/mzx/macro_util.h:49:76: error: ‘MZX_CHECK_STATIC_0’ was not declared in this scope
+ #define MZX_VA_SELECT(NAME, ...) MZX_CAT(NAME##_, MZX_VA_SIZE(__VA_ARGS__))(__VA_ARGS__)
+../include/mzx/logger.h:87:31: note: in expansion of macro ‘MZX_VA_SELECT’
+ #define MZX_CHECK_STATIC(...) MZX_VA_SELECT(MZX_CHECK_STATIC, __VA_ARGS__)
+                               ^~~~~~~~~~~~~
+../include/mzx/algorithm/sort/shell_sort.h:11:5: note: in expansion of macro ‘MZX_CHECK_STATIC’
+     MZX_CHECK_STATIC((std::is_same<std::random_access_iterator_tag
+     ^~~~~~~~~~~~~~~~
+../include/mzx/macro_util.h:49:76: note: suggested alternative: ‘MZX_CHECK_STATIC_2’
+ #define MZX_VA_SELECT(NAME, ...) MZX_CAT(NAME##_, MZX_VA_SIZE(__VA_ARGS__))(__VA_ARGS__)
+../include/mzx/logger.h:87:31: note: in expansion of macro ‘MZX_VA_SELECT’
+ #define MZX_CHECK_STATIC(...) MZX_VA_SELECT(MZX_CHECK_STATIC, __VA_ARGS__)
+                               ^~~~~~~~~~~~~
+../include/mzx/algorithm/sort/shell_sort.h:11:5: note: in expansion of macro ‘MZX_CHECK_STATIC’
+     MZX_CHECK_STATIC((std::is_same<std::random_access_iterator_tag
+     ^~~~~~~~~~~~~~~~
+../include/mzx/algorithm/sort/merge_sort.h: In instantiation of ‘void mzx::MergeSort(RandIt, RandIt, Compare) [with RandIt = __gnu_cxx::__normal_iterator<int*, std::vector<int> >; Compare = std::less<int&>]’:
+../include/mzx/algorithm/sort/merge_sort.h:56:14:   required from ‘void mzx::MergeSort(RandIt, RandIt) [with RandIt = __gnu_cxx::__normal_iterator<int*, std::vector<int> >]’
+test_sort.cpp:48:5:   required from here
+../include/mzx/macro_util.h:49:76: error: ‘MZX_CHECK_STATIC_0’ was not declared in this scope
+ #define MZX_VA_SELECT(NAME, ...) MZX_CAT(NAME##_, MZX_VA_SIZE(__VA_ARGS__))(__VA_ARGS__)
+../include/mzx/logger.h:87:31: note: in expansion of macro ‘MZX_VA_SELECT’
+ #define MZX_CHECK_STATIC(...) MZX_VA_SELECT(MZX_CHECK_STATIC, __VA_ARGS__)
+                               ^~~~~~~~~~~~~
+../include/mzx/algorithm/sort/merge_sort.h:46:5: note: in expansion of macro ‘MZX_CHECK_STATIC’
+     MZX_CHECK_STATIC((std::is_same<std::random_access_iterator_tag
+     ^~~~~~~~~~~~~~~~
+../include/mzx/macro_util.h:49:76: note: suggested alternative: ‘MZX_CHECK_STATIC_2’
+ #define MZX_VA_SELECT(NAME, ...) MZX_CAT(NAME##_, MZX_VA_SIZE(__VA_ARGS__))(__VA_ARGS__)
+../include/mzx/logger.h:87:31: note: in expansion of macro ‘MZX_VA_SELECT’
+ #define MZX_CHECK_STATIC(...) MZX_VA_SELECT(MZX_CHECK_STATIC, __VA_ARGS__)
+                               ^~~~~~~~~~~~~
+../include/mzx/algorithm/sort/merge_sort.h:46:5: note: in expansion of macro ‘MZX_CHECK_STATIC’
+     MZX_CHECK_STATIC((std::is_same<std::random_access_iterator_tag
+     ^~~~~~~~~~~~~~~~
+../include/mzx/algorithm/sort/quick_sort.h: In instantiation of ‘void mzx::QuickSort(RandIt, RandIt, Compare) [with RandIt = __gnu_cxx::__normal_iterator<int*, std::vector<int> >; Compare = std::less<int&>]’:
+../include/mzx/algorithm/sort/quick_sort.h:54:14:   required from ‘void mzx::QuickSort(RandIt, RandIt) [with RandIt = __gnu_cxx::__normal_iterator<int*, std::vector<int> >]’
+test_sort.cpp:49:5:   required from here
+../include/mzx/macro_util.h:49:76: error: ‘MZX_CHECK_STATIC_0’ was not declared in this scope
+ #define MZX_VA_SELECT(NAME, ...) MZX_CAT(NAME##_, MZX_VA_SIZE(__VA_ARGS__))(__VA_ARGS__)
+../include/mzx/logger.h:87:31: note: in expansion of macro ‘MZX_VA_SELECT’
+ #define MZX_CHECK_STATIC(...) MZX_VA_SELECT(MZX_CHECK_STATIC, __VA_ARGS__)
+                               ^~~~~~~~~~~~~
+../include/mzx/algorithm/sort/quick_sort.h:45:5: note: in expansion of macro ‘MZX_CHECK_STATIC’
+     MZX_CHECK_STATIC((std::is_same<std::random_access_iterator_tag
+     ^~~~~~~~~~~~~~~~
+../include/mzx/macro_util.h:49:76: note: suggested alternative: ‘MZX_CHECK_STATIC_2’
+ #define MZX_VA_SELECT(NAME, ...) MZX_CAT(NAME##_, MZX_VA_SIZE(__VA_ARGS__))(__VA_ARGS__)
+../include/mzx/logger.h:87:31: note: in expansion of macro ‘MZX_VA_SELECT’
+ #define MZX_CHECK_STATIC(...) MZX_VA_SELECT(MZX_CHECK_STATIC, __VA_ARGS__)
+                               ^~~~~~~~~~~~~
+../include/mzx/algorithm/sort/quick_sort.h:45:5: note: in expansion of macro ‘MZX_CHECK_STATIC’
+     MZX_CHECK_STATIC((std::is_same<std::random_access_iterator_tag
+     ^~~~~~~~~~~~~~~~
+../include/mzx/algorithm/sort/heap_sort.h: In instantiation of ‘void mzx::HeapSort(RandIt, RandIt, Compare) [with RandIt = __gnu_cxx::__normal_iterator<int*, std::vector<int> >; Compare = std::less<int&>]’:
+../include/mzx/algorithm/sort/heap_sort.h:50:13:   required from ‘void mzx::HeapSort(RandIt, RandIt) [with RandIt = __gnu_cxx::__normal_iterator<int*, std::vector<int> >]’
+test_sort.cpp:50:5:   required from here
+../include/mzx/macro_util.h:49:76: error: ‘MZX_CHECK_STATIC_0’ was not declared in this scope
+ #define MZX_VA_SELECT(NAME, ...) MZX_CAT(NAME##_, MZX_VA_SIZE(__VA_ARGS__))(__VA_ARGS__)
+../include/mzx/logger.h:87:31: note: in expansion of macro ‘MZX_VA_SELECT’
+ #define MZX_CHECK_STATIC(...) MZX_VA_SELECT(MZX_CHECK_STATIC, __VA_ARGS__)
+                               ^~~~~~~~~~~~~
+../include/mzx/algorithm/sort/heap_sort.h:32:5: note: in expansion of macro ‘MZX_CHECK_STATIC’
+     MZX_CHECK_STATIC((std::is_same<std::random_access_iterator_tag
+     ^~~~~~~~~~~~~~~~
+../include/mzx/macro_util.h:49:76: note: suggested alternative: ‘MZX_CHECK_STATIC_2’
+ #define MZX_VA_SELECT(NAME, ...) MZX_CAT(NAME##_, MZX_VA_SIZE(__VA_ARGS__))(__VA_ARGS__)
+../include/mzx/logger.h:87:31: note: in expansion of macro ‘MZX_VA_SELECT’
+ #define MZX_CHECK_STATIC(...) MZX_VA_SELECT(MZX_CHECK_STATIC, __VA_ARGS__)
+                               ^~~~~~~~~~~~~
+../include/mzx/algorithm/sort/heap_sort.h:32:5: note: in expansion of macro ‘MZX_CHECK_STATIC’
+     MZX_CHECK_STATIC((std::is_same<std::random_access_iterator_tag
+     ^~~~~~~~~~~~~~~~
+../include/mzx/algorithm/sort/count_sort.h: In instantiation of ‘void mzx::CountSort(RandIt, RandIt, Compare) [with RandIt = __gnu_cxx::__normal_iterator<int*, std::vector<int> >; Compare = std::less<int&>]’:
+../include/mzx/algorithm/sort/count_sort.h:21:14:   required from ‘void mzx::CountSort(RandIt, RandIt) [with RandIt = __gnu_cxx::__normal_iterator<int*, std::vector<int> >]’
+test_sort.cpp:51:5:   required from here
+../include/mzx/macro_util.h:49:76: error: ‘MZX_CHECK_STATIC_0’ was not declared in this scope
+ #define MZX_VA_SELECT(NAME, ...) MZX_CAT(NAME##_, MZX_VA_SIZE(__VA_ARGS__))(__VA_ARGS__)
+../include/mzx/logger.h:87:31: note: in expansion of macro ‘MZX_VA_SELECT’
+ #define MZX_CHECK_STATIC(...) MZX_VA_SELECT(MZX_CHECK_STATIC, __VA_ARGS__)
+                               ^~~~~~~~~~~~~
+../include/mzx/algorithm/sort/count_sort.h:11:5: note: in expansion of macro ‘MZX_CHECK_STATIC’
+     MZX_CHECK_STATIC((std::is_same<std::random_access_iterator_tag
+     ^~~~~~~~~~~~~~~~
+../include/mzx/macro_util.h:49:76: note: suggested alternative: ‘MZX_CHECK_STATIC_2’
+ #define MZX_VA_SELECT(NAME, ...) MZX_CAT(NAME##_, MZX_VA_SIZE(__VA_ARGS__))(__VA_ARGS__)
+../include/mzx/logger.h:87:31: note: in expansion of macro ‘MZX_VA_SELECT’
+ #define MZX_CHECK_STATIC(...) MZX_VA_SELECT(MZX_CHECK_STATIC, __VA_ARGS__)
+                               ^~~~~~~~~~~~~
+../include/mzx/algorithm/sort/count_sort.h:11:5: note: in expansion of macro ‘MZX_CHECK_STATIC’
+     MZX_CHECK_STATIC((std::is_same<std::random_access_iterator_tag
+     ^~~~~~~~~~~~~~~~

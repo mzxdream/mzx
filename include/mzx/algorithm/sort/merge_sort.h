@@ -43,8 +43,8 @@ void __MergeSort(RandIt begin, RandIt end, RandItStore store, Compare comp)
 template <typename RandIt, typename Compare>
 void MergeSort(RandIt begin, RandIt end, Compare comp)
 {
-    MZX_CHECK_STATIC((std::is_same<std::random_access_iterator_tag
-            , typename std::iterator_traits<RandIt>::iterator_category>::value));
+    MZX_CHECK_STATIC(std::is_same<std::random_access_iterator_tag
+            , typename std::iterator_traits<RandIt>::iterator_category>::value);
     MZX_CHECK(end > begin);
     std::vector<typename std::remove_reference<decltype(*begin)>::type> tmp(end - begin);
     __MergeSort(begin, end, tmp.begin(), comp);

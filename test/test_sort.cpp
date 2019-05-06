@@ -35,7 +35,7 @@ void PrintInfo(const T &sort_list)
 int main(int argc, char *argv[])
 {
     std::srand(time(0));
-    std::vector<float> test;
+    std::vector<int> test;
     int len = std::rand() % 6 + 5;
     for (int i = 0; i < len; ++i)
     {

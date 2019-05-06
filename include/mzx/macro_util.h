@@ -7,21 +7,6 @@
 #define MZX_PRIMITIVE_CAT(x, y) x ## y
 #define MZX_CAT(x, y) MZX_PRIMITIVE_CAT(x, y)
 
-#define MZX_COMPL(x) MZX_PRIMITIVE_CAT(MZX_COMPL_, x)
-#define MZX_COMPL_0 1
-#define MZX_COMPL_1 0
-
-#define MZX_IIF(x) MZX_PRIMITIVE_CAT(MZX_IIF_, x) 
-#define MZX_IIF_0(x, ...) __VA_ARGS__
-#define MZX_IIF_1(x, ...) x 
-
-#define MZX_GET_SECOND(x, y, ...) y
-#define MZX_CHECK(...) MZX_GET_SECOND(__VA_ARGS__, 0)
-#define MZX_PROBE(x) x, 1
-
-#define MZX_IS_EMPTY(x) MZX_CHECK(MZX_CAT(MZX_PRIMITIVE_CAT(MZX_IS_EMPTY_, x), 0))
-#define MZX_IS_EMPTY_0 MZX_PROBE()
-
 #define MZX_ARG_N( \
           _1,  _2,  _3,  _4,  _5,  _6,  _7,  _8,  _9, \
     _10, _11, _12, _13, _14, _15, _16, _17, _18, _19, \
