@@ -3,7 +3,9 @@
 
 int main(int argc, char *argv[])
 {
-    //MZX_CHECK_STATIC(2 == 1);
+    MZX_CHECK_STATIC(1 == 1);
+    MZX_CHECK_STATIC(1 == 1 && 1 == 1, "1 is equal 1");
+//    MZX_CHECK_STATIC(2 == 1, "2 is not equal 1");
     int a = 2;
     MZX_CHECK(a == 2);
     MZX_DEBUG("12312312", "  dffdfd");
