@@ -1,47 +1,52 @@
 #ifndef __MZX_ECS_H__
 #define __MZX_ECS_H__
 
-#include <list>
-#include <vector>
-#include <cstddef>
-#include <utility>
-#include <functional>
-#include <unordered_map>
-#include <type_traits>
 #include <mzx/event.h>
 #include <mzx/logger.h>
+#include <cstddef>
+#include <functional>
+#include <list>
+#include <type_traits>
+#include <unordered_map>
+#include <utility>
+#include <vector>
 
-namespace mzx {
-
+namespace mzx
+{
 class Entity;
 
 class ComponentBase
 {
     friend Entity;
+
 public:
     using ClassIndexType = std::size_t;
+
 protected:
     ComponentBase();
     ComponentBase(const ComponentBase &) = delete;
-    ComponentBase & operator=(const ComponentBase &) = delete;
+    ComponentBase &operator=(const ComponentBase &) = delete;
     virtual ~ComponentBase() = 0;
+
 public:
     virtual ClassIndexType ClassIndex() const = 0;
     static ClassIndexType ClassIndexCount();
+
 protected:
     static ClassIndexType class_index_counter_;
 };
 
 template <typename T>
-class Component
-    : public ComponentBase
+class Component : public ComponentBase
 {
     friend Entity;
+
 public:
     const static ClassIndexType CLASS_INDEX;
+
 protected:
-    template <typename ...Args>
-    explicit Component(Args &&...args)
+    template <typename... Args>
+    explicit Component(Args &&... args)
         : raw_data_(std::forward<Args>(args)...)
     {
     }
@@ -49,13 +54,14 @@ protected:
     {
     }
     Component(const Component &) = delete;
-    Component & operator=(const Component &) = delete;
+    Component &operator=(const Component &) = delete;
+
 public:
-    T * Get()
+    T *Get()
     {
         return &raw_data_;
     }
-    const T * Get() const
+    const T *Get() const
     {
         return &raw_data_;
     }
@@ -63,6 +69,7 @@ public:
     {
         return CLASS_INDEX;
     }
+
 private:
     T raw_data_;
 };
@@ -100,7 +107,7 @@ class EntityManager
                 delete this;
             }
         }
-        Entity * DetachEntity()
+        Entity *DetachEntity()
         {
             if (entity != nullptr)
             {
@@ -111,32 +118,37 @@ class EntityManager
             }
             return nullptr;
         }
-        Entity *entity{ nullptr };
-        int ref_count{ 0 };
+        Entity *entity{nullptr};
+        int ref_count{0};
         ListNode list_link;
     };
+
 public:
-    using ComponentChangedEvent = Event<void (Entity *, ComponentBase *)>;
-    using EntityChangedEvent = Event<void (Entity *)>;
+    using ComponentChangedEvent = Event<void(Entity *, ComponentBase *)>;
+    using EntityChangedEvent = Event<void(Entity *)>;
+
 public:
     EntityManager();
     ~EntityManager();
     EntityManager(const EntityManager &) = delete;
-    EntityManager & operator=(const EntityManager &) = delete;
-public:
-    ComponentChangedEvent & ComponentAddEvent();
-    ComponentChangedEvent & ComponentRemoveEvent();
-    EntityChangedEvent & EntityAddEvent();
-    EntityChangedEvent & EntityRemoveEvent();
+    EntityManager &operator=(const EntityManager &) = delete;
 
-    Entity * GetEntity(EntityID id);
-    Entity * AddEntity();
+public:
+    ComponentChangedEvent &ComponentAddEvent();
+    ComponentChangedEvent &ComponentRemoveEvent();
+    EntityChangedEvent &EntityAddEvent();
+    EntityChangedEvent &EntityRemoveEvent();
+
+    Entity *GetEntity(EntityID id);
+    Entity *AddEntity();
     void RemoveEntity(EntityID id);
     void RemoveAllEntity();
-    void ForeachEntity(std::function<bool (Entity *)> cb);
+    void ForeachEntity(std::function<bool(Entity *)> cb);
+
 private:
     void OnAddComponent(Entity *, ComponentBase *);
     void OnRemoveComponent(Entity *, ComponentBase *);
+
 private:
     ComponentChangedEvent component_add_event_;
     ComponentChangedEvent component_remove_event_;
@@ -149,17 +161,20 @@ private:
 class Entity
 {
     friend EntityManager;
+
 private:
     Entity(EntityManager &entity_manager);
     ~Entity();
     Entity(const Entity &) = delete;
-    Entity & operator=(const Entity &) = delete;
+    Entity &operator=(const Entity &) = delete;
+
 private:
     void SetID(EntityID id);
+
 public:
     EntityID ID() const;
     template <typename T>
-    T * GetComponent() const
+    T *GetComponent() const
     {
         auto *component = component_list_[Component<T>::CLASS_INDEX];
         if (!component)
@@ -173,13 +188,13 @@ public:
     {
         return component_list_[Component<T>::CLASS_INDEX] != nullptr;
     }
-    template <typename T, typename V, typename ...Args>
+    template <typename T, typename V, typename... Args>
     bool HasComponent() const
     {
         return HasComponent<T>() && HasComponent<V, Args...>();
     }
-    template <typename T, typename ...Args>
-    T * AddComponent(Args &&...args)
+    template <typename T, typename... Args>
+    T *AddComponent(Args &&... args)
     {
         MZX_CHECK(component_list_[Component<T>::CLASS_INDEX] == nullptr);
         auto *component = new Component<T>(std::forward<Args>(args)...);
@@ -199,9 +214,10 @@ public:
         }
     }
     void RemoveAllComponent();
-    void ForeachComponent(std::function<bool (ComponentBase *)> cb);
+    void ForeachComponent(std::function<bool(ComponentBase *)> cb);
+
 private:
-    EntityID id_{ 0 };
+    EntityID id_{0};
     EntityManager &entity_manager_;
     std::vector<ComponentBase *> component_list_;
 };
@@ -210,32 +226,37 @@ class EntitySystemBase
 {
 public:
     using ClassIndexType = std::size_t;
+
 public:
     EntitySystemBase();
     virtual ~EntitySystemBase() = 0;
     EntitySystemBase(const EntitySystemBase &) = delete;
-    EntitySystemBase & operator=(const EntitySystemBase &) = delete;
+    EntitySystemBase &operator=(const EntitySystemBase &) = delete;
+
 public:
     bool Init();
     void Uninit();
     void Update();
+
 private:
     virtual bool _Init();
     virtual void _Uninit();
     virtual void _Update();
+
 public:
     static ClassIndexType ClassIndexCount();
     virtual ClassIndexType ClassIndex() const = 0;
+
 protected:
     static ClassIndexType class_index_counter_;
 };
 
 template <typename T>
-class EntitySystem
-    : public EntitySystemBase
+class EntitySystem : public EntitySystemBase
 {
 public:
     const static ClassIndexType CLASS_INDEX;
+
 public:
     EntitySystem()
     {
@@ -244,7 +265,8 @@ public:
     {
     }
     EntitySystem(const EntitySystem &) = delete;
-    EntitySystem & operator=(const EntitySystem &) = delete;
+    EntitySystem &operator=(const EntitySystem &) = delete;
+
 public:
     virtual ClassIndexType ClassIndex() const override
     {
@@ -291,18 +313,20 @@ class EntitySystemManager
                 DecrRef();
             }
         }
-        EntitySystemBase *system{ nullptr };
-        int ref_count{ 0 };
+        EntitySystemBase *system{nullptr};
+        int ref_count{0};
         ListNode list_link;
     };
+
 public:
     EntitySystemManager();
     ~EntitySystemManager();
     EntitySystemManager(const EntitySystemManager &) = delete;
-    EntitySystemManager & operator=(const EntitySystemManager &) = delete;
+    EntitySystemManager &operator=(const EntitySystemManager &) = delete;
+
 public:
-    template <typename T, typename ...Args>
-    T * AddSystem(Args &&...args)
+    template <typename T, typename... Args>
+    T *AddSystem(Args &&... args)
     {
         MZX_CHECK_STATIC(std::is_base_of<EntitySystem<T>, T>::value);
         MZX_CHECK(systems_[T::CLASS_INDEX] == nullptr);
@@ -340,11 +364,12 @@ public:
         }
     }
     void UpdateAll();
+
 private:
     ListNode system_list_;
     std::vector<SystemNode *> systems_;
 };
 
-}
+} // namespace mzx
 
 #endif
