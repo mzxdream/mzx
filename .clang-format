@@ -3,6 +3,7 @@ Language: Cpp
 BasedOnStyle: LLVM
 # template break
 AlwaysBreakTemplateDeclarations: true
+# c++11 风格
 Cpp11BracedListStyle: true
 #指针的*的挨着哪边
 PointerAlignment: Right
@@ -57,9 +58,10 @@ ConstructorInitializerAllOnOneLineOrOnePerLine: false
 # 在构造函数的初始化列表的逗号前换行
 #BreakConstructorInitializersBeforeComma: true
 # 构造函数的初始化列表的缩进宽度 
-ConstructorInitializerIndentWidth: 4
+#ConstructorInitializerIndentWidth: 4
 # 在构造函数的初始化列表的逗号前换行
 BreakConstructorInitializers: BeforeComma
-# 继承时换行
+# 继承时换行 clang-format8 not work
 BreakBeforeInheritanceComma: true
 BreakInheritanceList: BeforeComma
+#
