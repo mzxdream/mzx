@@ -4,12 +4,13 @@
 #include <cstddef>
 #include <functional>
 #include <list>
-#include <mzx/event.h>
-#include <mzx/logger.h>
 #include <type_traits>
 #include <unordered_map>
 #include <utility>
 #include <vector>
+
+#include <mzx/event.h>
+#include <mzx/logger.h>
 
 namespace mzx
 {
