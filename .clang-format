@@ -1,6 +1,9 @@
 Language: Cpp
-#基础样式
-BasedOnStyle: Google
+# 基础样式
+BasedOnStyle: LLVM
+# template break
+AlwaysBreakTemplateDeclarations: true
+Cpp11BracedListStyle: true
 #指针的*的挨着哪边
 PointerAlignment: Right
 #访问修饰符前的空格
@@ -49,9 +52,14 @@ SpaceBeforeAssignmentOperators: true
 SpacesBeforeTrailingComments: 1
 # 函数名后大括号换行 
 BreakBeforeBraces:	Allman
-# 在构造函数的初始化列表的逗号前换行 
-BreakConstructorInitializersBeforeComma: true
-# 构造函数的初始化列表要么都在同一行，要么都各自一行 
-ConstructorInitializerAllOnOneLineOrOnePerLine: false 
+# 构造函数的初始化列表要么都在同一行，要么都各自一行
+ConstructorInitializerAllOnOneLineOrOnePerLine: false
+# 在构造函数的初始化列表的逗号前换行
+#BreakConstructorInitializersBeforeComma: true
 # 构造函数的初始化列表的缩进宽度 
 ConstructorInitializerIndentWidth: 4
+# 在构造函数的初始化列表的逗号前换行
+BreakConstructorInitializers: BeforeComma
+# 继承时换行
+BreakBeforeInheritanceComma: true
+BreakInheritanceList: BeforeComma
