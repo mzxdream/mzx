@@ -1,5 +1,5 @@
-#include <mzx/macro_util.h>
 #include <iostream>
+#include <mzx/macro_util.h>
 
 #define TEST_0() std::cout << "TEST_0()" << std::endl;
 #define TEST_1(x) std::cout << "TEST_1(" << x << ")" << std::endl;

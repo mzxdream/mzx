@@ -1,16 +1,16 @@
-#include <mzx/singleton.h>
 #include <iostream>
+#include <mzx/singleton.h>
 
-class Test1
-    : public mzx::Singleton<Test1>
+class Test1 : public mzx::Singleton<Test1>
 {
     friend mzx::Singleton<Test1>;
+
 private:
     Test1()
         : a(10)
     {
-
     }
+
 public:
     int a;
 };
@@ -18,7 +18,7 @@ public:
 class Test2
 {
 public:
-    int a{ 5 };
+    int a{5};
 };
 
 int main(int argc, char *argv[])

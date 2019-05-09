@@ -1,7 +1,7 @@
-#include <mzx/null_type.h>
 #include <iostream>
+#include <mzx/null_type.h>
 
-template <typename T1 = mzx::NullType<>, typename T2 = mzx::NullType<>, typename T3 = mzx::NullType<> >
+template <typename T1 = mzx::NullType<>, typename T2 = mzx::NullType<>, typename T3 = mzx::NullType<>>
 struct Test
 {
     Test(T1 a, T2 b, T3 c)
@@ -16,14 +16,14 @@ struct Test
 };
 
 template <typename T1, typename T2>
-struct Test<T1, T2, mzx::NullType<> >
+struct Test<T1, T2, mzx::NullType<>>
 {
     T1 a1;
     T2 a2;
 };
 
 template <typename T1>
-struct Test<T1, mzx::NullType<>, mzx::NullType<> >
+struct Test<T1, mzx::NullType<>, mzx::NullType<>>
 {
     Test(T1 a)
         : a1(a)
@@ -39,7 +39,7 @@ int main(int argc, char *argv[])
     Test<int, double> b;
     b.a1 = 1;
     b.a2 = 1.0;
-    //b.a3 = "123";
+    // b.a3 = "123";
     std::cout << b.a1 << "," << b.a2 << std::endl;
 
     Test<int> c(15);

@@ -1,15 +1,15 @@
-#include <mzx/system/cmd_line.h>
 #include <cstdio>
-#include <unistd.h>
-#include <mutex>
 #include <list>
 #include <map>
+#include <mutex>
+#include <mzx/system/cmd_line.h>
 #include <mzx/thread.h>
+#include <unistd.h>
 
-namespace mzx {
+namespace mzx
+{
 
-class CmdLineWorkThread
-    : public Thread
+class CmdLineWorkThread : public Thread
 {
 public:
     virtual void _Run();
@@ -142,4 +142,4 @@ void CmdLineWorkThread::_Run()
     }
 }
 
-}
+} // namespace mzx

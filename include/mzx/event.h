@@ -3,12 +3,13 @@
 
 #include <cstddef>
 #include <functional>
-#include <unordered_map>
 #include <memory>
 #include <mzx/list.h>
 #include <mzx/logger.h>
+#include <unordered_map>
 
-namespace mzx {
+namespace mzx
+{
 
 using EventID = std::size_t;
 constexpr static EventID EVENT_ID_INVALID = (EventID)-1;
@@ -16,11 +17,12 @@ constexpr static EventID EVENT_ID_INVALID = (EventID)-1;
 template <typename T>
 class Event;
 
-template <typename R, typename ...Args>
-class Event<R (Args...)>
+template <typename R, typename... Args>
+class Event<R(Args...)>
 {
 public:
-    using Listener = std::function<R (Args...)>;
+    using Listener = std::function<R(Args...)>;
+
 private:
     struct ListenerNode
     {
@@ -55,9 +57,10 @@ private:
             }
         }
         Listener listener;
-        int ref_count{ 0 };
+        int ref_count{0};
         ListNode list_link;
     };
+
 public:
     Event()
     {
@@ -67,7 +70,8 @@ public:
         RemoveAllListener();
     }
     Event(const Event &) = delete;
-    Event & operator=(const Event &) = delete;
+    Event &operator=(const Event &) = delete;
+
 public:
     EventID AddListener(Listener listener)
     {
@@ -91,16 +95,16 @@ public:
     }
     void RemoveAllListener()
     {
-        for (auto *node = listener_list_.Next(); node != &listener_list_; )
+        for (auto *node = listener_list_.Next(); node != &listener_list_;)
         {
             auto *entry = MZX_LIST_ENTRY(node, ListenerNode, list_link);
             node = node->Next();
             entry->SelfRemove();
         }
     }
-    void Invoke(Args ...args) const
+    void Invoke(Args... args) const
     {
-        for (auto *node = listener_list_.Next(); node != &listener_list_; )
+        for (auto *node = listener_list_.Next(); node != &listener_list_;)
         {
             auto *entry = MZX_LIST_ENTRY(node, ListenerNode, list_link);
             entry->IncrRef();
@@ -112,6 +116,7 @@ public:
             entry->DecrRef();
         }
     }
+
 private:
     ListNode listener_list_;
 };
@@ -119,11 +124,12 @@ private:
 template <typename T, typename O>
 class EventManager;
 
-template <typename T, typename R, typename ...Args>
-class EventManager<T, R (Args...)>
+template <typename T, typename R, typename... Args>
+class EventManager<T, R(Args...)>
 {
-    using EventType = Event<R (Args...)>;
+    using EventType = Event<R(Args...)>;
     using Listener = typename EventType::Listener;
+
 public:
     EventManager()
     {
@@ -133,7 +139,8 @@ public:
         RemoveAllEvent();
     }
     EventManager(const EventManager &) = delete;
-    EventManager & operator=(const EventManager &) = delete;
+    EventManager &operator=(const EventManager &) = delete;
+
 public:
     EventID AddListener(T type, Listener listener)
     {
@@ -165,13 +172,13 @@ public:
     }
     void RemoveAllEvent()
     {
-        for(auto iter_event = event_list_.begin(); iter_event != event_list_.end();)
+        for (auto iter_event = event_list_.begin(); iter_event != event_list_.end();)
         {
             iter_event->second->RemoveAllListener();
             iter_event = event_list_.erase(iter_event);
         }
     }
-    void Invoke(T type, Args ...args) const
+    void Invoke(T type, Args... args) const
     {
         auto iter_event = event_list_.find(type);
         if (iter_event == event_list_.end())
@@ -181,10 +188,11 @@ public:
         auto event = iter_event->second;
         event->Invoke(std::forward<Args>(args)...);
     }
+
 public:
-    std::unordered_map<T, std::shared_ptr<EventType> > event_list_;
+    std::unordered_map<T, std::shared_ptr<EventType>> event_list_;
 };
 
-}
+} // namespace mzx
 
 #endif

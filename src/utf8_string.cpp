@@ -1,10 +1,10 @@
 #include <mzx/utf8_string.h>
 
-namespace mzx {
+namespace mzx
+{
 
 Utf8String::Utf8String()
 {
-
 }
 
 Utf8String::Utf8String(const std::string &str)
@@ -25,7 +25,6 @@ Utf8String::Utf8String(const char *str, std::size_t len)
     UpdateOffset();
 }
 
-
 void Utf8String::UpdateOffset()
 {
     if (str_.empty())
@@ -43,7 +42,7 @@ void Utf8String::UpdateOffset()
     }
 }
 
-const char * Utf8String::CharAt(std::size_t index, std::size_t *len) const
+const char *Utf8String::CharAt(std::size_t index, std::size_t *len) const
 {
     if (index >= offset_list_.size())
     {
@@ -94,7 +93,7 @@ std::size_t Utf8String::Length() const
     return offset_list_.size();
 }
 
-const std::string & Utf8String::Data() const
+const std::string &Utf8String::Data() const
 {
     return str_;
 }
@@ -139,4 +138,4 @@ std::size_t Utf8String::Length(const std::string &str)
     return count;
 }
 
-}
+} // namespace mzx

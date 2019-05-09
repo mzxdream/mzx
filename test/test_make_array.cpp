@@ -1,9 +1,9 @@
-#include <mzx/make_array.h>
 #include <iostream>
+#include <mzx/make_array.h>
 
 constexpr std::size_t power(std::size_t i)
 {
-    return (i+1) * (i+1);
+    return (i + 1) * (i + 1);
 }
 
 constexpr auto arr = mzx::MakeArray<100>(power);

@@ -1,7 +1,8 @@
-#include <mzx/thread.h>
 #include <mzx/logger.h>
+#include <mzx/thread.h>
 
-namespace mzx {
+namespace mzx
+{
 
 Thread::Thread()
     : pid_(PID_INVALID)
@@ -73,9 +74,9 @@ Thread::PID Thread::GetCurrentPID()
     return pthread_self();
 }
 
-void* Thread::ThreadMain(void *param)
+void *Thread::ThreadMain(void *param)
 {
-    Thread *th = static_cast<Thread*>(param);
+    Thread *th = static_cast<Thread *>(param);
     if (!th)
     {
         MZX_ERR("param is null");
@@ -85,4 +86,4 @@ void* Thread::ThreadMain(void *param)
     return nullptr;
 }
 
-}
+} // namespace mzx

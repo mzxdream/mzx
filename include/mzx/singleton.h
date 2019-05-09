@@ -4,7 +4,8 @@
 #include <mutex>
 #include <mzx/null_mutex.h>
 
-namespace mzx {
+namespace mzx
+{
 
 template <typename T, typename Mutex = NullMutex>
 class Singleton
@@ -13,9 +14,10 @@ protected:
     Singleton() = default;
     ~Singleton() = default;
     Singleton(const Singleton &) = delete;
-    Singleton& operator=(const Singleton &) = delete;
+    Singleton &operator=(const Singleton &) = delete;
+
 public:
-    static T& Instance()
+    static T &Instance()
     {
         return instance_.Instance();
     }
@@ -23,12 +25,13 @@ public:
     {
         return instance_.DestoryInstance();
     }
+
 private:
     class SingletonBase
     {
     public:
         SingletonBase()
-            :instance_(nullptr)
+            : instance_(nullptr)
         {
         }
         ~SingletonBase()
@@ -40,9 +43,10 @@ private:
             }
         }
         SingletonBase(const SingletonBase &) = delete;
-        SingletonBase& operator=(const Singleton &) = delete;
+        SingletonBase &operator=(const Singleton &) = delete;
+
     public:
-        T& Instance()
+        T &Instance()
         {
             if (!instance_)
             {
@@ -66,17 +70,19 @@ private:
                 }
             }
         }
+
     private:
         T *instance_;
         Mutex mtx_;
     };
+
 private:
     static SingletonBase instance_;
 };
 
-template<typename T, typename Mutex>
+template <typename T, typename Mutex>
 typename Singleton<T, Mutex>::SingletonBase Singleton<T, Mutex>::instance_;
 
-}
+} // namespace mzx
 
 #endif

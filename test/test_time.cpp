@@ -1,5 +1,5 @@
-#include <mzx/time.h>
 #include <iostream>
+#include <mzx/time.h>
 
 int main(int argc, char *argv[])
 {

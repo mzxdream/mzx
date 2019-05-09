@@ -1,7 +1,8 @@
-#include <mzx/system/signal.h>
 #include <map>
+#include <mzx/system/signal.h>
 
-namespace mzx {
+namespace mzx
+{
 
 static std::map<SignalType, Signal::Callback> signal_callback_list;
 
@@ -38,4 +39,4 @@ void Signal::UnhookAll()
     signal_callback_list.clear();
 }
 
-}
+} // namespace mzx

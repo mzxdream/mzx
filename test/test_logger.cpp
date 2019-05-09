@@ -5,7 +5,7 @@ int main(int argc, char *argv[])
 {
     MZX_CHECK_STATIC(1 == 1);
     MZX_CHECK_STATIC(1 == 1 && 1 == 1, "1 is equal 1");
-//    MZX_CHECK_STATIC(2 == 1, "2 is not equal 1");
+    //    MZX_CHECK_STATIC(2 == 1, "2 is not equal 1");
     int a = 2;
     MZX_CHECK(a == 2);
     MZX_DEBUG("12312312", "  dffdfd");
@@ -18,7 +18,7 @@ int main(int argc, char *argv[])
     std::cout << "==================" << std::endl;
     MZX_WARN("test warn:", "tt", 123, "44");
     std::cout << "==================" << std::endl;
-    //MZX_FATAL("test fatal");
+    // MZX_FATAL("test fatal");
     MZX_CHECK(a != 2, "ffdfdfdfdfdf");
     std::cout << "==================" << std::endl;
 }

@@ -3,7 +3,8 @@
 
 #include <mzx/logger.h>
 
-namespace mzx {
+namespace mzx
+{
 
 template <typename RandIt, typename Compare>
 void __QuickSort(RandIt begin, RandIt end, Compare comp)
@@ -42,8 +43,8 @@ void __QuickSort(RandIt begin, RandIt end, Compare comp)
 template <typename RandIt, typename Compare>
 void QuickSort(RandIt begin, RandIt end, Compare comp)
 {
-    MZX_CHECK_STATIC(std::is_same<std::random_access_iterator_tag
-            , typename std::iterator_traits<RandIt>::iterator_category>::value);
+    MZX_CHECK_STATIC(
+        std::is_same<std::random_access_iterator_tag, typename std::iterator_traits<RandIt>::iterator_category>::value);
     MZX_CHECK(end > begin);
     __QuickSort(begin, end, comp);
 }
@@ -54,6 +55,6 @@ void QuickSort(RandIt begin, RandIt end)
     QuickSort(begin, end, std::less<decltype(*begin)>());
 }
 
-}
+} // namespace mzx
 
 #endif

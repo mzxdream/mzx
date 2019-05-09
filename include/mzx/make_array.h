@@ -4,9 +4,10 @@
 #include <array>
 #include <mzx/make_sequence.h>
 
-namespace mzx {
+namespace mzx
+{
 
-template <class Function, std::size_t ...Indices>
+template <class Function, std::size_t... Indices>
 constexpr auto MakeArrayHelper(Function f, Sequence<Indices...>)
     -> std::array<typename std::result_of<Function(std::size_t)>::type, sizeof...(Indices)>
 {
@@ -14,12 +15,11 @@ constexpr auto MakeArrayHelper(Function f, Sequence<Indices...>)
 }
 
 template <std::size_t N, class Function>
-constexpr auto MakeArray(Function f)
-    -> std::array<typename std::result_of<Function(std::size_t)>::type, N>
+constexpr auto MakeArray(Function f) -> std::array<typename std::result_of<Function(std::size_t)>::type, N>
 {
     return MakeArrayHelper(f, MakeSequence<N>{});
 }
 
-}
+} // namespace mzx
 
 #endif

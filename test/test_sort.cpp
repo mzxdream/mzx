@@ -1,16 +1,16 @@
-#include <iostream>
-#include <iomanip>
-#include <vector>
 #include <algorithm>
 #include <ctime>
+#include <iomanip>
+#include <iostream>
 #include <mzx/algorithm/sort/buddle_sort.h>
-#include <mzx/algorithm/sort/select_sort.h>
+#include <mzx/algorithm/sort/count_sort.h>
+#include <mzx/algorithm/sort/heap_sort.h>
 #include <mzx/algorithm/sort/insert_sort.h>
-#include <mzx/algorithm/sort/shell_sort.h>
 #include <mzx/algorithm/sort/merge_sort.h>
 #include <mzx/algorithm/sort/quick_sort.h>
-#include <mzx/algorithm/sort/heap_sort.h>
-#include <mzx/algorithm/sort/count_sort.h>
+#include <mzx/algorithm/sort/select_sort.h>
+#include <mzx/algorithm/sort/shell_sort.h>
+#include <vector>
 
 template <typename T>
 void PrintInfo(const T &sort_list)
@@ -23,13 +23,13 @@ void PrintInfo(const T &sort_list)
     std::cout << "]";
 }
 
-#define TEST_SORT(name) \
-    std::random_shuffle(test.begin(), test.end(), [](int i){return std::rand()%i;}); \
-    std::cout << std::setw(10) << #name; \
-    PrintInfo(test); \
-    std::cout << "->"; \
-    mzx::name(test.begin(), test.end()); \
-    PrintInfo(test); \
+#define TEST_SORT(name)                                                                                                \
+    std::random_shuffle(test.begin(), test.end(), [](int i) { return std::rand() % i; });                              \
+    std::cout << std::setw(10) << #name;                                                                               \
+    PrintInfo(test);                                                                                                   \
+    std::cout << "->";                                                                                                 \
+    mzx::name(test.begin(), test.end());                                                                               \
+    PrintInfo(test);                                                                                                   \
     std::cout << std::endl
 
 int main(int argc, char *argv[])

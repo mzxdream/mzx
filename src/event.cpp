@@ -1,5 +1,6 @@
 #include <mzx/event.h>
 
-namespace mzx {
+namespace mzx
+{
 
 }

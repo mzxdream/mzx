@@ -1,11 +1,12 @@
 #ifndef __MZX_LOGGER_H__
 #define __MZX_LOGGER_H__
 
-#include <sstream>
 #include <functional>
 #include <mzx/macro_util.h>
+#include <sstream>
 
-namespace mzx {
+namespace mzx
+{
 
 class Logger
 {
@@ -18,20 +19,23 @@ public:
         Error,
         Fatal,
     };
-    using PrintHandler = std::function<void (Level, const char *, int, const char *, const std::string &)>;
-    using FatalHandler = std::function<void ()>;
+    using PrintHandler = std::function<void(Level, const char *, int, const char *, const std::string &)>;
+    using FatalHandler = std::function<void()>;
+
 public:
     Logger() = delete;
     ~Logger() = delete;
     Logger(const Logger &) = delete;
-    Logger& operator=(const Logger &) = delete;
+    Logger &operator=(const Logger &) = delete;
+
 public:
     static void SetPrintHandler(PrintHandler handler);
     static void SetLevel(Level level);
     static void SetFatalHandler(FatalHandler handler);
+
 public:
-    template <typename ...Args>
-    static void Print(Level level, const char *file_name, int line, const char *func_name, Args &&...args)
+    template <typename... Args>
+    static void Print(Level level, const char *file_name, int line, const char *func_name, Args &&... args)
     {
         if (level >= level_ && print_handler_)
         {
@@ -44,9 +48,10 @@ public:
             fatal_handler_();
         }
     }
+
 private:
-    template <typename T, typename ...Args>
-    static void ReadArgs(std::ostringstream &stream, T &&arg, Args &&...args)
+    template <typename T, typename... Args>
+    static void ReadArgs(std::ostringstream &stream, T &&arg, Args &&... args)
     {
         stream << std::forward<T>(arg);
         ReadArgs(stream, std::forward<Args>(args)...);
@@ -54,13 +59,14 @@ private:
     static void ReadArgs(std::ostringstream &stream)
     {
     }
+
 private:
     static PrintHandler print_handler_;
     static Level level_;
     static FatalHandler fatal_handler_;
 };
 
-}
+} // namespace mzx
 
 #define MZX_LOG(level, ...) mzx::Logger::Print(level, __FILE__, __LINE__, __func__, ##__VA_ARGS__)
 #define MZX_LOG_IF(level, condition, ...) !(condition) ? (void)0 : MZX_LOG(level, ##__VA_ARGS__)
@@ -80,7 +86,8 @@ private:
 #define MZX_FATAL(...) MZX_LOG(mzx::Logger::Level::Fatal, ##__VA_ARGS__)
 #define MZX_FATAL_IF(condition, ...) MZX_LOG_IF(mzx::Logger::Level::Fatal, condition, ##__VA_ARGS__)
 
-#define MZX_CHECK(EXPRESSION, ...) MZX_LOG_IF(mzx::Logger::Level::Fatal, !(EXPRESSION), "CHECK failed:" #EXPRESSION " ", ##__VA_ARGS__)
+#define MZX_CHECK(EXPRESSION, ...)                                                                                     \
+    MZX_LOG_IF(mzx::Logger::Level::Fatal, !(EXPRESSION), "CHECK failed:" #EXPRESSION " ", ##__VA_ARGS__)
 
 #define MZX_CHECK_STATIC_1(...) static_assert(__VA_ARGS__, #__VA_ARGS__)
 #define MZX_CHECK_STATIC_2(...) static_assert(__VA_ARGS__)

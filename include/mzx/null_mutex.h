@@ -1,7 +1,8 @@
 #ifndef __MZX_NULL_MUTEX_H__
 #define __MZX_NULL_MUTEX_H__
 
-namespace mzx {
+namespace mzx
+{
 
 class NullMutex
 {
@@ -18,6 +19,6 @@ public:
     }
 };
 
-}
+} // namespace mzx
 
 #endif

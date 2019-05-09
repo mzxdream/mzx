@@ -1,18 +1,18 @@
 #ifndef __MZX_MEM_TRACER_H__
 #define __MZX_MEM_TRACER_H__
 
-#include <mutex>
-#include <cstdlib>
-#include <map>
-#include <string>
 #include <cstdio>
+#include <cstdlib>
 #include <functional>
+#include <map>
+#include <mutex>
+#include <string>
 
-namespace mzx {
+namespace mzx
+{
 
 template <typename T>
-struct MemTracerAllocator
-    : std::allocator<T>
+struct MemTracerAllocator : std::allocator<T>
 {
     typedef typename std::allocator<T>::pointer pointer;
     typedef typename std::allocator<T>::size_type size_type;
@@ -59,10 +59,10 @@ struct MemTracerInfo
         , size(s)
     {
     }
-    const char *file{ nullptr };
-    int line{ 0 };
-    void *memory{ nullptr };
-    std::size_t size{ 0 };
+    const char *file{nullptr};
+    int line{0};
+    void *memory{nullptr};
+    std::size_t size{0};
 };
 
 class MemTracerExit;
@@ -70,12 +70,15 @@ class MemTracerExit;
 class MemTracer
 {
 public:
-    using MemoryListType = std::map<void *, MemTracerInfo, std::less<void *>, MemTracerAllocator<std::pair<void *, MemTracerInfo> > >;
-    using DumpHandler = std::function<void (const MemTracerInfo &)>;
-    using ExitHandler = std::function<void ()>;
+    using MemoryListType =
+        std::map<void *, MemTracerInfo, std::less<void *>, MemTracerAllocator<std::pair<void *, MemTracerInfo>>>;
+    using DumpHandler = std::function<void(const MemTracerInfo &)>;
+    using ExitHandler = std::function<void()>;
+
 private:
     MemTracer(const MemTracer &);
-    MemTracer& operator=(const MemTracer &);
+    MemTracer &operator=(const MemTracer &);
+
 public:
     static void SetExitHandler(ExitHandler handler)
     {
@@ -118,6 +121,7 @@ public:
             exit_handler_();
         }
     }
+
 private:
     static MemoryListType memory_list_;
     static std::mutex mtx_;
@@ -134,9 +138,9 @@ public:
     }
 };
 
-}
+} // namespace mzx
 
-inline void * operator new(std::size_t size, const char *file, int line)
+inline void *operator new(std::size_t size, const char *file, int line)
 {
     void *memory = ::malloc(size);
     if (memory)
@@ -155,7 +159,7 @@ inline void operator delete(void *memory, const char *file, int line)
     }
 }
 
-inline void* operator new(size_t size)
+inline void *operator new(size_t size)
 {
     void *memory = ::malloc(size);
     if (memory)
@@ -174,7 +178,7 @@ inline void operator delete(void *memory)
     }
 }
 
-inline void* operator new[](size_t size, const char *file, int line)
+inline void *operator new[](size_t size, const char *file, int line)
 {
     void *memory = ::malloc(size);
     if (memory)
@@ -193,7 +197,7 @@ inline void operator delete[](void *memory, const char *file, int line)
     }
 }
 
-inline void* operator new[](size_t size)
+inline void *operator new[](size_t size)
 {
     void *memory = ::malloc(size);
     if (memory)
@@ -212,7 +216,7 @@ inline void operator delete[](void *memory)
     }
 }
 
-inline void* _malloc(size_t size, const char *file, int line)
+inline void *_malloc(size_t size, const char *file, int line)
 {
     void *memory = ::malloc(size);
     if (memory)
@@ -222,7 +226,7 @@ inline void* _malloc(size_t size, const char *file, int line)
     return memory;
 }
 
-inline void* _calloc(size_t n, size_t size, const char *file, int line)
+inline void *_calloc(size_t n, size_t size, const char *file, int line)
 {
     void *memory = ::calloc(n, size);
     if (memory)
@@ -232,7 +236,7 @@ inline void* _calloc(size_t n, size_t size, const char *file, int line)
     return memory;
 }
 
-inline void* _realloc(void *memory, size_t size, const char *file, int line)
+inline void *_realloc(void *memory, size_t size, const char *file, int line)
 {
     if (memory)
     {
@@ -255,11 +259,11 @@ inline void _free(void *memory)
     }
 }
 
-#define MZX_NEW        new(__FILE__, __LINE__)
-#define new            MZX_NEW
-#define malloc(s)      _malloc(s, __FILE__, __LINE__)
-#define calloc(n, s)   _calloc(n, s, __FILE__, __LINE__)
-#define realloc(p, s)  _realloc(p, s, __FILE__, __LINE__)
-#define free(p)        _free(p)
+#define MZX_NEW new (__FILE__, __LINE__)
+#define new MZX_NEW
+#define malloc(s) _malloc(s, __FILE__, __LINE__)
+#define calloc(n, s) _calloc(n, s, __FILE__, __LINE__)
+#define realloc(p, s) _realloc(p, s, __FILE__, __LINE__)
+#define free(p) _free(p)
 
 #endif

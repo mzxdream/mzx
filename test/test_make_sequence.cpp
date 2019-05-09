@@ -1,8 +1,8 @@
-#include <mzx/make_sequence.h>
 #include <array>
 #include <iostream>
+#include <mzx/make_sequence.h>
 
-template <std::size_t ...I>
+template <std::size_t... I>
 const auto MakeArray(mzx::Sequence<I...>) -> std::array<std::size_t, sizeof...(I)>
 {
     return std::array<std::size_t, sizeof...(I)>{(I + 1)...};

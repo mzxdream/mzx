@@ -4,7 +4,8 @@
 #include <functional>
 #include <mzx/logger.h>
 
-namespace mzx {
+namespace mzx
+{
 
 class RBTreeNode final
 {
@@ -15,25 +16,28 @@ public:
     ~RBTreeNode()
     {
     }
+
 private:
-    RBTreeNode *parent_{ nullptr };
-    RBTreeNode *left_{ nullptr };
-    RBTreeNode *right_{ nullptr };
-    bool is_black_{ false };
+    RBTreeNode *parent_{nullptr};
+    RBTreeNode *left_{nullptr};
+    RBTreeNode *right_{nullptr};
+    bool is_black_{false};
 };
 
-template <typename T, typename Compare = std::less<T> >
-class Test<T (RBTreeNode *)>
+template <typename T, typename Compare = std::less<T>>
+class Test<T(RBTreeNode *)>
 {
 
-    std::function<T (RBTreeNode *)> key_;
+    std::function<T(RBTreeNode *)> key_;
 };
 
 class RBTree final
 {
     friend RBTreeNode;
+
 public:
-    using Compare = std::function<bool (const RBTreeNode *, const RBTreeNode *)>;
+    using Compare = std::function<bool(const RBTreeNode *, const RBTreeNode *)>;
+
 public:
     RBTree(Compare comp)
         : compare_(comp)
@@ -43,6 +47,7 @@ public:
     ~RBTree()
     {
     }
+
 public:
     bool Empty() const;
     bool Insert(RBTreeNode *node)
@@ -69,9 +74,10 @@ public:
         LinkNode(node, parent, tmp);
         InsertColor(node);
     }
-    RBTreeNode * Find()
+    RBTreeNode *Find()
     {
     }
+
 private:
     void LinkNode(RBTreeNode *node, RBTreeNode *parent, RBTreeNode **link)
     {
@@ -280,10 +286,8 @@ private:
                     __rb_rotate_left(parent, root);
                     other = parent->rb_right;
                 }
-                if ((!other->rb_left ||
-                            other->rb_left->rb_color == RB_BLACK)
-                        && (!other->rb_right ||
-                            other->rb_right->rb_color == RB_BLACK))
+                if ((!other->rb_left || other->rb_left->rb_color == RB_BLACK) &&
+                    (!other->rb_right || other->rb_right->rb_color == RB_BLACK))
                 {
                     other->rb_color = RB_RED;
                     node = parent;
@@ -291,10 +295,9 @@ private:
                 }
                 else
                 {
-                    if (!other->rb_right ||
-                            other->rb_right->rb_color == RB_BLACK)
+                    if (!other->rb_right || other->rb_right->rb_color == RB_BLACK)
                     {
-                        register rb_node_t * o_left;
+                        register rb_node_t *o_left;
                         if ((o_left = other->rb_left))
                             o_left->rb_color = RB_BLACK;
                         other->rb_color = RB_RED;
@@ -320,10 +323,8 @@ private:
                     __rb_rotate_right(parent, root);
                     other = parent->rb_left;
                 }
-                if ((!other->rb_left ||
-                            other->rb_left->rb_color == RB_BLACK)
-                        && (!other->rb_right ||
-                            other->rb_right->rb_color == RB_BLACK))
+                if ((!other->rb_left || other->rb_left->rb_color == RB_BLACK) &&
+                    (!other->rb_right || other->rb_right->rb_color == RB_BLACK))
                 {
                     other->rb_color = RB_RED;
                     node = parent;
@@ -331,10 +332,9 @@ private:
                 }
                 else
                 {
-                    if (!other->rb_left ||
-                            other->rb_left->rb_color == RB_BLACK)
+                    if (!other->rb_left || other->rb_left->rb_color == RB_BLACK)
                     {
-                        register rb_node_t * o_right;
+                        register rb_node_t *o_right;
                         if ((o_right = other->rb_right))
                             o_right->rb_color = RB_BLACK;
                         other->rb_color = RB_RED;
@@ -353,13 +353,13 @@ private:
         }
         if (node)
             node->rb_color = RB_BLACK;
-
     }
+
 private:
-    RBTreeNode *root_{ nullptr };
+    RBTreeNode *root_{nullptr};
     Compare compare_;
 };
 
-}
+} // namespace mzx
 
 #endif

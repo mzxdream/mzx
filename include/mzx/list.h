@@ -3,7 +3,8 @@
 
 #include <mzx/logger.h>
 
-namespace mzx {
+namespace mzx
+{
 
 class ListNode final
 {
@@ -17,16 +18,17 @@ public:
     {
         Unlink();
     }
+
 public:
     inline bool IsLinked() const
     {
         return next_ == this;
     }
-    inline ListNode * Prev() const
+    inline ListNode *Prev() const
     {
         return prev_;
     }
-    inline ListNode * Next() const
+    inline ListNode *Next() const
     {
         return next_;
     }
@@ -48,7 +50,7 @@ public:
         MZX_CHECK(node != nullptr);
         node->InsertInto(prev_, this);
     }
-    inline ListNode * Unlink()
+    inline ListNode *Unlink()
     {
         auto *next = next_;
         next_->prev_ = prev_;
@@ -57,17 +59,18 @@ public:
         next_ = this;
         return next;
     }
+
 private:
-    ListNode *prev_{ nullptr };
-    ListNode *next_{ nullptr };
+    ListNode *prev_{nullptr};
+    ListNode *next_{nullptr};
 };
 
-#define MZX_LIST_ENTRY(node, type, member) \
-    ({\
-        const decltype(((type *)0)->member) *ptr = (node);\
-        (type *)((char *)ptr - (std::size_t) &((type *)0)->member);\
+#define MZX_LIST_ENTRY(node, type, member)                                                                             \
+    ({                                                                                                                 \
+        const decltype(((type *)0)->member) *ptr = (node);                                                             \
+        (type *)((char *)ptr - (std::size_t) & ((type *)0)->member);                                                   \
     })
 
-}
+} // namespace mzx
 
 #endif

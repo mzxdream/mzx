@@ -21,11 +21,11 @@ int main(int argc, char *argv[])
     event.Invoke();
     std::cout << std::endl;
 #endif
-    mzx::EventManager<int, void ()> event_manager;
+    mzx::EventManager<int, void()> event_manager;
     event_manager.AddListener(0, std::bind(PrintNum, 0));
     event_manager.AddListener(0, std::bind(PrintNum, 1));
     event_manager.AddListener(1, std::bind(PrintNum, 2));
-    event_manager.AddListener(0, [&](){
+    event_manager.AddListener(0, [&]() {
         event_manager.RemoveEvent(0);
         event_manager.RemoveAllEvent();
     });

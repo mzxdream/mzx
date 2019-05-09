@@ -4,12 +4,14 @@
 #include <functional>
 #include <string>
 
-namespace mzx {
+namespace mzx
+{
 
 class CmdLine
 {
 public:
-    using Callback = std::function<void (const std::string &)>;
+    using Callback = std::function<void(const std::string &)>;
+
 public:
     static bool Start();
     static void Stop();
@@ -21,6 +23,6 @@ public:
     static void Execute();
 };
 
-}
+} // namespace mzx
 
 #endif

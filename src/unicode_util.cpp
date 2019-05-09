@@ -1,9 +1,10 @@
-#include <mzx/unicode_util.h>
 #include <cstdint>
+#include <mzx/unicode_util.h>
 
-namespace mzx {
+namespace mzx
+{
 
-void ForeachUtf8Char(const char *utf8str, std::function<bool (const char *, std::size_t len)> cb)
+void ForeachUtf8Char(const char *utf8str, std::function<bool(const char *, std::size_t len)> cb)
 {
     if (!utf8str || !cb)
     {
@@ -87,4 +88,4 @@ bool IsAsciiUtf8Char(const char *str, std::size_t len)
     return str[0] <= 0x7F;
 }
 
-}
+} // namespace mzx

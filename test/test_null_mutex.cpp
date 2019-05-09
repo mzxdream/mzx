@@ -1,6 +1,6 @@
 #include <iostream>
-#include <mzx/null_mutex.h>
 #include <mutex>
+#include <mzx/null_mutex.h>
 
 int main(int argc, char *argv[])
 {

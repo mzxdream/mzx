@@ -1,13 +1,13 @@
 #ifndef __MZX_MULTI_INDEX_CONTAINER_H__
 #define __MZX_MULTI_INDEX_CONTAINER_H__
 
-namespace mzx {
+namespace mzx
+{
 
 class MultiIndexContainer
 {
-
 };
 
-}
+} // namespace mzx
 
 #endif

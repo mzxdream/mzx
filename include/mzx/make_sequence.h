@@ -3,9 +3,10 @@
 
 #include <cstddef>
 
-namespace mzx {
+namespace mzx
+{
 
-template <std::size_t ...I>
+template <std::size_t... I>
 struct Sequence
 {
     using type = Sequence;
@@ -14,34 +15,26 @@ struct Sequence
 template <typename T1, typename T2>
 struct ConcatSequence;
 
-template <std::size_t ...I1, std::size_t ...I2>
-struct ConcatSequence<Sequence<I1...>, Sequence<I2...>>
-    : public Sequence<I1..., (sizeof...(I1) + I2)...>
+template <std::size_t... I1, std::size_t... I2>
+struct ConcatSequence<Sequence<I1...>, Sequence<I2...>> : public Sequence<I1..., (sizeof...(I1) + I2)...>
 {
-
 };
 
 template <std::size_t N>
-struct MakeSequence
-    : public ConcatSequence<typename MakeSequence<N/2>::type, typename MakeSequence<N - N/2>::type>
+struct MakeSequence : public ConcatSequence<typename MakeSequence<N / 2>::type, typename MakeSequence<N - N / 2>::type>
 {
-
 };
 
 template <>
-struct MakeSequence<0>
-    : public Sequence<>
+struct MakeSequence<0> : public Sequence<>
 {
-
 };
 
 template <>
-struct MakeSequence<1>
-    : Sequence<0>
+struct MakeSequence<1> : Sequence<0>
 {
-
 };
 
-}
+} // namespace mzx
 
 #endif

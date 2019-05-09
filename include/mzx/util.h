@@ -3,14 +3,15 @@
 
 #include <type_traits>
 
-namespace mzx {
+namespace mzx
+{
 
-template<typename E>
+template <typename E>
 inline typename std::underlying_type<E>::type EnumToValue(E e)
 {
     return static_cast<typename std::underlying_type<E>::type>(e);
 }
 
-}
+} // namespace mzx
 
 #endif

@@ -1,7 +1,8 @@
 #ifndef __DEFAULT_TYPE_H__
 #define __DEFAULT_TYPE_H__
 
-namespace mzx {
+namespace mzx
+{
 
 template <typename T>
 class DefaultType
@@ -13,6 +14,6 @@ public:
 template <typename T>
 const T DefaultType<T>::Value;
 
-}
+} // namespace mzx
 
 #endif

@@ -3,13 +3,14 @@
 
 #include <mzx/logger.h>
 
-namespace mzx {
+namespace mzx
+{
 
 template <typename RandIt, typename Compare>
 void ShellSort(RandIt begin, RandIt end, Compare comp)
 {
-    MZX_CHECK_STATIC(std::is_same<std::random_access_iterator_tag
-            , typename std::iterator_traits<RandIt>::iterator_category>::value);
+    MZX_CHECK_STATIC(
+        std::is_same<std::random_access_iterator_tag, typename std::iterator_traits<RandIt>::iterator_category>::value);
     MZX_CHECK(end > begin);
     for (auto gap = (end - begin) >> 1; gap > 0; gap >>= 1)
     {
@@ -36,6 +37,6 @@ void ShellSort(RandIt begin, RandIt end)
     ShellSort(begin, end, std::less<decltype(*begin)>());
 }
 
-}
+} // namespace mzx
 
 #endif

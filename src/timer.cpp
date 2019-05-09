@@ -1,9 +1,10 @@
-#include <cassert>
 #include <array>
-#include <mzx/timer.h>
+#include <cassert>
 #include <mzx/make_array.h>
+#include <mzx/timer.h>
 
-namespace mzx {
+namespace mzx
+{
 
 constexpr std::size_t TIMER_WHEEL_BITS[] = {8, 6, 6, 6, 6};
 constexpr auto TIMER_WHEEL_COUNT = sizeof(TIMER_WHEEL_BITS) / sizeof(TIMER_WHEEL_BITS[0]);
@@ -38,7 +39,7 @@ struct TimerBase
     TimerID id;
     int64_t expire_time;
     int64_t interval;
-    std::function<void ()> cb;
+    std::function<void()> cb;
     TimerBase *prev;
     TimerBase *next;
 };
@@ -52,7 +53,7 @@ static void ListTimerInsertTail(TimerBase *timer, TimerBase *head)
     head->prev = timer;
 }
 
-static TimerBase * ListTimerPopFront(TimerBase *head)
+static TimerBase *ListTimerPopFront(TimerBase *head)
 {
     if (!head || head->next == head)
     {
@@ -93,14 +94,14 @@ Timer::~Timer()
     timer_free_list_.clear();
     for (std::size_t i = 0; i < TIMER_WHEEL_COUNT; ++i)
     {
-        delete [] timer_wheel_list_[i];
+        delete[] timer_wheel_list_[i];
         timer_wheel_list_[i] = nullptr;
     }
-    delete [] timer_wheel_list_;
+    delete[] timer_wheel_list_;
     timer_wheel_list_ = nullptr;
 }
 
-TimerBase * Timer::GetFreeTimer()
+TimerBase *Timer::GetFreeTimer()
 {
     if (!timer_free_list_.empty())
     {
@@ -115,7 +116,7 @@ TimerBase * Timer::GetFreeTimer()
     return timer;
 }
 
-TimerBase * Timer::FindTimer(TimerID id)
+TimerBase *Timer::FindTimer(TimerID id)
 {
     if (id == TIMER_ID_INVALID)
     {
@@ -157,7 +158,7 @@ void Timer::InsertToWheel(TimerBase *timer)
     ListTimerInsertTail(timer, &timer_wheel_list_[i][index]);
 }
 
-TimerID Timer::SetTimer(std::function<void ()> cb, int64_t delay, int64_t interval)
+TimerID Timer::SetTimer(std::function<void()> cb, int64_t delay, int64_t interval)
 {
     if (!cb)
     {
@@ -272,4 +273,4 @@ void Timer::Update(int64_t now_time)
     }
 }
 
-}
+} // namespace mzx

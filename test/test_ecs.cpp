@@ -1,5 +1,5 @@
-#include <mzx/ecs.h>
 #include <iostream>
+#include <mzx/ecs.h>
 
 struct TestComponent
 {
@@ -12,7 +12,7 @@ struct TestComponent
     {
         std::cout << "TestComponent destruct" << std::endl;
     }
-    int a{ 0 };
+    int a{0};
 };
 
 struct TestComponent2
@@ -25,7 +25,7 @@ struct TestComponent2
     {
         std::cout << "TestComponent2 destruct" << std::endl;
     }
-    int a{ 0 };
+    int a{0};
 };
 
 class World
@@ -33,98 +33,107 @@ class World
 public:
     World()
     {
-
     }
     ~World()
     {
-
     }
+
 public:
-    mzx::EntityManager & GetEntityManager() { return entity_manager_; }
-    mzx::EntitySystemManager & GetSystemManager() { return system_manager_; }
-    mzx::EventManager<int, void()> & GetEventManager() { return event_manager_; }
+    mzx::EntityManager &GetEntityManager()
+    {
+        return entity_manager_;
+    }
+    mzx::EntitySystemManager &GetSystemManager()
+    {
+        return system_manager_;
+    }
+    mzx::EventManager<int, void()> &GetEventManager()
+    {
+        return event_manager_;
+    }
+
 private:
     mzx::EntityManager entity_manager_;
     mzx::EntitySystemManager system_manager_;
     mzx::EventManager<int, void()> event_manager_;
 };
 
-class TestSystem
-    : public mzx::EntitySystem<TestSystem>
+class TestSystem : public mzx::EntitySystem<TestSystem>
 {
 public:
     TestSystem(World &world)
         : world_(world)
     {
     }
+
 private:
     virtual bool _Init() override
     {
-        world_.GetEventManager().AddListener(1, [this](){
-            std::cout << "this is test system id:" << ClassIndex() << std::endl;
-        });
-        world_.GetEntityManager().ComponentAddEvent().AddListener([](mzx::Entity *entity, mzx::ComponentBase *component){
-            std::cout << "entity:" << entity->ID() << " add component" << component->ClassIndex() << std::endl;
-        });
-        world_.GetEntityManager().ComponentRemoveEvent().AddListener([](mzx::Entity *entity, mzx::ComponentBase *component){
-            std::cout << "entity:" << entity->ID() << " remove component" << component->ClassIndex() << std::endl;
-        });
+        world_.GetEventManager().AddListener(
+            1, [this]() { std::cout << "this is test system id:" << ClassIndex() << std::endl; });
+        world_.GetEntityManager().ComponentAddEvent().AddListener(
+            [](mzx::Entity *entity, mzx::ComponentBase *component) {
+                std::cout << "entity:" << entity->ID() << " add component" << component->ClassIndex() << std::endl;
+            });
+        world_.GetEntityManager().ComponentRemoveEvent().AddListener(
+            [](mzx::Entity *entity, mzx::ComponentBase *component) {
+                std::cout << "entity:" << entity->ID() << " remove component" << component->ClassIndex() << std::endl;
+            });
         return true;
     }
     virtual void _Uninit() override
     {
-
     }
     virtual void _Update() override
     {
         std::cout << "test begin" << std::endl;
-        world_.GetEntityManager().ForeachEntity([](mzx::Entity *entity){
+        world_.GetEntityManager().ForeachEntity([](mzx::Entity *entity) {
             if (entity->HasComponent<TestComponent>())
             {
-                std::cout << "entity:" << entity->ID()
-                    << " test component:" << entity->GetComponent<TestComponent>()->a << std::endl;
+                std::cout << "entity:" << entity->ID() << " test component:" << entity->GetComponent<TestComponent>()->a
+                          << std::endl;
             }
             return true;
         });
         std::cout << "test end" << std::endl;
     }
+
 private:
     World &world_;
 };
 
-class TestSystem2
-    : public mzx::EntitySystem<TestSystem2>
+class TestSystem2 : public mzx::EntitySystem<TestSystem2>
 {
 public:
     TestSystem2(World &world)
         : world_(world)
     {
     }
+
 private:
     virtual bool _Init() override
     {
-        world_.GetEventManager().AddListener(1, [this](){
-            std::cout << "this is test system2 id:" << ClassIndex() << std::endl;
-        });
+        world_.GetEventManager().AddListener(
+            1, [this]() { std::cout << "this is test system2 id:" << ClassIndex() << std::endl; });
         return true;
     }
     virtual void _Uninit() override
     {
-
     }
     virtual void _Update() override
     {
         std::cout << "test2 begin" << std::endl;
-        world_.GetEntityManager().ForeachEntity([](mzx::Entity *entity){
+        world_.GetEntityManager().ForeachEntity([](mzx::Entity *entity) {
             if (entity->HasComponent<TestComponent2>())
             {
                 std::cout << "entity:" << entity->ID()
-                    << " test component2:" << entity->GetComponent<TestComponent2>()->a << std::endl;
+                          << " test component2:" << entity->GetComponent<TestComponent2>()->a << std::endl;
             }
             return true;
         });
         std::cout << "test2 end" << std::endl;
     }
+
 private:
     World &world_;
 };

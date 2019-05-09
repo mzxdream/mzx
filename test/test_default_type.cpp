@@ -1,6 +1,6 @@
-#include <mzx/default_type.h>
 #include <iostream>
 #include <map>
+#include <mzx/default_type.h>
 
 struct Test1
 {
@@ -14,7 +14,7 @@ struct Test1
 class Test
 {
 public:
-    const Test1 & GetValue(int a) const
+    const Test1 &GetValue(int a) const
     {
         auto iter = test_list.find(a);
         if (iter == test_list.end())

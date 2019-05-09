@@ -1,11 +1,12 @@
 #ifndef __MZX_CONVERT_H__
 #define __MZX_CONVERT_H__
 
+#include <mzx/logger.h>
 #include <sstream>
 #include <string>
-#include <mzx/logger.h>
 
-namespace mzx {
+namespace mzx
+{
 
 template <typename Target, typename Source>
 inline bool ConvertTo(Source &&src, Target *tgt)
@@ -27,6 +28,6 @@ inline Target ConvertTo(Source &&src)
     return tgt;
 }
 
-}
+} // namespace mzx
 
 #endif

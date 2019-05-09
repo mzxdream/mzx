@@ -1,6 +1,7 @@
 #include <mzx/ecs.h>
 
-namespace mzx {
+namespace mzx
+{
 
 ComponentBase::ClassIndexType ComponentBase::class_index_counter_ = 0;
 
@@ -26,7 +27,7 @@ EntityManager::~EntityManager()
     RemoveAllEntity();
 }
 
-Entity * EntityManager::GetEntity(EntityID id)
+Entity *EntityManager::GetEntity(EntityID id)
 {
     auto iter_entity = entities_.find(id);
     if (iter_entity == entities_.end())
@@ -36,7 +37,7 @@ Entity * EntityManager::GetEntity(EntityID id)
     return iter_entity->second->entity;
 }
 
-Entity * EntityManager::AddEntity()
+Entity *EntityManager::AddEntity()
 {
     MZX_CHECK_STATIC(sizeof(Entity *) == sizeof(EventID));
     auto *entity = new Entity(*this);
@@ -71,7 +72,7 @@ void EntityManager::RemoveEntity(EntityID id)
 
 void EntityManager::RemoveAllEntity()
 {
-    for (auto *node = entity_list_.Next(); node != &entity_list_; )
+    for (auto *node = entity_list_.Next(); node != &entity_list_;)
     {
         auto *entry = MZX_LIST_ENTRY(node, EntityNode, list_link);
         if (!entry->entity)
@@ -90,10 +91,10 @@ void EntityManager::RemoveAllEntity()
     }
 }
 
-void EntityManager::ForeachEntity(std::function<bool (Entity *)> cb)
+void EntityManager::ForeachEntity(std::function<bool(Entity *)> cb)
 {
     MZX_CHECK(cb != nullptr);
-    for (auto *node = entity_list_.Next(); node != &entity_list_; )
+    for (auto *node = entity_list_.Next(); node != &entity_list_;)
     {
         auto *entry = MZX_LIST_ENTRY(node, EntityNode, list_link);
         if (!entry->entity)
@@ -112,22 +113,22 @@ void EntityManager::ForeachEntity(std::function<bool (Entity *)> cb)
     }
 }
 
-EntityManager::ComponentChangedEvent & EntityManager::ComponentAddEvent()
+EntityManager::ComponentChangedEvent &EntityManager::ComponentAddEvent()
 {
     return component_add_event_;
 }
 
-EntityManager::ComponentChangedEvent & EntityManager::ComponentRemoveEvent()
+EntityManager::ComponentChangedEvent &EntityManager::ComponentRemoveEvent()
 {
     return component_remove_event_;
 }
 
-EntityManager::EntityChangedEvent & EntityManager::EntityAddEvent()
+EntityManager::EntityChangedEvent &EntityManager::EntityAddEvent()
 {
     return entity_add_event_;
 }
 
-EntityManager::EntityChangedEvent & EntityManager::EntityRemoveEvent()
+EntityManager::EntityChangedEvent &EntityManager::EntityRemoveEvent()
 {
     return entity_remove_event_;
 }
@@ -177,7 +178,7 @@ void Entity::RemoveAllComponent()
     }
 }
 
-void Entity::ForeachComponent(std::function<bool (ComponentBase *)> cb)
+void Entity::ForeachComponent(std::function<bool(ComponentBase *)> cb)
 {
     if (!cb)
     {
@@ -205,7 +206,6 @@ EntitySystemBase::EntitySystemBase()
 
 EntitySystemBase::~EntitySystemBase()
 {
-
 }
 
 bool EntitySystemBase::Init()
@@ -230,12 +230,10 @@ bool EntitySystemBase::_Init()
 
 void EntitySystemBase::_Uninit()
 {
-
 }
 
 void EntitySystemBase::_Update()
 {
-
 }
 
 EntitySystemBase::ClassIndexType EntitySystemBase::ClassIndexCount()
@@ -255,7 +253,7 @@ EntitySystemManager::~EntitySystemManager()
 
 void EntitySystemManager::RemoveAllSystem()
 {
-    for (auto *node = system_list_.Next(); node != &system_list_; )
+    for (auto *node = system_list_.Next(); node != &system_list_;)
     {
         auto *entry = MZX_LIST_ENTRY(node, SystemNode, list_link);
         if (!entry->system)
@@ -273,7 +271,7 @@ void EntitySystemManager::RemoveAllSystem()
 
 void EntitySystemManager::UpdateAll()
 {
-    for (auto *node = system_list_.Next(); node != &system_list_; )
+    for (auto *node = system_list_.Next(); node != &system_list_;)
     {
         auto *entry = MZX_LIST_ENTRY(node, SystemNode, list_link);
         entry->IncrRef();
@@ -286,4 +284,4 @@ void EntitySystemManager::UpdateAll()
     }
 }
 
-}
+} // namespace mzx

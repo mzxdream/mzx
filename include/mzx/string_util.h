@@ -1,26 +1,27 @@
 #ifndef __MZX_STRING_UTIL_H__
 #define __MZX_STRING_UTIL_H__
 
-#include <string>
 #include <sstream>
+#include <string>
 #include <vector>
 
-namespace mzx {
+namespace mzx
+{
 
 template <typename O>
 inline void ConcatBase(O &os)
 {
 }
 
-template <typename O, typename T, typename ...Args>
-inline void ConcatBase(O &os, T &&val, Args && ...args)
+template <typename O, typename T, typename... Args>
+inline void ConcatBase(O &os, T &&val, Args &&... args)
 {
     os << val;
     ConcatBase(os, std::forward<Args>(args)...);
 }
 
-template <typename ...Args>
-inline std::string Concat(Args && ...args)
+template <typename... Args>
+inline std::string Concat(Args &&... args)
 {
     std::stringstream ss;
     ConcatBase(ss, std::forward<Args>(args)...);
@@ -137,6 +138,6 @@ inline std::vector<std::string> Split(const std::string &str, const char *delimi
     return v;
 }
 
-}
+} // namespace mzx
 
 #endif

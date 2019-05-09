@@ -3,7 +3,8 @@
 
 #include <cstdint>
 
-namespace mzx {
+namespace mzx
+{
 
 class Time
 {
@@ -12,6 +13,6 @@ public:
     static void Sleep(int64_t time);
 };
 
-}
+} // namespace mzx
 
 #endif
