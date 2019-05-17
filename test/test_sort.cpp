@@ -2,6 +2,7 @@
 #include <ctime>
 #include <iomanip>
 #include <iostream>
+#include <mzx/algorithm/sort/bucket_sort.h>
 #include <mzx/algorithm/sort/buddle_sort.h>
 #include <mzx/algorithm/sort/count_sort.h>
 #include <mzx/algorithm/sort/heap_sort.h>
@@ -49,5 +50,6 @@ int main(int argc, char *argv[])
     TEST_SORT(QuickSort);
     TEST_SORT(HeapSort);
     TEST_SORT(CountSort);
+    TEST_SORT(BucketSort);
     return 0;
 }
