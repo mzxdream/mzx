@@ -1,5 +1,6 @@
 #include <iostream>
-#include <mzx/list.h>
+
+#include <mzx/data_structure/list.h>
 
 struct Test
 {

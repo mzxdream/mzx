@@ -4,7 +4,8 @@
 #include <cstddef>
 #include <functional>
 #include <memory>
-#include <mzx/list.h>
+
+#include <mzx/data_structure/list.h>
 #include <mzx/logger.h>
 #include <unordered_map>
 
