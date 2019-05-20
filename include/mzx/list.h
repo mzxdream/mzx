@@ -22,7 +22,7 @@ public:
 public:
     inline bool IsLinked() const
     {
-        return next_ == this;
+        return next_ != this;
     }
     inline ListNode *Prev() const
     {
