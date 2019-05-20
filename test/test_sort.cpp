@@ -2,6 +2,8 @@
 #include <ctime>
 #include <iomanip>
 #include <iostream>
+#include <vector>
+
 #include <mzx/algorithm/sort/bucket_sort.h>
 #include <mzx/algorithm/sort/buddle_sort.h>
 #include <mzx/algorithm/sort/count_sort.h>
@@ -9,9 +11,9 @@
 #include <mzx/algorithm/sort/insert_sort.h>
 #include <mzx/algorithm/sort/merge_sort.h>
 #include <mzx/algorithm/sort/quick_sort.h>
+#include <mzx/algorithm/sort/radix_sort.h>
 #include <mzx/algorithm/sort/select_sort.h>
 #include <mzx/algorithm/sort/shell_sort.h>
-#include <vector>
 
 template <typename T>
 void PrintInfo(const T &sort_list)
@@ -51,5 +53,6 @@ int main(int argc, char *argv[])
     TEST_SORT(HeapSort);
     TEST_SORT(CountSort);
     TEST_SORT(BucketSort);
+    TEST_SORT(RadixSort);
     return 0;
 }

@@ -15,8 +15,11 @@ void BucketSort(RandIt begin, RandIt end, Compare comp)
 {
     MZX_CHECK_STATIC(
         std::is_same<std::random_access_iterator_tag, typename std::iterator_traits<RandIt>::iterator_category>::value);
-    typename std::decay<decltype(*begin)>::type num = 10;
-    std::map<decltype(num), std::vector<decltype(num)>> buckets;
+    MZX_CHECK_STATIC(std::is_integral<typename std::decay<decltype(*begin)>::type>::value);
+    MZX_CHECK(end > begin);
+    using T = typename std::decay<decltype(*begin)>::type;
+    T num = 10;
+    std::map<T, std::vector<T>> buckets;
     for (auto iter = begin; iter != end; ++iter)
     {
         buckets[*iter / num].emplace_back(std::move(*iter));
