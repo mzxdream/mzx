@@ -1,6 +1,7 @@
 #ifndef __MZX_UTIL_H__
 #define __MZX_UTIL_H__
 
+#include <string>
 #include <type_traits>
 
 namespace mzx
@@ -11,6 +12,8 @@ inline typename std::underlying_type<E>::type EnumToValue(E e)
 {
     return static_cast<typename std::underlying_type<E>::type>(e);
 }
+
+std::string Demangle(const char *name);
 
 } // namespace mzx
 
