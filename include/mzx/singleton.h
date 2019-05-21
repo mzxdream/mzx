@@ -2,6 +2,7 @@
 #define __MZX_SINGLETON_H__
 
 #include <mutex>
+
 #include <mzx/null_mutex.h>
 
 namespace mzx

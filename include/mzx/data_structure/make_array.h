@@ -2,7 +2,8 @@
 #define __MZX_MAKE_ARRAY_H__
 
 #include <array>
-#include <mzx/make_sequence.h>
+
+#include <mzx/data_structure/make_sequence.h>
 
 namespace mzx
 {

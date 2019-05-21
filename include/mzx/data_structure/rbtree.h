@@ -6,7 +6,7 @@
 
 namespace mzx
 {
-
+#if 0
 class RBTreeNode final
 {
 public:
@@ -359,6 +359,7 @@ private:
     RBTreeNode *root_{nullptr};
     Compare compare_;
 };
+#endif
 
 } // namespace mzx
 

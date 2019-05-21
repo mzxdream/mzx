@@ -1,7 +1,8 @@
-#include <mzx/logger.h>
-#include <mzx/time.h>
 #include <sys/time.h>
 #include <unistd.h>
+
+#include <mzx/logger.h>
+#include <mzx/time.h>
 
 namespace mzx
 {

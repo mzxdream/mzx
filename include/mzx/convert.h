@@ -9,7 +9,7 @@ namespace mzx
 {
 
 template <typename Target, typename Source>
-inline bool ConvertTo(Source &&src, Target *tgt)
+inline bool TryConvertTo(Source &&src, Target *tgt)
 {
     MZX_CHECK(tgt != nullptr);
     std::stringstream ss;
@@ -24,6 +24,18 @@ inline Target ConvertTo(Source &&src)
     if (!(ss << std::forward<Source>(src)) || !(ss >> tgt) || !ss.eof())
     {
         MZX_CHECK(false, "convert failed");
+    }
+    return tgt;
+}
+
+template <typename Target, typename Source>
+inline Target ConvertTo(Source &&src, const Target &def_tgt)
+{
+    std::stringstream ss;
+    Target tgt;
+    if (!(ss << std::forward<Source>(src)) || !(ss >> tgt) || !ss.eof())
+    {
+        return def_tgt;
     }
     return tgt;
 }

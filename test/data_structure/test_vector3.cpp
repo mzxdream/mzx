@@ -1,5 +1,5 @@
 #include <iostream>
-#include <mzx/vector3.h>
+#include <mzx/data_structure/vector3.h>
 
 int main(int argc, char *argv[])
 {

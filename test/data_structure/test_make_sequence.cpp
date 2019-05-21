@@ -1,6 +1,7 @@
 #include <array>
 #include <iostream>
-#include <mzx/make_sequence.h>
+
+#include <mzx/data_structure/make_sequence.h>
 
 template <std::size_t... I>
 const auto MakeArray(mzx::Sequence<I...>) -> std::array<std::size_t, sizeof...(I)>

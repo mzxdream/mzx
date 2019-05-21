@@ -1,6 +1,7 @@
 #include <array>
-#include <cassert>
-#include <mzx/make_array.h>
+
+#include <mzx/data_structure/make_array.h>
+#include <mzx/logger.h>
 #include <mzx/timer.h>
 
 namespace mzx
@@ -46,7 +47,7 @@ struct TimerBase
 
 static void ListTimerInsertTail(TimerBase *timer, TimerBase *head)
 {
-    assert(timer != nullptr && head != nullptr && "timer or head is null");
+    MZX_CHECK(timer != nullptr && head != nullptr && "timer or head is null");
     timer->next = head;
     timer->prev = head->prev;
     head->prev->next = timer;
@@ -137,7 +138,7 @@ TimerBase *Timer::FindTimer(TimerID id)
 
 void Timer::InsertToWheel(TimerBase *timer)
 {
-    assert(timer != nullptr && "timer is nullptr");
+    MZX_CHECK(timer != nullptr && "timer is nullptr");
     int64_t delay = timer->expire_time - cur_time_;
     if (delay <= 0)
     {

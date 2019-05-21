@@ -1,8 +1,9 @@
 #include <cstdio>
 #include <cstdlib>
+#include <utility>
+
 #include <mzx/logger.h>
 #include <mzx/util.h>
-#include <utility>
 
 namespace mzx
 {

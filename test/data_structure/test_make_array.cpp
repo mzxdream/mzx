@@ -1,5 +1,5 @@
 #include <iostream>
-#include <mzx/make_array.h>
+#include <mzx/data_structure/make_array.h>
 
 constexpr std::size_t power(std::size_t i)
 {

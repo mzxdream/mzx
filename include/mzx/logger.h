@@ -2,8 +2,9 @@
 #define __MZX_LOGGER_H__
 
 #include <functional>
-#include <mzx/macro_util.h>
 #include <sstream>
+
+#include <mzx/macro_util.h>
 
 namespace mzx
 {
