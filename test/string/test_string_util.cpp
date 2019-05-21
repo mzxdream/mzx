@@ -1,5 +1,6 @@
 #include <iostream>
-#include <mzx/string_util.h>
+
+#include <mzx/string/string_util.h>
 
 int main(int argc, char *argv[])
 {

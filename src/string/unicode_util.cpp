@@ -1,5 +1,6 @@
 #include <cstdint>
-#include <mzx/unicode_util.h>
+
+#include <mzx/string/unicode_util.h>
 
 namespace mzx
 {

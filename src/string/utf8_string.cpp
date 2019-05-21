@@ -1,4 +1,4 @@
-#include <mzx/utf8_string.h>
+#include <mzx/string/utf8_string.h>
 
 namespace mzx
 {
