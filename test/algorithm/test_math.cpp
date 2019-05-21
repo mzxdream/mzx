@@ -1,5 +1,6 @@
 #include <iostream>
-#include <mzx/math.h>
+
+#include <mzx/algorithm/math.h>
 
 int main(int argc, char *argv[])
 {
