@@ -2,6 +2,7 @@
 #include <cxxabi.h>
 #include <execinfo.h>
 #include <memory>
+#include <sstream>
 #include <unistd.h>
 
 #include <mzx/logger.h>
@@ -10,7 +11,7 @@
 namespace mzx
 {
 
-int GetCPUCount()
+int CPUCount()
 {
     return sysconf(_SC_NPROCESSORS_ONLN);
 }
@@ -22,15 +23,16 @@ std::string Demangle(const char *name)
     return status == 0 ? res.get() : name;
 }
 
-void ForeachStackTrace(std::function<bool(const char *)> cb)
+std::string BackTrace()
 {
-    MZX_CHECK(cb != nullptr);
-    void *addresses[128];
-    auto size = backtrace(addresses, sizeof(addresses) / sizeof(addresses[0]));
-    std::unique_ptr<char *, void (*)(void *)> symbols{backtrace_symbols(addresses, size), std::free};
-    for (decltype(size) i = 0; i < size; ++i)
+    void *bt[128];
+    auto bt_size = backtrace(bt, sizeof(bt) / sizeof(bt[0]));
+    std::unique_ptr<char *, void (*)(void *)> bt_symbols{backtrace_symbols(bt, bt_size), std::free};
+    std::ostringstream ss;
+    ss << "backtrace begin\n";
+    for (decltype(bt_size) i = 1; i < bt_size; ++i)
     {
-        auto *symbol = symbols.get()[i];
+        auto *symbol = bt_symbols.get()[i];
         char *mangled_begin = nullptr;
         char *mangled_end = nullptr;
         for (auto *p = symbol; *p; ++p)
@@ -54,21 +56,14 @@ void ForeachStackTrace(std::function<bool(const char *)> cb)
             *mangled_end = '+';
             if (status == 0)
             {
-                std::string mangled_symbol(symbol, mangled_begin - symbol - 1);
-                mangled_symbol += res.get();
-                mangled_symbol += mangled_end;
-                if (!cb(mangled_symbol.c_str()))
-                {
-                    break;
-                }
+                ss.write(symbol, mangled_begin - symbol);
+                ss << res.get() << mangled_end << '\n';
                 continue;
             }
         }
-        if (!cb(symbol))
-        {
-            break;
-        }
+        ss << symbol << '\n';
     }
+    return ss.str();
 }
 
 } // namespace mzx

@@ -5,4 +5,4 @@ if [ $# -ne 1 ]; then
     exit 0
 fi
 
-g++ -Wall -g -rdynamic -o test $1 -I../include -L../out_lib -lmzx -static -std=c++11
+g++ -Wall -g -rdynamic -o test $1 -I../include -L../out_lib -l:libmzx.a -std=c++11

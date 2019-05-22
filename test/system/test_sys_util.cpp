@@ -5,11 +5,8 @@
 
 void Test3()
 {
-    std::cout << 2 << std::endl;
-    mzx::ForeachStackTrace([](const char *symbol) {
-        std::cout << "symbol:" << symbol << std::endl;
-        return true;
-    });
+    std::cout << 3 << std::endl;
+    std::cout << mzx::BackTrace() << std::endl;
 }
 
 void Test2()
@@ -36,7 +33,7 @@ int main(int argc, char *argv[])
     std::function<void(int, int)> b;
     std::cout << "a: " << typeid(a).name() << " -> " << mzx::Demangle(typeid(a).name()) << std::endl;
     std::cout << "b: " << typeid(b).name() << " -> " << mzx::Demangle(typeid(b).name()) << std::endl;
-    std::cout << "CPU count:" << mzx::GetCPUCount() << std::endl;
+    std::cout << "CPU count:" << mzx::CPUCount() << std::endl;
     Test();
     return 0;
 }
