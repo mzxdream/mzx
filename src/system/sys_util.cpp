@@ -32,6 +32,7 @@ std::string BackTrace()
     ss << "backtrace begin\n";
     for (decltype(bt_size) i = 1; i < bt_size; ++i)
     {
+        ss << bt[i] << " -> ";
         auto *symbol = bt_symbols.get()[i];
         char *mangled_begin = nullptr;
         char *mangled_end = nullptr;
@@ -63,6 +64,7 @@ std::string BackTrace()
         }
         ss << symbol << '\n';
     }
+    ss << "backtrace end";
     return ss.str();
 }
 
