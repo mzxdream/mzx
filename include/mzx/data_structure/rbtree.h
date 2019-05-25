@@ -22,15 +22,14 @@ public:
     RBTreeNode *Left();
     RBTreeNode *Right();
 
-    void Link(RBTreeNode *parent, RBTreeNode **link)
+    void Link(RBTreeNode *parent, RBTreeNode **link, RBTreeNode **root)
     {
         parent_color_ = static_cast<unsigned long>(parent);
         left_ = nullptr;
         right_ = nullptr;
         *link = this;
     }
-    void SetParentColor(RBTreeNode *parent, Color color);
-
+    void Insert(RBTreeNode **root);
 private:
     unsigned long parent_color_{0};
     RBTreeNode *left_{nullptr};
@@ -86,8 +85,7 @@ public:
             }
         }
         node->Link(parent, link);
-        //check repeat
-        // TODO
+        //TODO check repeat
     }
     void InsertEqual(RBTreeNode *node)
     {
