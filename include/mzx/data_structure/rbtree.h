@@ -71,42 +71,42 @@ public:
     bool Insert(RBTreeNode *node)
     {
         MZX_CHECK(node != nullptr);
-        auto **new_link = &root_;
+        auto **link = &root_;
         RBTreeNode *parent = nullptr;
-        while (*new_link)
+        while (*link)
         {
-            parent = *new_link;
+            parent = *link;
             if (key_comp_(key_of_node_(node), key_of_node_(parent)))
             {
-                new_link = &parent->Left();
+                link = &parent->Left();
             }
             else
             {
-                new_link = &parent->Right();
+                link = &parent->Right();
             }
         }
-        node->Link(parent, new_link);
+        node->Link(parent, link);
         //check repeat
         // TODO
     }
     void InsertEqual(RBTreeNode *node)
     {
         MZX_CHECK(node != nullptr);
-        auto **new_link = &root_;
+        auto **link = &root_;
         RBTreeNode *parent = nullptr;
-        while (*new_link)
+        while (*link)
         {
-            parent = *new_link;
+            parent = *link;
             if (key_comp_(key_of_node_(node), key_of_node_(parent)))
             {
-                new_link = &parent->Left();
+                link = &parent->Left();
             }
             else
             {
-                new_link = &parent->Right();
+                link = &parent->Right();
             }
         }
-        node->Link(parent, new_link);
+        node->Link(parent, link);
         // TODO
     }
 
