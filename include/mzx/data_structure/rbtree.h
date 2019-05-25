@@ -30,6 +30,7 @@ public:
         *link = this;
     }
     void SetParentColor(RBTreeNode *parent, Color color);
+
 private:
     unsigned long parent_color_{0};
     RBTreeNode *left_{nullptr};
@@ -85,8 +86,28 @@ public:
             }
         }
         node->Link(parent, new_link);
-        //TODO
-        
+        //check repeat
+        // TODO
+    }
+    void InsertEqual(RBTreeNode *node)
+    {
+        MZX_CHECK(node != nullptr);
+        auto **new_link = &root_;
+        RBTreeNode *parent = nullptr;
+        while (*new_link)
+        {
+            parent = *new_link;
+            if (key_comp_(key_of_node_(node), key_of_node_(parent)))
+            {
+                new_link = &parent->Left();
+            }
+            else
+            {
+                new_link = &parent->Right();
+            }
+        }
+        node->Link(parent, new_link);
+        // TODO
     }
 
 private:
