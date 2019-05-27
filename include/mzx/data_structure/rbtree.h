@@ -13,7 +13,7 @@ class RBTreeNode final
 public:
     inline RBTreeNode *Parent() const
     {
-        return parent_color_ & ~3;
+        return static_cast<RBTreeNode *>(parent_color_ & ~3);
     }
     inline bool IsBlack() const
     {
@@ -30,6 +30,22 @@ public:
     inline RBTreeNode *Right() const
     {
         return right_;
+    }
+    inline void SetParentAndBlackColor(RBTreeNode *parent)
+    {
+        parent_color_ = static_cast<unsigned long>(parent) | 1;
+    }
+    inline void SetParentAndRedColor(RBTreeNode *parent)
+    {
+        parent_color_ = static_cast<unsigned long>(parent);
+    }
+    inline void SetLeft(RBTreeNode *node)
+    {
+        left_ = node;
+    }
+    inline void SetRight(RBTreeNode *node)
+    {
+        right_ = node;
     }
     void Insert(RBTreeNode *parent, RBTreeNode **link, RBTreeNode **root);
     void Erase(RBTreeNode **root);
