@@ -33,4 +33,12 @@
 
 #define MZX_VA_SELECT(NAME, ...) MZX_CAT(NAME##_, MZX_VA_SIZE(__VA_ARGS__))(__VA_ARGS__)
 
+#define MZX_OFFSETOF(type, member) (std::size_t) & (((type *)0)->member)
+
+#define MZX_CONTAINER_OF(ptr, type, member)                                                                            \
+    ({                                                                                                                 \
+        const decltype(((type *)0)->member) *__mptr = (ptr);                                                           \
+        (type *)((char *)__mptr - (std::size_t) & (((type *)0)->member));                                              \
+    })
+
 #endif

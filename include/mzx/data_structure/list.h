@@ -2,6 +2,7 @@
 #define __MZX_LIST_H__
 
 #include <mzx/logger.h>
+#include <mzx/macro_util.h>
 
 namespace mzx
 {
@@ -65,11 +66,7 @@ private:
     ListNode *next_{nullptr};
 };
 
-#define MZX_LIST_ENTRY(node, type, member)                                                                             \
-    ({                                                                                                                 \
-        const decltype(((type *)0)->member) *ptr = (node);                                                             \
-        (type *)((char *)ptr - (std::size_t) & ((type *)0)->member);                                                   \
-    })
+#define MZX_LIST_ENTRY(node, type, member) MZX_CONTAINER_OF(node, type, member)
 
 } // namespace mzx
 
