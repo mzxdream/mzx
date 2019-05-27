@@ -11,6 +11,10 @@ namespace mzx
 class RBTreeNode final
 {
 public:
+    inline unsigned long ParentColor() const
+    {
+        return parent_color_;
+    }
     inline RBTreeNode *Parent() const
     {
         return static_cast<RBTreeNode *>(parent_color_ & ~3);
@@ -31,13 +35,19 @@ public:
     {
         return right_;
     }
-    inline void SetParentAndBlackColor(RBTreeNode *parent)
+
+public:
+    inline void SetParentColor(unsigned long parent_color)
     {
-        parent_color_ = static_cast<unsigned long>(parent) | 1;
+        parent_color_ = parent_color;
     }
-    inline void SetParentAndRedColor(RBTreeNode *parent)
+    inline void SetParentColor(RBTreeNode *parent, bool is_black)
     {
-        parent_color_ = static_cast<unsigned long>(parent);
+        parent_color_ = static_cast<unsigned long>(parent) | is_black;
+    }
+    inline void SetParent(RBTreeNode *parent)
+    {
+        parent_color_ = static_cast<unsigned long>(parent) | (parent_color_ & 1);
     }
     inline void SetLeft(RBTreeNode *node)
     {

@@ -3,9 +3,32 @@
 namespace mzx
 {
 
+static void RBTreeRotateSetParents(RBTreeNode *old_node, RBTreeNode *new_node, RBTreeNode **root, bool is_black)
+{
+    // MZX_CHECK(old_node != nullptr && new_node != nullptr && root != nullptr);
+    RBTreeNode *parent = old_node->Parent();
+    new_node->SetParentColor(old_node->ParentColor());
+    old_node->SetParentColor(new_node, is_black);
+    if (parent)
+    {
+        if (parent->Left() == old_node)
+        {
+            parent->SetLeft(new_node);
+        }
+        else
+        {
+            parent->SetRight(new_node);
+        }
+    }
+    else
+    {
+        *root = new_node;
+    }
+}
+
 static void RBTreeInsert(RBTreeNode *node, RBTreeNode **root)
 {
-    MZX_CHECK(node != nullptr && root != nullptr);
+    // MZX_CHECK(node != nullptr && root != nullptr);
     RBTreeNode *parent = node->Parent();
     RBTreeNode *gparent = nullptr;
     RBTreeNode *tmp = nullptr;
@@ -13,7 +36,7 @@ static void RBTreeInsert(RBTreeNode *node, RBTreeNode **root)
     {
         if (!parent)
         {
-            node->SetParentAndBlackColor(nullptr);
+            node->SetParentColor(nullptr, true);
             break;
         }
         if (parent->IsBlack())
@@ -26,11 +49,11 @@ static void RBTreeInsert(RBTreeNode *node, RBTreeNode **root)
         {
             if (tmp && tmp->IsRed())
             {
-                tmp->SetParentAndBlackColor(gparent);
-                parent->SetParentAndBlackColor(gparent);
+                tmp->SetParentColor(gparent, true);
+                parent->SetParentColor(gparent, true);
                 node = gparent;
                 parent = node->Parent();
-                node->SetParentAndRedColor(parent);
+                node->SetParentColor(parent, false);
                 continue;
             }
             tmp = parent->Right();
@@ -41,9 +64,9 @@ static void RBTreeInsert(RBTreeNode *node, RBTreeNode **root)
                 node->SetLeft(parent);
                 if (tmp)
                 {
-                    tmp->SetParentAndBlackColor(parent);
+                    tmp->SetParentColor(parent, true);
                 }
-                parent->SetParentAndRedColor(node);
+                parent->SetParentColor(node, false);
                 parent = node;
                 tmp = node->Right();
             }
@@ -51,9 +74,45 @@ static void RBTreeInsert(RBTreeNode *node, RBTreeNode **root)
             parent->SetRight(gparent);
             if (tmp)
             {
-                tmp->SetParentAndBlackColor(gparent);
+                tmp->SetParentColor(gparent, true);
             }
-            RBTreeRotateSetParents(gparent, parent, root, RB_RED);
+            RBTreeRotateSetParents(gparent, parent, root, false);
+            break;
+        }
+        else
+        {
+            tmp = gparent->Left();
+            if (tmp && tmp->IsRed())
+            {
+                tmp->SetParentColor(gparent, true);
+                parent->SetParentColor(gparent, true);
+                node = gparent;
+                parent = node->Parent();
+                node->SetParentColor(parent, false);
+                continue;
+            }
+            tmp = parent->Left();
+            if (node == tmp)
+            {
+                tmp = node->Right();
+                parent->SetLeft(tmp);
+                node->SetRight(parent);
+                if (tmp)
+                {
+                    tmp->SetParentColor(parent, true);
+                }
+                parent->SetParentColor(node, false);
+                parent = node;
+                tmp = node->Left();
+            }
+            gparent->SetRight(tmp);
+            parent->SetLeft(gparent);
+            if (tmp)
+            {
+                tmp->SetParentColor(gparent, true);
+            }
+            RBTreeRotateSetParents(gparent, parent, root, false);
+            break;
         }
     }
 }
