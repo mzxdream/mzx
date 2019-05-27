@@ -37,6 +37,20 @@ public:
     }
 
 public:
+    static RBTreeNode *Parent(unsigned parent_color)
+    {
+        return static_cast<RBTreeNode *>(parent_color & ~3);
+    }
+    static bool IsBlack(unsigned long parent_color)
+    {
+        return parent_color & 1;
+    }
+    static bool IsRed(unsigned long parent_color)
+    {
+        return !RBTreeNode::IsBlack(parent_color);
+    }
+
+public:
     inline void SetParentColor(unsigned long parent_color)
     {
         parent_color_ = parent_color;
@@ -48,6 +62,14 @@ public:
     inline void SetParent(RBTreeNode *parent)
     {
         parent_color_ = static_cast<unsigned long>(parent) | (parent_color_ & 1);
+    }
+    inline void SetBlack()
+    {
+        parent_color_ |= 1;
+    }
+    inline void SetRed()
+    {
+        parent_color_ &= ~3;
     }
     inline void SetLeft(RBTreeNode *node)
     {

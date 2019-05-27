@@ -3,12 +3,9 @@
 namespace mzx
 {
 
-static void RBTreeRotateSetParents(RBTreeNode *old_node, RBTreeNode *new_node, RBTreeNode **root, bool is_black)
+static void RBTreeChangeChild(RBTreeNode *old_node, RBTreeNode *new_node, RBTreeNode *parent, RBTreeNode **root)
 {
-    // MZX_CHECK(old_node != nullptr && new_node != nullptr && root != nullptr);
-    RBTreeNode *parent = old_node->Parent();
-    new_node->SetParentColor(old_node->ParentColor());
-    old_node->SetParentColor(new_node, is_black);
+    // MZX_CHECK(old_node != nullptr && new_node != nullptr && parent != nullptr && root != nullptr);
     if (parent)
     {
         if (parent->Left() == old_node)
@@ -24,6 +21,15 @@ static void RBTreeRotateSetParents(RBTreeNode *old_node, RBTreeNode *new_node, R
     {
         *root = new_node;
     }
+}
+
+static void RBTreeRotateSetParents(RBTreeNode *old_node, RBTreeNode *new_node, RBTreeNode **root, bool is_black)
+{
+    // MZX_CHECK(old_node != nullptr && new_node != nullptr && root != nullptr);
+    RBTreeNode *parent = old_node->Parent();
+    new_node->SetParentColor(old_node->ParentColor());
+    old_node->SetParentColor(new_node, is_black);
+    RBTreeChangeChild(old_node, new_node, parent, root);
 }
 
 static void RBTreeInsert(RBTreeNode *node, RBTreeNode **root)
@@ -117,6 +123,206 @@ static void RBTreeInsert(RBTreeNode *node, RBTreeNode **root)
     }
 }
 
+static void RBTreeErase(RBTreeNode *node, RBTreeNode **root)
+{
+    // MZX_CHECK(node != nullptr && root != nullptr);
+    RBTreeNode *child = node->Right();
+    RBTreeNode *tmp = node->Left();
+    RBTreeNode *parent = nullptr;
+    RBTreeNode *rebalance = nullptr;
+    unsigned long pc = 0;
+    if (!tmp)
+    {
+        pc = node->ParentColor();
+        parent = RBTreeNode::Parent(pc);
+        RBTreeChangeChild(node, child, parent, root);
+        if (child)
+        {
+            child->SetParentColor(pc);
+            rebalance = nullptr;
+        }
+        else
+        {
+            rebalance = RBTreeNode::IsBlack(pc) ? parent : nullptr;
+        }
+        tmp = parent;
+    }
+    else if (!child)
+    {
+        pc = node->ParentColor();
+        tmp->SetParentColor(pc);
+        parent = RBTreeNode::Parent(pc);
+        RBTreeChangeChild(node, tmp, parent, root);
+        rebalance = nullptr;
+        tmp = parent;
+    }
+    else
+    {
+        RBTreeNode *successor = child;
+        RBTreeNode *child2 = nullptr;
+        if (!tmp)
+        {
+            parent = successor;
+            child2 = successor->Right();
+        }
+        else
+        {
+            do
+            {
+                parent = successor;
+                successor = tmp;
+                tmp = tmp->Left();
+            } while (tmp);
+            child2 = successor->Right();
+            parent->SetLeft(child2);
+            successor->SetRight(child);
+            child->SetParent(successor);
+        }
+        tmp = node->Left();
+        successor->SetLeft(tmp);
+        tmp->SetParent(successor);
+        pc = node->ParentColor();
+        tmp = RBTreeNode::Parent(pc);
+        RBTreeChangeChild(node, successor, tmp, root);
+        if (child2)
+        {
+            successor->SetParentColor(pc);
+            child2->SetParentColor(parent, true);
+            rebalance = nullptr;
+        }
+        else
+        {
+            unsigned long pc2 = successor->ParentColor();
+            successor->SetParentColor(pc);
+            rebalance = RBTreeNode::IsBlack(pc2) ? parent : nullptr;
+        }
+        // tmp = successor;
+    }
+    if (rebalance)
+    {
+        parent = rebalance;
+        node = nullptr;
+        RBTreeNode *sibling = nullptr;
+        RBTreeNode *tmp1 = nullptr;
+        RBTreeNode *tmp2 = nullptr;
+        while (true)
+        {
+            sibling = parent->Right();
+            if (node != sibling)
+            {
+                if (sibling->IsRed())
+                {
+                    tmp1 = sibling->Left();
+                    parent->SetRight(tmp1);
+                    sibling->SetLeft(parent);
+                    tmp1->SetParentColor(parent, true);
+                    RBTreeRotateSetParents(parent, sibling, root, false);
+                    sibling = tmp1;
+                }
+                tmp1 = sibling->Right();
+                if (!tmp1 || tmp1->IsBlack())
+                {
+                    tmp2 = sibling->Left();
+                    if (!tmp2 || tmp2->IsBlack())
+                    {
+                        sibling->SetParentColor(parent, false);
+                        if (parent->IsRed())
+                        {
+                            parent->SetBlack();
+                        }
+                        else
+                        {
+                            node = parent;
+                            parent = node->Parent();
+                            if (parent)
+                            {
+                                continue;
+                            }
+                        }
+                        break;
+                    }
+                    tmp1 = tmp2->Right();
+                    sibling->SetLeft(tmp1);
+                    tmp2->SetRight(sibling);
+                    parent->SetRight(tmp2);
+                    if (tmp1)
+                    {
+                        tmp1->SetParentColor(sibling, true);
+                    }
+                    tmp1 = sibling;
+                    sibling = tmp2;
+                }
+                tmp2 = sibling->Left();
+                parent->SetRight(tmp2);
+                sibling->SetLeft(parent);
+                tmp1->SetParentColor(sibling, true);
+                if (tmp2)
+                {
+                    tmp2->SetParent(parent);
+                }
+                RBTreeRotateSetParents(parent, sibling, root, true);
+                break;
+            }
+            else
+            {
+                sibling = parent->Left();
+                if (sibling->IsRed())
+                {
+                    tmp1 = sibling->Right();
+                    parent->SetLeft(tmp1);
+                    sibling->SetRight(parent);
+                    tmp1->SetParentColor(parent, true);
+                    RBTreeRotateSetParents(parent, sibling, root, false);
+                    sibling = tmp1;
+                }
+                tmp1 = sibling->Left();
+                if (!tmp1 || tmp1->IsBlack())
+                {
+                    tmp2 = sibling->Right();
+                    if (!tmp2 || tmp2->IsBlack())
+                    {
+                        sibling->SetParentColor(parent, false);
+                        if (parent->IsRed())
+                        {
+                            parent->SetBlack();
+                        }
+                        else
+                        {
+                            node = parent;
+                            parent = node->Parent();
+                            if (parent)
+                            {
+                                continue;
+                            }
+                        }
+                        break;
+                    }
+                    tmp1 = tmp2->Left();
+                    sibling->SetRight(tmp1);
+                    tmp2->SetLeft(sibling);
+                    parent->SetLeft(tmp2);
+                    if (tmp1)
+                    {
+                        tmp1->SetParentColor(sibling, true);
+                    }
+                    tmp1 = sibling;
+                    sibling = tmp2;
+                }
+                tmp2 = sibling->Right();
+                parent->SetLeft(tmp2);
+                sibling->SetRight(parent);
+                tmp1->SetParentColor(sibling, true);
+                if (tmp2)
+                {
+                    tmp2->SetParent(parent);
+                }
+                RBTreeRotateSetParents(parent, sibling, root, true);
+                break;
+            }
+        }
+    }
+}
+
 void RBTreeNode::Insert(RBTreeNode *parent, RBTreeNode **link, RBTreeNode **root)
 {
     MZX_CHECK(parent != nullptr && link != nullptr && root != nullptr);
@@ -125,6 +331,12 @@ void RBTreeNode::Insert(RBTreeNode *parent, RBTreeNode **link, RBTreeNode **root
     right_ = nullptr;
     *link = this;
     RBTreeInsert(this, root);
+}
+
+void RBTreeNode::Erase(RBTreeNode **root)
+{
+    MZX_CHECK(root != nullptr);
+    RBTreeErase(this, root);
 }
 
 } // namespace mzx
