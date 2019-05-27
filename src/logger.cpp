@@ -4,6 +4,7 @@
 
 #include <mzx/logger.h>
 #include <mzx/util.h>
+#include <mzx/system/sys_util.h>
 
 namespace mzx
 {
@@ -20,6 +21,7 @@ static void LogPrint(Logger::Level level, const char *file_name, int line, const
 
 static void LogFatal()
 {
+    fprintf(stderr, "%s", BackTrace().c_str());
     std::abort();
 }
 

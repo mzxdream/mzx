@@ -64,7 +64,7 @@ std::string BackTrace()
         }
         ss << symbol << '\n';
     }
-    ss << "backtrace end";
+    ss << "backtrace end\n";
     return ss.str();
 }
 
