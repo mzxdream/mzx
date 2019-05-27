@@ -326,7 +326,7 @@ static void RBTreeErase(RBTreeNode *node, RBTreeNode **root)
 void RBTreeNode::Insert(RBTreeNode *parent, RBTreeNode **link, RBTreeNode **root)
 {
     MZX_CHECK(parent != nullptr && link != nullptr && root != nullptr);
-    SetParentAndRedColor(parent);
+    SetParentColor(parent, false);
     left_ = nullptr;
     right_ = nullptr;
     *link = this;

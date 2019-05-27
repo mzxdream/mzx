@@ -8,8 +8,14 @@
 namespace mzx
 {
 
+template <typename Key, typename KeyOfNode, typename Compare>
+class RBTree;
+
 class RBTreeNode final
 {
+    template <typename Key, typename KeyOfNode, typename Compare>
+    friend class RBTree;
+
 public:
     inline unsigned long ParentColor() const
     {
@@ -17,7 +23,7 @@ public:
     }
     inline RBTreeNode *Parent() const
     {
-        return static_cast<RBTreeNode *>(parent_color_ & ~3);
+        return reinterpret_cast<RBTreeNode *>(parent_color_ & ~3);
     }
     inline bool IsBlack() const
     {
@@ -39,7 +45,7 @@ public:
 public:
     static RBTreeNode *Parent(unsigned parent_color)
     {
-        return static_cast<RBTreeNode *>(parent_color & ~3);
+        return reinterpret_cast<RBTreeNode *>(parent_color & ~3);
     }
     static bool IsBlack(unsigned long parent_color)
     {
@@ -57,11 +63,11 @@ public:
     }
     inline void SetParentColor(RBTreeNode *parent, bool is_black)
     {
-        parent_color_ = static_cast<unsigned long>(parent) | is_black;
+        parent_color_ = reinterpret_cast<unsigned long>(parent) | is_black;
     }
     inline void SetParent(RBTreeNode *parent)
     {
-        parent_color_ = static_cast<unsigned long>(parent) | (parent_color_ & 1);
+        parent_color_ = reinterpret_cast<unsigned long>(parent) | (parent_color_ & 1);
     }
     inline void SetBlack()
     {
@@ -129,14 +135,16 @@ public:
             parent = *link;
             if (key_comp_(key_of_node_(node), key_of_node_(parent)))
             {
-                link = &parent->Left();
+                link = &parent->left_;
             }
             else
             {
-                link = &parent->Right();
+                link = &parent->right_;
             }
         }
-        node->Link(parent, link, &root_);
+        // Check euqal
+        node->Insert(parent, link, &root_);
+        return true;
     }
     void InsertEqual(RBTreeNode *node)
     {
@@ -148,15 +156,14 @@ public:
             parent = *link;
             if (key_comp_(key_of_node_(node), key_of_node_(parent)))
             {
-                link = &parent->Left();
+                link = &parent->left_;
             }
             else
             {
-                link = &parent->Right();
+                link = &parent->right_;
             }
         }
-        node->Link(parent, link);
-        // TODO
+        node->Insert(parent, link, &root_);
     }
 
 private:
@@ -166,3 +173,5 @@ private:
 };
 
 } // namespace mzx
+
+#endif
