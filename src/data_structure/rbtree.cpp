@@ -3,9 +3,8 @@
 namespace mzx
 {
 
-static void RBTreeChangeChild(RBTreeNode *old_node, RBTreeNode *new_node, RBTreeNode *parent, RBTreeNode **root)
+void RBTreeNode::_ChangeChild(RBTreeNode *old_node, RBTreeNode *new_node, RBTreeNode *parent, RBTreeNode **root)
 {
-    // MZX_CHECK(old_node != nullptr && new_node != nullptr && parent != nullptr && root != nullptr);
     if (parent)
     {
         if (parent->Left() == old_node)
@@ -23,18 +22,16 @@ static void RBTreeChangeChild(RBTreeNode *old_node, RBTreeNode *new_node, RBTree
     }
 }
 
-static void RBTreeRotateSetParents(RBTreeNode *old_node, RBTreeNode *new_node, RBTreeNode **root, bool is_black)
+void RBTreeNode::_RotateSetParents(RBTreeNode *old_node, RBTreeNode *new_node, RBTreeNode **root, bool is_black)
 {
-    // MZX_CHECK(old_node != nullptr && new_node != nullptr && root != nullptr);
     RBTreeNode *parent = old_node->Parent();
     new_node->SetParentColor(old_node->ParentColor());
     old_node->SetParentColor(new_node, is_black);
-    RBTreeChangeChild(old_node, new_node, parent, root);
+    _ChangeChild(old_node, new_node, parent, root);
 }
 
-static void RBTreeInsert(RBTreeNode *node, RBTreeNode **root)
+void RBTreeNode::_Insert(RBTreeNode *node, RBTreeNode **root)
 {
-    // MZX_CHECK(node != nullptr && root != nullptr);
     RBTreeNode *parent = node->Parent();
     RBTreeNode *gparent = nullptr;
     RBTreeNode *tmp = nullptr;
@@ -82,7 +79,7 @@ static void RBTreeInsert(RBTreeNode *node, RBTreeNode **root)
             {
                 tmp->SetParentColor(gparent, true);
             }
-            RBTreeRotateSetParents(gparent, parent, root, false);
+            _RotateSetParents(gparent, parent, root, false);
             break;
         }
         else
@@ -117,15 +114,14 @@ static void RBTreeInsert(RBTreeNode *node, RBTreeNode **root)
             {
                 tmp->SetParentColor(gparent, true);
             }
-            RBTreeRotateSetParents(gparent, parent, root, false);
+            _RotateSetParents(gparent, parent, root, false);
             break;
         }
     }
 }
 
-static void RBTreeErase(RBTreeNode *node, RBTreeNode **root)
+void RBTreeNode::_Erase(RBTreeNode *node, RBTreeNode **root)
 {
-    // MZX_CHECK(node != nullptr && root != nullptr);
     RBTreeNode *child = node->Right();
     RBTreeNode *tmp = node->Left();
     RBTreeNode *parent = nullptr;
@@ -135,7 +131,7 @@ static void RBTreeErase(RBTreeNode *node, RBTreeNode **root)
     {
         pc = node->ParentColor();
         parent = RBTreeNode::Parent(pc);
-        RBTreeChangeChild(node, child, parent, root);
+        _ChangeChild(node, child, parent, root);
         if (child)
         {
             child->SetParentColor(pc);
@@ -152,7 +148,7 @@ static void RBTreeErase(RBTreeNode *node, RBTreeNode **root)
         pc = node->ParentColor();
         tmp->SetParentColor(pc);
         parent = RBTreeNode::Parent(pc);
-        RBTreeChangeChild(node, tmp, parent, root);
+        _ChangeChild(node, tmp, parent, root);
         rebalance = nullptr;
         tmp = parent;
     }
@@ -183,7 +179,7 @@ static void RBTreeErase(RBTreeNode *node, RBTreeNode **root)
         tmp->SetParent(successor);
         pc = node->ParentColor();
         tmp = RBTreeNode::Parent(pc);
-        RBTreeChangeChild(node, successor, tmp, root);
+        _ChangeChild(node, successor, tmp, root);
         if (child2)
         {
             successor->SetParentColor(pc);
@@ -216,7 +212,7 @@ static void RBTreeErase(RBTreeNode *node, RBTreeNode **root)
                     parent->SetRight(tmp1);
                     sibling->SetLeft(parent);
                     tmp1->SetParentColor(parent, true);
-                    RBTreeRotateSetParents(parent, sibling, root, false);
+                    _RotateSetParents(parent, sibling, root, false);
                     sibling = tmp1;
                 }
                 tmp1 = sibling->Right();
@@ -260,7 +256,7 @@ static void RBTreeErase(RBTreeNode *node, RBTreeNode **root)
                 {
                     tmp2->SetParent(parent);
                 }
-                RBTreeRotateSetParents(parent, sibling, root, true);
+                _RotateSetParents(parent, sibling, root, true);
                 break;
             }
             else
@@ -272,7 +268,7 @@ static void RBTreeErase(RBTreeNode *node, RBTreeNode **root)
                     parent->SetLeft(tmp1);
                     sibling->SetRight(parent);
                     tmp1->SetParentColor(parent, true);
-                    RBTreeRotateSetParents(parent, sibling, root, false);
+                    _RotateSetParents(parent, sibling, root, false);
                     sibling = tmp1;
                 }
                 tmp1 = sibling->Left();
@@ -316,7 +312,7 @@ static void RBTreeErase(RBTreeNode *node, RBTreeNode **root)
                 {
                     tmp2->SetParent(parent);
                 }
-                RBTreeRotateSetParents(parent, sibling, root, true);
+                _RotateSetParents(parent, sibling, root, true);
                 break;
             }
         }
@@ -325,18 +321,18 @@ static void RBTreeErase(RBTreeNode *node, RBTreeNode **root)
 
 void RBTreeNode::Insert(RBTreeNode *parent, RBTreeNode **link, RBTreeNode **root)
 {
-    MZX_CHECK(parent != nullptr && link != nullptr && root != nullptr);
+    MZX_CHECK(link != nullptr && root != nullptr);
     SetParentColor(parent, false);
     left_ = nullptr;
     right_ = nullptr;
     *link = this;
-    RBTreeInsert(this, root);
+    _Insert(this, root);
 }
 
 void RBTreeNode::Erase(RBTreeNode **root)
 {
     MZX_CHECK(root != nullptr);
-    RBTreeErase(this, root);
+    _Erase(this, root);
 }
 
 } // namespace mzx

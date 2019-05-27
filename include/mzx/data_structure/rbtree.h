@@ -16,7 +16,7 @@ class RBTreeNode final
     template <typename Key, typename KeyOfNode, typename Compare>
     friend class RBTree;
 
-public:
+private:
     inline unsigned long ParentColor() const
     {
         return parent_color_;
@@ -42,21 +42,7 @@ public:
         return right_;
     }
 
-public:
-    static RBTreeNode *Parent(unsigned parent_color)
-    {
-        return reinterpret_cast<RBTreeNode *>(parent_color & ~3);
-    }
-    static bool IsBlack(unsigned long parent_color)
-    {
-        return parent_color & 1;
-    }
-    static bool IsRed(unsigned long parent_color)
-    {
-        return !RBTreeNode::IsBlack(parent_color);
-    }
-
-public:
+private:
     inline void SetParentColor(unsigned long parent_color)
     {
         parent_color_ = parent_color;
@@ -87,6 +73,26 @@ public:
     }
     void Insert(RBTreeNode *parent, RBTreeNode **link, RBTreeNode **root);
     void Erase(RBTreeNode **root);
+
+private:
+    static RBTreeNode *Parent(unsigned parent_color)
+    {
+        return reinterpret_cast<RBTreeNode *>(parent_color & ~3);
+    }
+    static bool IsBlack(unsigned long parent_color)
+    {
+        return parent_color & 1;
+    }
+    static bool IsRed(unsigned long parent_color)
+    {
+        return !RBTreeNode::IsBlack(parent_color);
+    }
+
+private:
+    static void _ChangeChild(RBTreeNode *old_node, RBTreeNode *new_node, RBTreeNode *parent, RBTreeNode **root);
+    static void _RotateSetParents(RBTreeNode *old_node, RBTreeNode *new_node, RBTreeNode **root, bool is_black);
+    static void _Insert(RBTreeNode *node, RBTreeNode **root);
+    static void _Erase(RBTreeNode *node, RBTreeNode **root);
 
 private:
     unsigned long parent_color_{0};
