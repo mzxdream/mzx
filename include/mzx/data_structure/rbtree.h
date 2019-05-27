@@ -11,25 +11,29 @@ namespace mzx
 class RBTreeNode final
 {
 public:
-    enum class Color
+    inline RBTreeNode *Parent() const
     {
-        Red = 0,
-        Black = 1
-    };
-
-public:
-    RBTreeNode *Parent();
-    RBTreeNode *Left();
-    RBTreeNode *Right();
-
-    void Link(RBTreeNode *parent, RBTreeNode **link, RBTreeNode **root)
-    {
-        parent_color_ = static_cast<unsigned long>(parent);
-        left_ = nullptr;
-        right_ = nullptr;
-        *link = this;
+        return parent_color_ & ~3;
     }
-    void Insert(RBTreeNode **root);
+    inline bool IsBlack() const
+    {
+        return parent_color_ & 1;
+    }
+    inline bool IsRed() const
+    {
+        return !IsBlack();
+    }
+    inline RBTreeNode *Left() const
+    {
+        return left_;
+    }
+    inline RBTreeNode *Right() const
+    {
+        return right_;
+    }
+    void Insert(RBTreeNode *parent, RBTreeNode **link, RBTreeNode **root);
+    void Erase(RBTreeNode **root);
+
 private:
     unsigned long parent_color_{0};
     RBTreeNode *left_{nullptr};
@@ -84,8 +88,7 @@ public:
                 link = &parent->Right();
             }
         }
-        node->Link(parent, link);
-        //TODO check repeat
+        node->Link(parent, link, &root_);
     }
     void InsertEqual(RBTreeNode *node)
     {
