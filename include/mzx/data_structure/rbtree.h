@@ -98,8 +98,12 @@ template <typename Key, typename KeyOfNode, typename Compare = std::less<Key>>
 class RBTree final
 {
 public:
-    RBTree();
-    ~RBTree();
+    RBTree()
+    {
+    }
+    ~RBTree()
+    {
+    }
 
 public:
     RBTreeNode *Find(Key key)
