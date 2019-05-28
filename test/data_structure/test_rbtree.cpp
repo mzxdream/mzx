@@ -25,6 +25,24 @@ struct TestKeyOfNode
     }
 };
 
+void PrintNode(mzx::RBTreeNode *node)
+{
+    if (!node)
+    {
+        return;
+    }
+    std::cout << MZX_CONTAINER_OF(node, Test, rbtree_link)->a << ",";
+    PrintNode(node->Left());
+    PrintNode(node->Right());
+}
+
+void PrintTree(const mzx::RBTree<int, TestKeyOfNode> &rbtree)
+{
+    std::cout << std::endl;
+    PrintNode(rbtree.Root());
+    std::cout << std::endl;
+}
+
 int main(int argc, char *argv[])
 {
     std::srand(time(0));
@@ -37,8 +55,9 @@ int main(int argc, char *argv[])
     }
     for (auto &t : ttt)
     {
-        rbtree.Insert(&t.rbtree_link);
-        std::cout << t.a << ",";
+        auto ret = rbtree.Insert(&t.rbtree_link);
+        std::cout << t.a << "," << ret << ";";
+        // PrintTree(rbtree);
     }
     std::cout << std::endl;
     for (auto *node = rbtree.First(); node != nullptr; node = node->Next())

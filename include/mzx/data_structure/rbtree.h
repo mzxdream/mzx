@@ -133,6 +133,10 @@ public:
     }
 
 public:
+    RBTreeNode *Root() const
+    {
+        return root_;
+    }
     RBTreeNode *Find(Key key)
     {
         RBTreeNode *found = nullptr;
@@ -161,6 +165,7 @@ public:
         MZX_CHECK(node != nullptr);
         auto **link = &root_;
         RBTreeNode *parent = nullptr;
+        RBTreeNode *check_node = nullptr;
         while (*link)
         {
             parent = *link;
@@ -171,9 +176,13 @@ public:
             else
             {
                 link = &parent->right_;
+                check_node = parent;
             }
         }
-        // Check euqal
+        if (check_node && !key_comp_(key_of_node_(check_node), key_of_node_(node)))
+        {
+            return false;
+        }
         node->Insert(parent, link, &root_);
         return true;
     }
