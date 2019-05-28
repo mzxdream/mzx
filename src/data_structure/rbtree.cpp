@@ -59,11 +59,12 @@ RBTreeNode *RBTreeNode::Next()
     return parent;
 }
 
-void RBTreeNode::_ChangeChild(RBTreeNode *old_node, RBTreeNode *new_node, RBTreeNode *parent, RBTreeNode **root)
+void RBTreeNode::ChangeChild(RBTreeNode *new_node, RBTreeNode *parent, RBTreeNode **root)
 {
+    MZX_CHECK(root != nullptr);
     if (parent)
     {
-        if (parent->Left() == old_node)
+        if (parent->Left() == this)
         {
             parent->SetLeft(new_node);
         }
@@ -78,12 +79,13 @@ void RBTreeNode::_ChangeChild(RBTreeNode *old_node, RBTreeNode *new_node, RBTree
     }
 }
 
-void RBTreeNode::_RotateSetParents(RBTreeNode *old_node, RBTreeNode *new_node, RBTreeNode **root, Color color)
+void RBTreeNode::RotateSetParents(RBTreeNode *new_node, RBTreeNode **root, Color color)
 {
-    RBTreeNode *parent = old_node->Parent();
-    new_node->SetParentColor(old_node->ParentColor());
-    old_node->SetParentColor(new_node, color);
-    _ChangeChild(old_node, new_node, parent, root);
+    MZX_CHECK(new_node != nullptr && root != nullptr);
+    RBTreeNode *parent = this->Parent();
+    new_node->SetParentColor(this->ParentColor());
+    this->SetParentColor(new_node, color);
+    this->ChangeChild(new_node, parent, root);
 }
 
 void RBTreeNode::Insert(RBTreeNode *parent, RBTreeNode **link, RBTreeNode **root)
@@ -141,7 +143,7 @@ void RBTreeNode::Insert(RBTreeNode *parent, RBTreeNode **link, RBTreeNode **root
             {
                 tmp->SetParentColor(gparent, Color::Black);
             }
-            _RotateSetParents(gparent, parent, root, Color::Red);
+            gparent->RotateSetParents(parent, root, Color::Red);
             break;
         }
         else
@@ -176,7 +178,7 @@ void RBTreeNode::Insert(RBTreeNode *parent, RBTreeNode **link, RBTreeNode **root
             {
                 tmp->SetParentColor(gparent, Color::Black);
             }
-            _RotateSetParents(gparent, parent, root, Color::Red);
+            gparent->RotateSetParents(parent, root, Color::Red);
             break;
         }
     }
@@ -195,7 +197,7 @@ void RBTreeNode::Erase(RBTreeNode **root)
     {
         pc = node->ParentColor();
         parent = RBTreeNode::Parent(pc);
-        _ChangeChild(node, child, parent, root);
+        node->ChangeChild(child, parent, root);
         if (child)
         {
             child->SetParentColor(pc);
@@ -212,7 +214,7 @@ void RBTreeNode::Erase(RBTreeNode **root)
         pc = node->ParentColor();
         tmp->SetParentColor(pc);
         parent = RBTreeNode::Parent(pc);
-        _ChangeChild(node, tmp, parent, root);
+        node->ChangeChild(tmp, parent, root);
         rebalance = nullptr;
         tmp = parent;
     }
@@ -243,7 +245,7 @@ void RBTreeNode::Erase(RBTreeNode **root)
         tmp->SetParent(successor);
         pc = node->ParentColor();
         tmp = RBTreeNode::Parent(pc);
-        _ChangeChild(node, successor, tmp, root);
+        node->ChangeChild(successor, tmp, root);
         if (child2)
         {
             successor->SetParentColor(pc);
@@ -276,7 +278,7 @@ void RBTreeNode::Erase(RBTreeNode **root)
                     parent->SetRight(tmp1);
                     sibling->SetLeft(parent);
                     tmp1->SetParentColor(parent, Color::Black);
-                    _RotateSetParents(parent, sibling, root, Color::Red);
+                    parent->RotateSetParents(sibling, root, Color::Red);
                     sibling = tmp1;
                 }
                 tmp1 = sibling->Right();
@@ -320,7 +322,7 @@ void RBTreeNode::Erase(RBTreeNode **root)
                 {
                     tmp2->SetParent(parent);
                 }
-                _RotateSetParents(parent, sibling, root, Color::Black);
+                parent->RotateSetParents(sibling, root, Color::Black);
                 break;
             }
             else
@@ -332,7 +334,7 @@ void RBTreeNode::Erase(RBTreeNode **root)
                     parent->SetLeft(tmp1);
                     sibling->SetRight(parent);
                     tmp1->SetParentColor(parent, Color::Black);
-                    _RotateSetParents(parent, sibling, root, Color::Red);
+                    parent->RotateSetParents(sibling, root, Color::Red);
                     sibling = tmp1;
                 }
                 tmp1 = sibling->Left();
@@ -376,7 +378,7 @@ void RBTreeNode::Erase(RBTreeNode **root)
                 {
                     tmp2->SetParent(parent);
                 }
-                _RotateSetParents(parent, sibling, root, Color::Black);
+                parent->RotateSetParents(sibling, root, Color::Black);
                 break;
             }
         }

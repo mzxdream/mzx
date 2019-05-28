@@ -93,6 +93,8 @@ private:
     {
         right_ = node;
     }
+    void ChangeChild(RBTreeNode *new_node, RBTreeNode *parent, RBTreeNode **root);
+    void RotateSetParents(RBTreeNode *new_node, RBTreeNode **root, Color color);
     void Insert(RBTreeNode *parent, RBTreeNode **link, RBTreeNode **root);
     void Erase(RBTreeNode **root);
 
@@ -109,10 +111,6 @@ private:
     {
         return !RBTreeNode::IsBlack(parent_color);
     }
-
-private:
-    static void _ChangeChild(RBTreeNode *old_node, RBTreeNode *new_node, RBTreeNode *parent, RBTreeNode **root);
-    static void _RotateSetParents(RBTreeNode *old_node, RBTreeNode *new_node, RBTreeNode **root, Color color);
 
 private:
     unsigned long parent_color_{0};
