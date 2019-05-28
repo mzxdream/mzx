@@ -43,7 +43,8 @@ int main(int argc, char *argv[])
     std::cout << std::endl;
     for (auto *node = rbtree.First(); node != nullptr; node = node->Next())
     {
-        std::cout << MZX_CONTAINER_OF(node, Test, rbtree_link)->a << "," << std::endl;
+        std::cout << MZX_CONTAINER_OF(node, Test, rbtree_link)->a << ",";
     }
+    std::cout << std::endl;
     return 0;
 }

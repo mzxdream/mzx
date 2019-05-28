@@ -22,7 +22,7 @@ public:
 
     inline bool IsLinked() const
     {
-        return parent_color_ == reinterpret_cast<unsigned long>(this);
+        return parent_color_ != reinterpret_cast<unsigned long>(this);
     }
     RBTreeNode *Prev();
     RBTreeNode *Next();
