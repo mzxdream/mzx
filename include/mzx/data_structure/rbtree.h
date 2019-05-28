@@ -20,7 +20,7 @@ public:
     RBTreeNode();
     ~RBTreeNode();
 
-    inline bool IsLinked() const
+    bool IsLinked() const
     {
         return parent_color_ != reinterpret_cast<unsigned long>(this);
     }
@@ -28,63 +28,63 @@ public:
     RBTreeNode *Next();
 
 private:
-    inline unsigned long ParentColor() const
+    unsigned long ParentColor() const
     {
         return parent_color_;
     }
-    inline RBTreeNode *Parent() const
+    RBTreeNode *Parent() const
     {
         return reinterpret_cast<RBTreeNode *>(parent_color_ & ~3);
     }
-    inline bool IsBlack() const
+    bool IsBlack() const
     {
         return parent_color_ & 1;
     }
-    inline bool IsRed() const
+    bool IsRed() const
     {
         return !IsBlack();
     }
-    inline RBTreeNode *Left() const
+    RBTreeNode *Left() const
     {
         return left_;
     }
-    inline RBTreeNode *Right() const
+    RBTreeNode *Right() const
     {
         return right_;
     }
 
 private:
-    inline void Clear()
+    void Clear()
     {
         parent_color_ = reinterpret_cast<unsigned long>(this);
         left_ = nullptr;
         right_ = nullptr;
     }
-    inline void SetParentColor(unsigned long parent_color)
+    void SetParentColor(unsigned long parent_color)
     {
         parent_color_ = parent_color;
     }
-    inline void SetParentColor(RBTreeNode *parent, bool is_black)
+    void SetParentColor(RBTreeNode *parent, bool is_black)
     {
         parent_color_ = reinterpret_cast<unsigned long>(parent) | is_black;
     }
-    inline void SetParent(RBTreeNode *parent)
+    void SetParent(RBTreeNode *parent)
     {
         parent_color_ = reinterpret_cast<unsigned long>(parent) | (parent_color_ & 1);
     }
-    inline void SetBlack()
+    void SetBlack()
     {
         parent_color_ |= 1;
     }
-    inline void SetRed()
+    void SetRed()
     {
         parent_color_ &= ~3;
     }
-    inline void SetLeft(RBTreeNode *node)
+    void SetLeft(RBTreeNode *node)
     {
         left_ = node;
     }
-    inline void SetRight(RBTreeNode *node)
+    void SetRight(RBTreeNode *node)
     {
         right_ = node;
     }
