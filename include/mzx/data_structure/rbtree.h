@@ -32,7 +32,7 @@ public:
     RBTreeNode *Prev();
     RBTreeNode *Next();
 
-private:
+public:
     unsigned long ParentColor() const
     {
         return parent_color_;
@@ -69,9 +69,9 @@ private:
     {
         parent_color_ = parent_color;
     }
-    void SetParentColor(RBTreeNode *parent, bool is_black)
+    void SetParentColor(RBTreeNode *parent, Color color)
     {
-        parent_color_ = reinterpret_cast<unsigned long>(parent) | is_black;
+        parent_color_ = reinterpret_cast<unsigned long>(parent) | static_cast<unsigned long>(color);
     }
     void SetParent(RBTreeNode *parent)
     {
@@ -112,7 +112,7 @@ private:
 
 private:
     static void _ChangeChild(RBTreeNode *old_node, RBTreeNode *new_node, RBTreeNode *parent, RBTreeNode **root);
-    static void _RotateSetParents(RBTreeNode *old_node, RBTreeNode *new_node, RBTreeNode **root, bool is_black);
+    static void _RotateSetParents(RBTreeNode *old_node, RBTreeNode *new_node, RBTreeNode **root, Color color);
 
 private:
     unsigned long parent_color_{0};
