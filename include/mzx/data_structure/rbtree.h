@@ -15,6 +15,11 @@ class RBTreeNode final
 {
     template <typename Key, typename KeyOfNode, typename Compare>
     friend class RBTree;
+    enum class Color : bool
+    {
+        Red = 0,
+        Black = 1,
+    };
 
 public:
     RBTreeNode();
@@ -108,8 +113,6 @@ private:
 private:
     static void _ChangeChild(RBTreeNode *old_node, RBTreeNode *new_node, RBTreeNode *parent, RBTreeNode **root);
     static void _RotateSetParents(RBTreeNode *old_node, RBTreeNode *new_node, RBTreeNode **root, bool is_black);
-    static void _Insert(RBTreeNode *node, RBTreeNode **root);
-    static void _Erase(RBTreeNode *node, RBTreeNode **root);
 
 private:
     unsigned long parent_color_{0};
