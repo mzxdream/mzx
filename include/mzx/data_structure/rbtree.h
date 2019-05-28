@@ -15,11 +15,14 @@ class RBTreeNode final
 {
     template <typename Key, typename KeyOfNode, typename Compare>
     friend class RBTree;
+
     enum class Color : bool
     {
         Red = 0,
         Black = 1,
     };
+
+    using ParentColorType = unsigned long;
 
 public:
     RBTreeNode();
@@ -27,19 +30,19 @@ public:
 
     bool IsLinked() const
     {
-        return parent_color_ != reinterpret_cast<unsigned long>(this);
+        return parent_color_ != reinterpret_cast<ParentColorType>(this);
     }
     RBTreeNode *Prev();
     RBTreeNode *Next();
 
 public:
-    unsigned long ParentColor() const
+    ParentColorType ParentColor() const
     {
         return parent_color_;
     }
     RBTreeNode *Parent() const
     {
-        return reinterpret_cast<RBTreeNode *>(parent_color_ & ~3);
+        return RBTreeNode::Parent(parent_color_);
     }
     bool IsBlack() const
     {
@@ -61,21 +64,21 @@ public:
 private:
     void Clear()
     {
-        parent_color_ = reinterpret_cast<unsigned long>(this);
+        parent_color_ = reinterpret_cast<ParentColorType>(this);
         left_ = nullptr;
         right_ = nullptr;
     }
-    void SetParentColor(unsigned long parent_color)
+    void SetParentColor(ParentColorType parent_color)
     {
         parent_color_ = parent_color;
     }
     void SetParentColor(RBTreeNode *parent, Color color)
     {
-        parent_color_ = reinterpret_cast<unsigned long>(parent) | static_cast<unsigned long>(color);
+        parent_color_ = reinterpret_cast<ParentColorType>(parent) | static_cast<ParentColorType>(color);
     }
     void SetParent(RBTreeNode *parent)
     {
-        parent_color_ = reinterpret_cast<unsigned long>(parent) | (parent_color_ & 1);
+        parent_color_ = reinterpret_cast<ParentColorType>(parent) | (parent_color_ & 1);
     }
     void SetBlack()
     {
@@ -99,21 +102,21 @@ private:
     void Erase(RBTreeNode **root);
 
 private:
-    static RBTreeNode *Parent(unsigned parent_color)
+    static RBTreeNode *Parent(ParentColorType parent_color)
     {
         return reinterpret_cast<RBTreeNode *>(parent_color & ~3);
     }
-    static bool IsBlack(unsigned long parent_color)
+    static bool IsBlack(ParentColorType parent_color)
     {
         return parent_color & 1;
     }
-    static bool IsRed(unsigned long parent_color)
+    static bool IsRed(ParentColorType parent_color)
     {
         return !RBTreeNode::IsBlack(parent_color);
     }
 
 private:
-    unsigned long parent_color_{0};
+    ParentColorType parent_color_{0};
     RBTreeNode *left_{nullptr};
     RBTreeNode *right_{nullptr};
 };

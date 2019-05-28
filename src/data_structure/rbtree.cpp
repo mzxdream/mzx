@@ -5,7 +5,7 @@ namespace mzx
 
 RBTreeNode::RBTreeNode()
 {
-    parent_color_ = reinterpret_cast<unsigned long>(this);
+    parent_color_ = reinterpret_cast<ParentColorType>(this);
 }
 RBTreeNode::~RBTreeNode()
 {
@@ -192,7 +192,7 @@ void RBTreeNode::Erase(RBTreeNode **root)
     RBTreeNode *tmp = node->Left();
     RBTreeNode *parent = nullptr;
     RBTreeNode *rebalance = nullptr;
-    unsigned long pc = 0;
+    ParentColorType pc = 0;
     if (!tmp)
     {
         pc = node->ParentColor();
@@ -254,7 +254,7 @@ void RBTreeNode::Erase(RBTreeNode **root)
         }
         else
         {
-            unsigned long pc2 = successor->ParentColor();
+            auto pc2 = successor->ParentColor();
             successor->SetParentColor(pc);
             rebalance = RBTreeNode::IsBlack(pc2) ? parent : nullptr;
         }
