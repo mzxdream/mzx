@@ -1,3 +1,5 @@
+#include <algorithm>
+#include <ctime>
 #include <iostream>
 #include <vector>
 
@@ -25,15 +27,23 @@ struct TestKeyOfNode
 
 int main(int argc, char *argv[])
 {
+    std::srand(time(0));
     mzx::RBTree<int, TestKeyOfNode> rbtree;
     std::vector<Test> ttt;
-    for (int i = 0; i < 20; i++)
+    int len = std::rand() % 6 + 5;
+    for (int i = 0; i < len; ++i)
     {
-        ttt.push_back(Test(i));
+        ttt.emplace_back(std::rand() % 20);
     }
     for (auto &t : ttt)
     {
         rbtree.Insert(&t.rbtree_link);
+        std::cout << t.a << ",";
+    }
+    std::cout << std::endl;
+    for (auto *node = rbtree.First(); node != nullptr; node = node->Next())
+    {
+        std::cout << MZX_CONTAINER_OF(node, Test, rbtree_link)->a << "," << std::endl;
     }
     return 0;
 }
