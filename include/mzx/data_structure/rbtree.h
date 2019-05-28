@@ -16,6 +16,17 @@ class RBTreeNode final
     template <typename Key, typename KeyOfNode, typename Compare>
     friend class RBTree;
 
+public:
+    RBTreeNode();
+    ~RBTreeNode();
+
+    inline bool IsLinked() const
+    {
+        return parent_color_ == reinterpret_cast<unsigned long>(this);
+    }
+    RBTreeNode *Prev();
+    RBTreeNode *Next();
+
 private:
     inline unsigned long ParentColor() const
     {
@@ -43,6 +54,12 @@ private:
     }
 
 private:
+    inline void Clear()
+    {
+        parent_color_ = reinterpret_cast<unsigned long>(this);
+        left_ = nullptr;
+        right_ = nullptr;
+    }
     inline void SetParentColor(unsigned long parent_color)
     {
         parent_color_ = parent_color;
@@ -174,6 +191,37 @@ public:
             }
         }
         node->Insert(parent, link, &root_);
+    }
+    void Erase(RBTreeNode *node)
+    {
+        MZX_CHECK(node != nullptr);
+        node->Erase(&root_);
+    }
+    RBTreeNode *First() const
+    {
+        if (!root_)
+        {
+            return nullptr;
+        }
+        RBTreeNode *node = root_;
+        while (node->Left())
+        {
+            node = node->Left();
+        }
+        return node;
+    }
+    RBTreeNode *Last() const
+    {
+        if (!root_)
+        {
+            return nullptr;
+        }
+        RBTreeNode *node = root_;
+        while (node->Right())
+        {
+            node = node->Right();
+        }
+        return node;
     }
 
 private:

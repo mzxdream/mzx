@@ -3,6 +3,62 @@
 namespace mzx
 {
 
+RBTreeNode::RBTreeNode()
+{
+    parent_color_ = reinterpret_cast<unsigned long>(this);
+}
+RBTreeNode::~RBTreeNode()
+{
+}
+
+RBTreeNode *RBTreeNode::Prev()
+{
+    if (!IsLinked())
+    {
+        return nullptr;
+    }
+    auto *node = this;
+    if (node->Left())
+    {
+        node = node->Left();
+        while (node->Right())
+        {
+            node = node->Right();
+        }
+        return node;
+    }
+    RBTreeNode *parent = nullptr;
+    while ((parent = node->Parent()) && node == parent->Left())
+    {
+        node = parent;
+    }
+    return parent;
+}
+
+RBTreeNode *RBTreeNode::Next()
+{
+    if (!IsLinked())
+    {
+        return nullptr;
+    }
+    auto *node = this;
+    if (node->Right())
+    {
+        node = node->Right();
+        while (node->Left())
+        {
+            node = node->Left();
+        }
+        return node;
+    }
+    RBTreeNode *parent = nullptr;
+    while ((parent = node->Parent()) && node == parent->Right())
+    {
+        node = parent;
+    }
+    return parent;
+}
+
 void RBTreeNode::_ChangeChild(RBTreeNode *old_node, RBTreeNode *new_node, RBTreeNode *parent, RBTreeNode **root)
 {
     if (parent)
