@@ -227,7 +227,7 @@ public:
                 node = node->right_;
             }
         }
-        return !found || !key_comp_(key_of_node_(found), key) ? found : found->Next();
+        return !found || key_comp_(key, key_of_node_(found)) ? found : found->Next();
     }
 
     bool Insert(RBTreeNode *node)

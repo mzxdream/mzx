@@ -92,7 +92,7 @@ int main(int argc, char *argv[])
         std::cout << MZX_CONTAINER_OF(node, Test, rbtree_link)->a << ",";
     }
     std::cout << std::endl;
-    std::vector<Test> ttt3{Test(0), Test(1), Test(2), Test(2), Test(3), Test(4), Test(6), Test(4)};
+    std::vector<Test> ttt3{Test(0), Test(1), Test(2), Test(2), Test(3), Test(4), Test(6), Test(4), Test(4)};
     mzx::RBTree<int, TestKeyOfNode> rbtree3;
     for (auto &t : ttt3)
     {
@@ -104,12 +104,15 @@ int main(int argc, char *argv[])
         std::cout << MZX_CONTAINER_OF(node, Test, rbtree_link)->a << ",";
     }
     std::cout << std::endl;
-    auto *found = rbtree3.Find(2);
-    auto *lower = rbtree3.LowerBound(2);
-    auto *upper = rbtree3.UpperBound(2);
+    int tmp = std::rand() % 10;
+    std::cout << "tmp:" << tmp << std::endl;
+    auto *found = rbtree3.Find(tmp);
+    auto *lower = rbtree3.LowerBound(tmp);
+    auto *upper = rbtree3.UpperBound(tmp);
     std::cout << "1:" << found << " 2:" << lower << " 3:" << upper << std::endl;
-    std::cout << MZX_CONTAINER_OF(found, Test, rbtree_link)->a << std::endl;
-    std::cout << MZX_CONTAINER_OF(lower, Test, rbtree_link)->a << std::endl;
-    std::cout << MZX_CONTAINER_OF(upper, Test, rbtree_link)->a << std::endl;
+    for (auto *node = lower; node != upper; node = node->Next())
+    {
+        std::cout << MZX_CONTAINER_OF(node, Test, rbtree_link)->a << std::endl;
+    }
     return 0;
 }
