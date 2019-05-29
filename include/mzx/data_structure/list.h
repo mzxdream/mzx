@@ -2,38 +2,46 @@
 #define __MZX_LIST_H__
 
 #include <mzx/logger.h>
-#include <mzx/macro_util.h>
+#include <type_traits>
+
+#define MZX_NON_CONST_OVERLOAD(F)                                                                                      \
+    auto F()                                                                                                           \
+    {                                                                                                                  \
+        const auto *tmp = this;                                                                                        \
+        return const_cast<std::remove_const<decltype(tmp->F())>::type>(tmp->F());                                      \
+    }
 
 namespace mzx
 {
 
+class List;
+
 class ListNode final
 {
-public:
-    ListNode()
-    {
-        prev_ = this;
-        next_ = this;
-    }
-    ~ListNode()
-    {
-        Unlink();
-    }
+    friend List;
 
 public:
-    inline bool IsLinked() const
+    ListNode();
+    ~ListNode();
+
+public:
+    bool IsLinked() const
     {
         return next_ != this;
     }
-    inline ListNode *Prev() const
+    const ListNode *Prev() const
     {
         return prev_;
     }
-    inline ListNode *Next() const
+    MZX_NON_CONST_OVERLOAD(Prev);
+    const ListNode *Next() const
     {
         return next_;
     }
-    inline void InsertInto(ListNode *prev, ListNode *next)
+    MZX_NON_CONST_OVERLOAD(Next);
+
+private:
+    void Insert(ListNode *prev, ListNode *next)
     {
         MZX_CHECK(prev != nullptr && next != nullptr);
         prev_ = prev;
@@ -41,17 +49,7 @@ public:
         next->prev_ = this;
         prev->next_ = this;
     }
-    inline void PushFront(ListNode *node)
-    {
-        MZX_CHECK(node != nullptr);
-        node->InsertInto(this, next_);
-    }
-    inline void PushBack(ListNode *node)
-    {
-        MZX_CHECK(node != nullptr);
-        node->InsertInto(prev_, this);
-    }
-    inline ListNode *Unlink()
+    ListNode *Erase()
     {
         auto *next = next_;
         next_->prev_ = prev_;
@@ -66,7 +64,64 @@ private:
     ListNode *next_{nullptr};
 };
 
-#define MZX_LIST_ENTRY(node, type, member) MZX_CONTAINER_OF(node, type, member)
+class List final
+{
+public:
+    List();
+    ~List();
+
+public:
+    const ListNode *Begin() const
+    {
+        return head_.next_;
+    }
+    MZX_NON_CONST_OVERLOAD(Begin);
+    const ListNode *End() const
+    {
+        return &head_;
+    }
+    MZX_NON_CONST_OVERLOAD(End);
+    const ListNode *RBegin() const
+    {
+        return head_.prev_;
+    }
+    MZX_NON_CONST_OVERLOAD(RBegin);
+    const ListNode *REnd() const
+    {
+        return &head_;
+    }
+    MZX_NON_CONST_OVERLOAD(REnd);
+    bool Empty() const
+    {
+        return head_.next_ == &head_;
+    }
+
+    void PushFront(ListNode *node)
+    {
+        MZX_CHECK(node != nullptr);
+        node->Insert(&head_, head_.next_);
+    }
+    void PushBack(ListNode *node)
+    {
+        MZX_CHECK(node != nullptr);
+        node->Insert(head_.prev_, &head_);
+    }
+    ListNode *Erase(ListNode *node)
+    {
+        MZX_CHECK(node != nullptr);
+        return node->Erase();
+    }
+    void Clear()
+    {
+        while (head_.next_ != &head_)
+        {
+            Erase(head_.next_);
+        }
+    }
+
+private:
+    ListNode head_;
+};
 
 } // namespace mzx
 

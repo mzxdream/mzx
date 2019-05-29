@@ -41,4 +41,6 @@
         (type *)((char *)__mptr - (std::size_t) & (((type *)0)->member));                                              \
     })
 
+#define MZX_CONST_OVERLOAD(T, F, ...) static_cast<const T &>(*this).F(##__VA_ARGS__)
+
 #endif
