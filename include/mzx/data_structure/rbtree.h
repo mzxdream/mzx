@@ -171,7 +171,7 @@ public:
         }
         return node;
     }
-    RBTreeNode *Find(Key key)
+    RBTreeNode *Find(Key key) const
     {
         RBTreeNode *found = nullptr;
         auto *node = root_;
@@ -191,7 +191,43 @@ public:
         {
             return nullptr;
         }
-        return found && !key_comp_(key, key_of_node_(node)) ? found : nullptr;
+        return found && !key_comp_(key, key_of_node_(found)) ? found : nullptr;
+    }
+    RBTreeNode *LowerBound(Key key) const
+    {
+        RBTreeNode *found = nullptr;
+        auto *node = root_;
+        while (node)
+        {
+            if (!key_comp_(key_of_node_(node), key))
+            {
+                found = node;
+                node = node->left_;
+            }
+            else
+            {
+                node = node->right_;
+            }
+        }
+        return found;
+    }
+    RBTreeNode *UpperBound(Key key) const
+    {
+        RBTreeNode *found = nullptr;
+        auto *node = root_;
+        while (node)
+        {
+            if (key_comp_(key, key_of_node_(node)))
+            {
+                node = node->left_;
+            }
+            else
+            {
+                found = node;
+                node = node->right_;
+            }
+        }
+        return !found || !key_comp_(key_of_node_(found), key) ? found : found->Next();
     }
 
     bool Insert(RBTreeNode *node)
