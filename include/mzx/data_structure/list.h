@@ -2,14 +2,7 @@
 #define __MZX_LIST_H__
 
 #include <mzx/logger.h>
-#include <type_traits>
-
-#define MZX_NON_CONST_OVERLOAD(F)                                                                                      \
-    auto F()                                                                                                           \
-    {                                                                                                                  \
-        const auto *tmp = this;                                                                                        \
-        return const_cast<std::remove_const<decltype(tmp->F())>::type>(tmp->F());                                      \
-    }
+#include <mzx/macro_util.h>
 
 namespace mzx
 {
