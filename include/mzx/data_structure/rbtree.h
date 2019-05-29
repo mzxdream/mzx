@@ -4,6 +4,7 @@
 #include <functional>
 
 #include <mzx/logger.h>
+#include <mzx/macro_const_overload.h>
 
 namespace mzx
 {
@@ -32,10 +33,6 @@ public:
     {
         return parent_color_ != reinterpret_cast<ParentColorType>(this);
     }
-    RBTreeNode *Prev();
-    RBTreeNode *Next();
-
-public:
     ParentColorType ParentColor() const
     {
         return parent_color_;
@@ -60,6 +57,10 @@ public:
     {
         return right_;
     }
+    const RBTreeNode *Prev() const;
+    MZX_NON_CONST_OVERLOAD(Prev);
+    const RBTreeNode *Next() const;
+    MZX_NON_CONST_OVERLOAD(Next);
 
 private:
     void Clear()
@@ -74,11 +75,13 @@ private:
     }
     void SetParentColor(RBTreeNode *parent, Color color)
     {
-        parent_color_ = reinterpret_cast<ParentColorType>(parent) | static_cast<ParentColorType>(color);
+        parent_color_ = reinterpret_cast<ParentColorType>(parent) |
+                        static_cast<ParentColorType>(color);
     }
     void SetParent(RBTreeNode *parent)
     {
-        parent_color_ = reinterpret_cast<ParentColorType>(parent) | (parent_color_ & 1);
+        parent_color_ =
+            reinterpret_cast<ParentColorType>(parent) | (parent_color_ & 1);
     }
     void SetBlack()
     {
@@ -96,12 +99,13 @@ private:
     {
         right_ = node;
     }
-    void ChangeChild(RBTreeNode *new_node, RBTreeNode *parent, RBTreeNode **root);
+    void ChangeChild(RBTreeNode *new_node, RBTreeNode *parent,
+                     RBTreeNode **root);
     void RotateSetParents(RBTreeNode *new_node, RBTreeNode **root, Color color);
     void Insert(RBTreeNode *parent, RBTreeNode **link, RBTreeNode **root);
     void Erase(RBTreeNode **root);
 
-private:
+public:
     static RBTreeNode *Parent(ParentColorType parent_color)
     {
         return reinterpret_cast<RBTreeNode *>(parent_color & ~3);
@@ -145,7 +149,7 @@ public:
     {
         return length_ == 0;
     }
-    RBTreeNode *First() const
+    RBTreeNode *Begin() const
     {
         if (!root_)
         {
@@ -158,7 +162,11 @@ public:
         }
         return node;
     }
-    RBTreeNode *Last() const
+    RBTreeNode *End() const
+    {
+        return nullptr;
+    }
+    RBTreeNode *RBegin() const
     {
         if (!root_)
         {
@@ -170,6 +178,10 @@ public:
             node = node->Right();
         }
         return node;
+    }
+    RBTreeNode *REnd() const
+    {
+        return nullptr;
     }
     RBTreeNode *Find(Key key) const
     {
@@ -227,7 +239,8 @@ public:
                 node = node->right_;
             }
         }
-        return !found || key_comp_(key, key_of_node_(found)) ? found : found->Next();
+        return !found || key_comp_(key, key_of_node_(found)) ? found
+                                                             : found->Next();
     }
 
     bool Insert(RBTreeNode *node)
@@ -249,7 +262,8 @@ public:
                 check_node = parent;
             }
         }
-        if (check_node && !key_comp_(key_of_node_(check_node), key_of_node_(node)))
+        if (check_node &&
+            !key_comp_(key_of_node_(check_node), key_of_node_(node)))
         {
             return false;
         }
@@ -277,21 +291,29 @@ public:
         node->Insert(parent, link, &root_);
         ++length_;
     }
-    RBTreeNode *Erase(Key key)
+    std::size_t Erase(Key key)
     {
-        auto *node = Find(key);
-        if (!node)
+        auto *node_begin = LowerBound(key);
+        if (!node_begin)
         {
-            return nullptr;
+            return 0;
         }
-        Erase(node);
-        return node;
+        std::size_t len = 0;
+        auto *node_end = UpperBound(key);
+        while (node_begin != node_end)
+        {
+            node_begin = Erase(node_begin);
+            ++len;
+        }
+        return len;
     }
-    void Erase(RBTreeNode *node)
+    RBTreeNode *Erase(RBTreeNode *node)
     {
         MZX_CHECK(node != nullptr);
+        auto *tmp = node->Next();
         node->Erase(&root_);
         --length_;
+        return tmp;
     }
 
 private:

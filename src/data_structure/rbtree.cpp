@@ -11,7 +11,7 @@ RBTreeNode::~RBTreeNode()
 {
 }
 
-RBTreeNode *RBTreeNode::Prev()
+const RBTreeNode *RBTreeNode::Prev() const
 {
     if (!IsLinked())
     {
@@ -35,7 +35,7 @@ RBTreeNode *RBTreeNode::Prev()
     return parent;
 }
 
-RBTreeNode *RBTreeNode::Next()
+const RBTreeNode *RBTreeNode::Next() const
 {
     if (!IsLinked())
     {
@@ -59,7 +59,8 @@ RBTreeNode *RBTreeNode::Next()
     return parent;
 }
 
-void RBTreeNode::ChangeChild(RBTreeNode *new_node, RBTreeNode *parent, RBTreeNode **root)
+void RBTreeNode::ChangeChild(RBTreeNode *new_node, RBTreeNode *parent,
+                             RBTreeNode **root)
 {
     MZX_CHECK(root != nullptr);
     if (parent)
@@ -79,7 +80,8 @@ void RBTreeNode::ChangeChild(RBTreeNode *new_node, RBTreeNode *parent, RBTreeNod
     }
 }
 
-void RBTreeNode::RotateSetParents(RBTreeNode *new_node, RBTreeNode **root, Color color)
+void RBTreeNode::RotateSetParents(RBTreeNode *new_node, RBTreeNode **root,
+                                  Color color)
 {
     MZX_CHECK(new_node != nullptr && root != nullptr);
     RBTreeNode *parent = this->Parent();
@@ -88,7 +90,8 @@ void RBTreeNode::RotateSetParents(RBTreeNode *new_node, RBTreeNode **root, Color
     this->ChangeChild(new_node, parent, root);
 }
 
-void RBTreeNode::Insert(RBTreeNode *parent, RBTreeNode **link, RBTreeNode **root)
+void RBTreeNode::Insert(RBTreeNode *parent, RBTreeNode **link,
+                        RBTreeNode **root)
 {
     MZX_CHECK(link != nullptr && root != nullptr);
     SetParentColor(parent, Color::Red);

@@ -32,11 +32,6 @@ public:
         return next_;
     }
     MZX_NON_CONST_OVERLOAD(Next);
-    const ListNode *Tmp(int a, int b) const
-    {
-        return this - a - b;
-    }
-    MZX_NON_CONST_OVERLOAD(Tmp, int, a, int, b);
 
 private:
     void Insert(ListNode *prev, ListNode *next)
