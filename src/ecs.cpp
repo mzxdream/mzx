@@ -27,27 +27,48 @@ EntityManager::~EntityManager()
     RemoveAllEntity();
 }
 
-Entity *EntityManager::GetEntity(EntityID id)
+Entity *EntityManager::GetEntity(EntityID id) const
 {
     auto iter_entity = entities_.find(id);
     if (iter_entity == entities_.end())
     {
         return nullptr;
     }
-    return iter_entity->second->entity;
+    return iter_entity->second->Get();
+}
+
+EntityManager::ComponentChangedEvent &EntityManager::ComponentAddEvent()
+{
+    return component_add_event_;
+}
+
+EntityManager::ComponentChangedEvent &EntityManager::ComponentRemoveEvent()
+{
+    return component_remove_event_;
+}
+
+EntityManager::EntityChangedEvent &EntityManager::EntityAddEvent()
+{
+    return entity_add_event_;
+}
+
+EntityManager::EntityChangedEvent &EntityManager::EntityRemoveEvent()
+{
+    return entity_remove_event_;
 }
 
 Entity *EntityManager::AddEntity()
 {
     MZX_CHECK_STATIC(sizeof(Entity *) == sizeof(EventID));
+
     auto *entity = new Entity(*this);
     entity->SetID((EntityID)entity);
     auto *node = new EntityNode(entity);
-    entity_list_.PushBack(&node->list_link);
+    entity_list_.PushBack(node->ListLink());
     entities_[entity->ID()] = node;
     node->IncrRef();
-    entity_add_event_.Invoke(node->entity);
-    entity = node->entity;
+    entity_add_event_.Invoke(node->Get());
+    entity = node->Get();
     node->DecrRef();
     return entity;
 }
@@ -61,7 +82,7 @@ void EntityManager::RemoveEntity(EntityID id)
     }
     auto *node = iter_entity->second;
     entities_.erase(iter_entity);
-    auto *entity = node->DetachEntity();
+    auto *entity = node->Detach();
     if (entity)
     {
         entity->RemoveAllComponent();
@@ -72,10 +93,10 @@ void EntityManager::RemoveEntity(EntityID id)
 
 void EntityManager::RemoveAllEntity()
 {
-    for (auto *node = entity_list_.Next(); node != &entity_list_;)
+    for (auto *node = entity_list_.Begin(); node != entity_list_.End();)
     {
-        auto *entry = MZX_LIST_ENTRY(node, EntityNode, list_link);
-        if (!entry->entity)
+        auto *entry = MZX_CONTAINER_OF(node, EntityNode, node->ListLink());
+        if (!entry->Get())
         {
             node = node->Next();
             continue;
@@ -111,26 +132,6 @@ void EntityManager::ForeachEntity(std::function<bool(Entity *)> cb)
         node = node->Next();
         entry->DecrRef();
     }
-}
-
-EntityManager::ComponentChangedEvent &EntityManager::ComponentAddEvent()
-{
-    return component_add_event_;
-}
-
-EntityManager::ComponentChangedEvent &EntityManager::ComponentRemoveEvent()
-{
-    return component_remove_event_;
-}
-
-EntityManager::EntityChangedEvent &EntityManager::EntityAddEvent()
-{
-    return entity_add_event_;
-}
-
-EntityManager::EntityChangedEvent &EntityManager::EntityRemoveEvent()
-{
-    return entity_remove_event_;
 }
 
 void EntityManager::OnAddComponent(Entity *entity, ComponentBase *component)
@@ -180,10 +181,7 @@ void Entity::RemoveAllComponent()
 
 void Entity::ForeachComponent(std::function<bool(ComponentBase *)> cb)
 {
-    if (!cb)
-    {
-        return;
-    }
+    MZX_CHECK(cb != nullptr);
     for (std::size_t i = 0; i < component_list_.size(); ++i)
     {
         auto *component = component_list_[i];

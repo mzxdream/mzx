@@ -1,16 +1,14 @@
 #ifndef __MZX_ECS_H__
 #define __MZX_ECS_H__
 
-#include <cstddef>
 #include <functional>
-#include <list>
-#include <type_traits>
 #include <unordered_map>
-#include <utility>
 #include <vector>
 
 #include <mzx/event.h>
+#include <mzx/list_safe_node.h>
 #include <mzx/logger.h>
+#include <mzx/macro_const_overload.h>
 
 namespace mzx
 {
@@ -58,14 +56,11 @@ protected:
     Component &operator=(const Component &) = delete;
 
 public:
-    T *Get()
-    {
-        return &raw_data_;
-    }
     const T *Get() const
     {
         return &raw_data_;
     }
+    MZX_NON_CONST_OVERLOAD(Get);
     virtual ClassIndexType ClassIndex() const override
     {
         return CLASS_INDEX;
@@ -76,53 +71,16 @@ private:
 };
 
 template <typename T>
-const ComponentBase::ClassIndexType Component<T>::CLASS_INDEX = ComponentBase::class_index_counter_++;
+const ComponentBase::ClassIndexType Component<T>::CLASS_INDEX =
+    ComponentBase::class_index_counter_++;
 
-using EntityID = int64_t;
+using EntityID = std::size_t;
 constexpr EntityID ENTITY_ID_INVALID = (EntityID)-1;
 
 class EntityManager
 {
     friend Entity;
-    struct EntityNode
-    {
-        EntityNode(Entity *e)
-            : entity(e)
-            , ref_count(1)
-        {
-            MZX_CHECK(e != nullptr);
-        }
-        ~EntityNode()
-        {
-            MZX_CHECK(entity == nullptr && ref_count == 0);
-        }
-        void IncrRef()
-        {
-            ++ref_count;
-        }
-        void DecrRef()
-        {
-            MZX_CHECK(ref_count > 0);
-            if (--ref_count == 0)
-            {
-                delete this;
-            }
-        }
-        Entity *DetachEntity()
-        {
-            if (entity != nullptr)
-            {
-                auto *ret = entity;
-                entity = nullptr;
-                DecrRef();
-                return ret;
-            }
-            return nullptr;
-        }
-        Entity *entity{nullptr};
-        int ref_count{0};
-        ListNode list_link;
-    };
+    using EntityNode = typename ListSafeNode<Entity>;
 
 public:
     using ComponentChangedEvent = Event<void(Entity *, ComponentBase *)>;
@@ -135,12 +93,12 @@ public:
     EntityManager &operator=(const EntityManager &) = delete;
 
 public:
+    Entity *GetEntity(EntityID id) const;
     ComponentChangedEvent &ComponentAddEvent();
     ComponentChangedEvent &ComponentRemoveEvent();
     EntityChangedEvent &EntityAddEvent();
     EntityChangedEvent &EntityRemoveEvent();
 
-    Entity *GetEntity(EntityID id);
     Entity *AddEntity();
     void RemoveEntity(EntityID id);
     void RemoveAllEntity();
@@ -156,7 +114,7 @@ private:
     EntityChangedEvent entity_add_event_;
     EntityChangedEvent entity_remove_event_;
     std::unordered_map<EntityID, EntityNode *> entities_;
-    ListNode entity_list_;
+    List entity_list_;
 };
 
 class Entity
@@ -164,7 +122,7 @@ class Entity
     friend EntityManager;
 
 private:
-    Entity(EntityManager &entity_manager);
+    explicit Entity(EntityManager &entity_manager);
     ~Entity();
     Entity(const Entity &) = delete;
     Entity &operator=(const Entity &) = delete;
@@ -276,7 +234,8 @@ public:
 };
 
 template <typename T>
-const EntitySystemBase::ClassIndexType EntitySystem<T>::CLASS_INDEX = EntitySystemBase::class_index_counter_++;
+const EntitySystemBase::ClassIndexType EntitySystem<T>::CLASS_INDEX =
+    EntitySystemBase::class_index_counter_++;
 
 class EntitySystemManager
 {
