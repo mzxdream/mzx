@@ -28,7 +28,7 @@ ObjCBlockIndentWidth: 4
 # 针对OC，属性名后加空格
 ObjCSpaceAfterProperty: true
 # 每行字符的长度
-ColumnLimit: 100
+ColumnLimit: 80
 # 注释对齐
 AlignTrailingComments: true
 # 括号后加空格

@@ -2,7 +2,7 @@
 #define __MZX_LIST_H__
 
 #include <mzx/logger.h>
-#include <mzx/macro_util.h>
+#include <mzx/macro_const_overload.h>
 
 namespace mzx
 {
@@ -32,6 +32,11 @@ public:
         return next_;
     }
     MZX_NON_CONST_OVERLOAD(Next);
+    const ListNode *Tmp(int a, int b) const
+    {
+        return this - a - b;
+    }
+    MZX_NON_CONST_OVERLOAD(Tmp, int, a, int, b);
 
 private:
     void Insert(ListNode *prev, ListNode *next)
