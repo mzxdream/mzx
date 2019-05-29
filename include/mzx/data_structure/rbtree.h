@@ -137,6 +137,40 @@ public:
     {
         return root_;
     }
+    std::size_t Length() const
+    {
+        return length_;
+    }
+    bool Empty() const
+    {
+        return length_ == 0;
+    }
+    RBTreeNode *First() const
+    {
+        if (!root_)
+        {
+            return nullptr;
+        }
+        RBTreeNode *node = root_;
+        while (node->Left())
+        {
+            node = node->Left();
+        }
+        return node;
+    }
+    RBTreeNode *Last() const
+    {
+        if (!root_)
+        {
+            return nullptr;
+        }
+        RBTreeNode *node = root_;
+        while (node->Right())
+        {
+            node = node->Right();
+        }
+        return node;
+    }
     RBTreeNode *Find(Key key)
     {
         RBTreeNode *found = nullptr;
@@ -184,6 +218,7 @@ public:
             return false;
         }
         node->Insert(parent, link, &root_);
+        ++length_;
         return true;
     }
     void InsertEqual(RBTreeNode *node)
@@ -204,43 +239,30 @@ public:
             }
         }
         node->Insert(parent, link, &root_);
+        ++length_;
+    }
+    RBTreeNode *Erase(Key key)
+    {
+        auto *node = Find(key);
+        if (!node)
+        {
+            return nullptr;
+        }
+        Erase(node);
+        return node;
     }
     void Erase(RBTreeNode *node)
     {
         MZX_CHECK(node != nullptr);
         node->Erase(&root_);
-    }
-    RBTreeNode *First() const
-    {
-        if (!root_)
-        {
-            return nullptr;
-        }
-        RBTreeNode *node = root_;
-        while (node->Left())
-        {
-            node = node->Left();
-        }
-        return node;
-    }
-    RBTreeNode *Last() const
-    {
-        if (!root_)
-        {
-            return nullptr;
-        }
-        RBTreeNode *node = root_;
-        while (node->Right())
-        {
-            node = node->Right();
-        }
-        return node;
+        --length_;
     }
 
 private:
     RBTreeNode *root_{nullptr};
     KeyOfNode key_of_node_;
     Compare key_comp_;
+    std::size_t length_{0};
 };
 
 } // namespace mzx
