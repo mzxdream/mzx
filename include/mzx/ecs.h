@@ -5,8 +5,8 @@
 #include <unordered_map>
 #include <vector>
 
+#include <mzx/data_structure/list_safe_node.h>
 #include <mzx/event.h>
-#include <mzx/list_safe_node.h>
 #include <mzx/logger.h>
 #include <mzx/macro_const_overload.h>
 
