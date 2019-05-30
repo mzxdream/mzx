@@ -127,9 +127,6 @@ private:
     Entity(const Entity &) = delete;
     Entity &operator=(const Entity &) = delete;
 
-private:
-    void SetID(EntityID id);
-
 public:
     EntityID ID() const;
     template <typename T>
@@ -239,44 +236,7 @@ const EntitySystemBase::ClassIndexType EntitySystem<T>::CLASS_INDEX =
 
 class EntitySystemManager
 {
-    struct SystemNode
-    {
-        SystemNode(EntitySystemBase *sys)
-            : system(sys)
-            , ref_count(1)
-        {
-            MZX_CHECK(sys != nullptr);
-        }
-        ~SystemNode()
-        {
-            MZX_CHECK(system == nullptr && ref_count == 0);
-        }
-        void IncrRef()
-        {
-            ++ref_count;
-        }
-        void DecrRef()
-        {
-            MZX_CHECK(ref_count > 0);
-            if (--ref_count == 0)
-            {
-                delete this;
-            }
-        }
-        void SelfRemove()
-        {
-            if (system != nullptr)
-            {
-                system->Uninit();
-                delete system;
-                system = nullptr;
-                DecrRef();
-            }
-        }
-        EntitySystemBase *system{nullptr};
-        int ref_count{0};
-        ListNode list_link;
-    };
+    using SystemNode = ListSafeNode<EntitySystemBase>;
 
 public:
     EntitySystemManager();
@@ -296,8 +256,8 @@ public:
             delete system;
             return nullptr;
         }
-        auto *node = new SystemNode(system);
-        system_list_.PushBack(&node->list_link);
+        auto *system_node = new SystemNode(system);
+        system_list_.PushBack(&system_node->list_link_);
         systems_[T::CLASS_INDEX] = node;
         return system;
     }
@@ -305,11 +265,17 @@ public:
     void RemoveSystem()
     {
         MZX_CHECK_STATIC(std::is_base_of<EntitySystem<T>, T>::value);
-        auto *node = systems_[T::CLASS_INDEX];
-        if (node)
+        auto *system_node = systems_[T::CLASS_INDEX];
+        if (!system_node)
         {
-            systems_[T::CLASS_INDEX] = nullptr;
-            node->SelfRemove();
+            return;
+        }
+        systems_[T::CLASS_INDEX] = nullptr;
+        auto *system = system_node->Detach();
+        if (system)
+        {
+            system->Uninit();
+            delete system;
         }
     }
     void RemoveAllSystem();
@@ -317,17 +283,17 @@ public:
     void Update()
     {
         MZX_CHECK_STATIC(std::is_base_of<EntitySystem<T>, T>::value);
-        auto *node = systems_[T::CLASS_INDEX];
-        if (node && node->system)
+        auto *system_node = systems_[T::CLASS_INDEX];
+        if (system_node && system_node->Get())
         {
-            node->system->Update();
+            system_node->Get()->Update();
         }
     }
     void UpdateAll();
 
 private:
-    ListNode system_list_;
     std::vector<SystemNode *> systems_;
+    List system_list_;
 };
 
 } // namespace mzx

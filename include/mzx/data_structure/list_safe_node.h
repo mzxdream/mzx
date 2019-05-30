@@ -20,10 +20,6 @@ public:
     {
         MZX_CHECK(raw_data_ == nullptr && ref_count_ == 0);
     }
-    const ListNode *ListLink() const
-    {
-        return &list_link_;
-    }
     MZX_NON_CONST_OVERLOAD(ListLink);
     T *Get() const
     {
@@ -57,6 +53,7 @@ public:
 private:
     T *raw_data_{nullptr};
     int ref_count_{0};
+public:
     ListNode list_link_;
 };
 
