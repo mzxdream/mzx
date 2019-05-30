@@ -7,7 +7,8 @@
     auto F(T1 t1, T2 t2)                                                       \
     {                                                                          \
         const auto *tmp = this;                                                \
-        return const_cast<std::remove_const<decltype(tmp->F(t1, t2))>::type>(  \
+        return const_cast<                                                     \
+            typename std::remove_const<decltype(tmp->F(t1, t2))>::type>(       \
             tmp->F(t1, t2));                                                   \
     }
 
@@ -15,7 +16,8 @@
     auto F(T1 t1)                                                              \
     {                                                                          \
         const auto *tmp = this;                                                \
-        return const_cast<std::remove_const<decltype(tmp->F(t1))>::type>(      \
+        return const_cast<                                                     \
+            typename std::remove_const<decltype(tmp->F(t1))>::type>(           \
             tmp->F(t1));                                                       \
     }
 
@@ -23,8 +25,8 @@
     auto F()                                                                   \
     {                                                                          \
         const auto *tmp = this;                                                \
-        return const_cast<std::remove_const<decltype(tmp->F())>::type>(        \
-            tmp->F());                                                         \
+        return const_cast<                                                     \
+            typename std::remove_const<decltype(tmp->F())>::type>(tmp->F());   \
     }
 
 #define MZX_NON_CONST_OVERLOAD(...)                                            \

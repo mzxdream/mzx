@@ -6,6 +6,7 @@
 #include <memory>
 
 #include <mzx/data_structure/list.h>
+#include <mzx/data_structure/list_safe_node.h>
 #include <mzx/logger.h>
 #include <unordered_map>
 
@@ -23,44 +24,7 @@ class Event<R(Args...)>
 {
 public:
     using Listener = std::function<R(Args...)>;
-
-private:
-    struct ListenerNode
-    {
-        ListenerNode(Listener l)
-            : listener(l)
-            , ref_count(1)
-        {
-            MZX_CHECK(listener != nullptr);
-        }
-        ~ListenerNode()
-        {
-            MZX_CHECK(listener == nullptr && ref_count == 0);
-        }
-        void IncrRef()
-        {
-            ++ref_count;
-        }
-        void DecrRef()
-        {
-            MZX_CHECK(ref_count > 0);
-            if (--ref_count == 0)
-            {
-                delete this;
-            }
-        }
-        void SelfRemove()
-        {
-            if (listener != nullptr)
-            {
-                listener = nullptr;
-                DecrRef();
-            }
-        }
-        Listener listener;
-        int ref_count{0};
-        ListNode list_link;
-    };
+    using ListenerNode = ListSafeNode<Listener>;
 
 public:
     Event()
@@ -78,48 +42,52 @@ public:
     {
         MZX_CHECK_STATIC(sizeof(ListenerNode *) == sizeof(EventID));
         MZX_CHECK(listener != nullptr);
-        auto *node = new ListenerNode(listener);
-        listener_list_.PushBack(&node->list_link);
-        return (EventID)node;
+        auto *listener_node = new ListenerNode(new Listener(listener));
+        listener_list_.PushBack(&listener_node->list_link_);
+        return (EventID)listener_node;
     }
     void RemoveListener(EventID id)
     {
-        for (auto *node = listener_list_.Next(); node != &listener_list_; node = node->Next())
+        for (auto *node = listener_list_.Begin(); node != listener_list_.End();
+             node = node->Next())
         {
-            auto *entry = MZX_LIST_ENTRY(node, ListenerNode, list_link);
-            if ((EventID)entry == id)
+            auto *listener_node =
+                MZX_CONTAINER_OF(node, ListenerNode, list_link_);
+            if ((EventID)listener_node == id)
             {
-                entry->SelfRemove();
+                delete listener_node->Detach();
                 break;
             }
         }
     }
     void RemoveAllListener()
     {
-        for (auto *node = listener_list_.Next(); node != &listener_list_;)
+        for (auto *node = listener_list_.Begin(); node != listener_list_.End();)
         {
-            auto *entry = MZX_LIST_ENTRY(node, ListenerNode, list_link);
+            auto *listener_node =
+                MZX_CONTAINER_OF(node, ListenerNode, list_link_);
             node = node->Next();
-            entry->SelfRemove();
+            delete listener_node->Detach();
         }
     }
     void Invoke(Args... args) const
     {
-        for (auto *node = listener_list_.Next(); node != &listener_list_;)
+        for (auto *node = listener_list_.Begin(); node != listener_list_.End();)
         {
-            auto *entry = MZX_LIST_ENTRY(node, ListenerNode, list_link);
-            entry->IncrRef();
-            if (entry->listener)
+            auto *listener_node =
+                MZX_CONTAINER_OF(node, ListenerNode, list_link_);
+            listener_node->IncrRef();
+            if (listener_node->Get())
             {
-                (entry->listener)(args...);
+                (*listener_node->Get())(args...);
             }
             node = node->Next();
-            entry->DecrRef();
+            listener_node->DecrRef();
         }
     }
 
 private:
-    ListNode listener_list_;
+    List listener_list_;
 };
 
 template <typename T, typename O>
@@ -149,7 +117,7 @@ public:
         if (iter_event == event_list_.end())
         {
             std::shared_ptr<EventType> event(new EventType());
-            event_list_[type] = event;
+            event_list_.emplace(type, event);
             return event->AddListener(listener);
         }
         return iter_event->second->AddListener(listener);
@@ -173,7 +141,8 @@ public:
     }
     void RemoveAllEvent()
     {
-        for (auto iter_event = event_list_.begin(); iter_event != event_list_.end();)
+        for (auto iter_event = event_list_.begin();
+             iter_event != event_list_.end();)
         {
             iter_event->second->RemoveAllListener();
             iter_event = event_list_.erase(iter_event);

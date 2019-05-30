@@ -80,7 +80,7 @@ constexpr EntityID ENTITY_ID_INVALID = (EntityID)-1;
 class EntityManager
 {
     friend Entity;
-    using EntityNode = typename ListSafeNode<Entity>;
+    using EntityNode = ListSafeNode<Entity>;
 
 public:
     using ComponentChangedEvent = Event<void(Entity *, ComponentBase *)>;
