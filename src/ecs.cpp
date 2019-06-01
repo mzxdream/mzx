@@ -60,14 +60,13 @@ EntityManager::EntityChangedEvent &EntityManager::EntityRemoveEvent()
 Entity *EntityManager::AddEntity()
 {
     MZX_CHECK_STATIC(sizeof(Entity *) == sizeof(EventID));
-
     auto *entity = new Entity(*this);
     entity->id_ = reinterpret_cast<EntityID>(entity);
     auto *entity_node = new EntityNode(entity);
-    entity_list_.PushBack(&entity_node->list_link_);
     entities_[entity->ID()] = entity_node;
+    entity_list_.PushBack(&entity_node->list_link_);
     entity_node->IncrRef();
-    entity_add_event_.Invoke(entity_node->Get());
+    entity_add_event_.Invoke(entity);
     entity = entity_node->Get();
     entity_node->DecrRef();
     return entity;

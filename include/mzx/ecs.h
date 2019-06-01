@@ -12,6 +12,7 @@
 
 namespace mzx
 {
+
 class Entity;
 
 class ComponentBase
@@ -36,7 +37,7 @@ protected:
 };
 
 template <typename T>
-class Component : public ComponentBase
+class Component final : public ComponentBase
 {
     friend Entity;
 
@@ -77,7 +78,7 @@ const ComponentBase::ClassIndexType Component<T>::CLASS_INDEX =
 using EntityID = std::size_t;
 constexpr EntityID ENTITY_ID_INVALID = (EntityID)-1;
 
-class EntityManager
+class EntityManager final
 {
     friend Entity;
     using EntityNode = ListSafeNode<Entity>;
@@ -117,7 +118,7 @@ private:
     List entity_list_;
 };
 
-class Entity
+class Entity final
 {
     friend EntityManager;
 
@@ -156,7 +157,9 @@ public:
         auto *component = new Component<T>(std::forward<Args>(args)...);
         component_list_[Component<T>::CLASS_INDEX] = component;
         entity_manager_.OnAddComponent(this, component);
-        return component->Get();
+        return component == component_list_[Component<T>::CLASS_INDEX]
+                   ? component->Get()
+                   : nullptr;
     }
     template <typename T>
     void RemoveComponent()
@@ -234,7 +237,7 @@ template <typename T>
 const EntitySystemBase::ClassIndexType EntitySystem<T>::CLASS_INDEX =
     EntitySystemBase::class_index_counter_++;
 
-class EntitySystemManager
+class EntitySystemManager final
 {
     using SystemNode = ListSafeNode<EntitySystemBase>;
 
