@@ -2,47 +2,46 @@
 
 #include <mzx/data_structure/make_array.h>
 #include <mzx/logger.h>
-#include <mzx/timer.h>
+#include <mzx/timer_manager.h>
 
 namespace mzx
 {
 
-constexpr std::size_t TIMER_WHEEL_BITS[] = {8, 6, 6, 6, 6};
-constexpr auto TIMER_WHEEL_COUNT = sizeof(TIMER_WHEEL_BITS) / sizeof(TIMER_WHEEL_BITS[0]);
-constexpr std::size_t CalculateTimerWheelSize(std::size_t i)
+constexpr static std::size_t TIMER_WHEEL_BITS[] = {8, 6, 6, 6, 6};
+constexpr static auto TIMER_WHEEL_COUNT =
+    sizeof(TIMER_WHEEL_BITS) / sizeof(TIMER_WHEEL_BITS[0]);
+constexpr static std::size_t CalculateTimerWheelSize(std::size_t i)
 {
     return 1 << TIMER_WHEEL_BITS[i];
 }
-constexpr auto TIMER_WHEEL_SIZE = MakeArray<TIMER_WHEEL_COUNT>(CalculateTimerWheelSize);
+constexpr auto TIMER_WHEEL_SIZE =
+    MakeArray<TIMER_WHEEL_COUNT>(CalculateTimerWheelSize);
 constexpr std::size_t CalculateTimerWheelMask(std::size_t i)
 {
     return TIMER_WHEEL_SIZE[i] - 1;
 }
-constexpr auto TIMER_WHEEL_MASK = MakeArray<TIMER_WHEEL_COUNT>(CalculateTimerWheelMask);
+constexpr auto TIMER_WHEEL_MASK =
+    MakeArray<TIMER_WHEEL_COUNT>(CalculateTimerWheelMask);
 constexpr std::size_t CalculateTimerWheelOffset(std::size_t i)
 {
-    return i == 0 ? 0 : TIMER_WHEEL_BITS[i - 1] + CalculateTimerWheelOffset(i - 1);
+    return i == 0 ? 0
+                  : TIMER_WHEEL_BITS[i - 1] + CalculateTimerWheelOffset(i - 1);
 }
-constexpr auto TIMER_WHEEL_OFFSET = MakeArray<TIMER_WHEEL_COUNT>(CalculateTimerWheelOffset);
-constexpr std::size_t TIMER_ID_COUNT_BIT = 16;
-constexpr std::size_t TIMER_ID_COUNT_MASK = (static_cast<std::size_t>(1) << TIMER_ID_COUNT_BIT) - 1;
+constexpr auto TIMER_WHEEL_OFFSET =
+    MakeArray<TIMER_WHEEL_COUNT>(CalculateTimerWheelOffset);
 
-struct TimerBase
+constexpr std::size_t TIMER_ID_COUNT_BIT = 16;
+constexpr std::size_t TIMER_ID_COUNT_MASK =
+    (static_cast<std::size_t>(1) << TIMER_ID_COUNT_BIT) - 1;
+
+struct Timer::TimerNode
 {
-    TimerBase()
-        : id(TIMER_ID_INVALID)
-        , expire_time(0)
-        , interval(0)
-        , prev(nullptr)
-        , next(nullptr)
-    {
-    }
-    TimerID id;
-    int64_t expire_time;
-    int64_t interval;
+    TimerID id{TIMER_ID_INVALID};
+    int64_t expire_time{0};
+    int64_t interval{0};
     std::function<void()> cb;
-    TimerBase *prev;
-    TimerBase *next;
+    TimerBase *prev{nullptr};
+    TimerBase *next{nullptr};
 };
 
 static void ListTimerInsertTail(TimerBase *timer, TimerBase *head)
@@ -108,7 +107,9 @@ TimerBase *Timer::GetFreeTimer()
     {
         TimerBase *timer = timer_free_list_.front();
         timer_free_list_.pop_front();
-        timer->id = static_cast<TimerID>((timer->id & ~TIMER_ID_COUNT_MASK) | ((timer->id + 1) & TIMER_ID_COUNT_MASK));
+        timer->id =
+            static_cast<TimerID>((timer->id & ~TIMER_ID_COUNT_MASK) |
+                                 ((timer->id + 1) & TIMER_ID_COUNT_MASK));
         return timer;
     }
     TimerBase *timer = new TimerBase();
@@ -142,24 +143,30 @@ void Timer::InsertToWheel(TimerBase *timer)
     int64_t delay = timer->expire_time - cur_time_;
     if (delay <= 0)
     {
-        ListTimerInsertTail(timer, &timer_wheel_list_[0][cur_time_ & TIMER_WHEEL_MASK[0]]);
+        ListTimerInsertTail(
+            timer, &timer_wheel_list_[0][cur_time_ & TIMER_WHEEL_MASK[0]]);
         return;
     }
     for (std::size_t i = 0; i < TIMER_WHEEL_COUNT; ++i)
     {
-        if (static_cast<std::size_t>(delay >> TIMER_WHEEL_OFFSET[i]) < TIMER_WHEEL_SIZE[i])
+        if (static_cast<std::size_t>(delay >> TIMER_WHEEL_OFFSET[i]) <
+            TIMER_WHEEL_SIZE[i])
         {
-            auto index = (timer->expire_time >> TIMER_WHEEL_OFFSET[i]) & TIMER_WHEEL_MASK[i];
+            auto index = (timer->expire_time >> TIMER_WHEEL_OFFSET[i]) &
+                         TIMER_WHEEL_MASK[i];
             ListTimerInsertTail(timer, &timer_wheel_list_[i][index]);
             return;
         }
     }
     auto i = TIMER_WHEEL_COUNT - 1;
-    auto index = ((cur_time_ >> TIMER_WHEEL_OFFSET[i]) + (TIMER_WHEEL_MASK[i])) & TIMER_WHEEL_MASK[i];
+    auto index =
+        ((cur_time_ >> TIMER_WHEEL_OFFSET[i]) + (TIMER_WHEEL_MASK[i])) &
+        TIMER_WHEEL_MASK[i];
     ListTimerInsertTail(timer, &timer_wheel_list_[i][index]);
 }
 
-TimerID Timer::SetTimer(std::function<void()> cb, int64_t delay, int64_t interval)
+TimerID Timer::SetTimer(std::function<void()> cb, int64_t delay,
+                        int64_t interval)
 {
     if (!cb)
     {

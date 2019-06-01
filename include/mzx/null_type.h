@@ -5,7 +5,7 @@ namespace mzx
 {
 
 template <typename T = void>
-class NullType
+class NullType final
 {
 };
 

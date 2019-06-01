@@ -9,7 +9,7 @@
 namespace mzx
 {
 
-class Logger
+class Logger final
 {
 public:
     enum class Level

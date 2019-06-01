@@ -12,18 +12,19 @@ namespace mzx
 using TimerID = std::int64_t;
 constexpr TimerID TIMER_ID_INVALID = (TimerID)-1;
 
-struct TimerBase;
-
-class Timer
+class Timer final
 {
+    struct TimerNode;
+
 public:
-    Timer(int64_t cur_time = 0);
+    explicit Timer(int64_t cur_time = 0);
     ~Timer();
     Timer(const Timer &) = delete;
     Timer &operator=(const Timer &) = delete;
 
 public:
-    TimerID SetTimer(std::function<void()> cb, int64_t delay = 0, int64_t interval = 0);
+    TimerID SetTimer(std::function<void()> cb, int64_t delay = 0,
+                     int64_t interval = 0);
     void DelTimer(TimerID id);
     int64_t ExpireTime(TimerID id);
     int64_t LeftTime(TimerID id);
@@ -36,10 +37,10 @@ private:
     void CascadeTimer(std::size_t i);
 
 private:
-    int64_t cur_time_;
+    int64_t cur_time_{0};
     std::vector<TimerBase *> timer_list_;
     std::list<TimerBase *> timer_free_list_;
-    TimerBase **timer_wheel_list_;
+    TimerBase **timer_wheel_list_{nullptr};
 };
 
 } // namespace mzx
