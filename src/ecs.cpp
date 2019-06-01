@@ -62,7 +62,7 @@ Entity *EntityManager::AddEntity()
     MZX_CHECK_STATIC(sizeof(Entity *) == sizeof(EventID));
 
     auto *entity = new Entity(*this);
-    entity->id_ = reinpreter_cast<EntityID>(entity);
+    entity->id_ = reinterpret_cast<EntityID>(entity);
     auto *entity_node = new EntityNode(entity);
     entity_list_.PushBack(&entity_node->list_link_);
     entities_[entity->ID()] = entity_node;
@@ -117,7 +117,7 @@ void EntityManager::ForeachEntity(std::function<bool(Entity *)> cb)
     {
         auto *entity_node = MZX_CONTAINER_OF(node, EntityNode, list_link_);
         entity_node->IncrRef();
-        if (entity_node->Get() && !cb(entity->Get()))
+        if (entity_node->Get() && !cb(entity_node->Get()))
         {
             entity_node->DecrRef();
             return;

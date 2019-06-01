@@ -258,7 +258,7 @@ public:
         }
         auto *system_node = new SystemNode(system);
         system_list_.PushBack(&system_node->list_link_);
-        systems_[T::CLASS_INDEX] = node;
+        systems_[T::CLASS_INDEX] = system_node;
         return system;
     }
     template <typename T>
