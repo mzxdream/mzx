@@ -99,6 +99,26 @@ public:
         MZX_CHECK(node != nullptr);
         node->Insert(head_.prev_, &head_);
     }
+    ListNode *PopFront()
+    {
+        if (head_.next_ == &head_)
+        {
+            return nullptr;
+        }
+        auto *node = head_.next_;
+        node->Erase();
+        return node;
+    }
+    ListNode *PopBack()
+    {
+        if (head_.prev_ == &head_)
+        {
+            return nullptr;
+        }
+        auto *node = head_.prev_;
+        node->Erase();
+        return node;
+    }
     ListNode *Erase(ListNode *node)
     {
         MZX_CHECK(node != nullptr);
