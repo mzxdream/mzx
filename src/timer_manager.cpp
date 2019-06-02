@@ -34,7 +34,7 @@ constexpr std::size_t TIMER_ID_COUNT_BIT = 16;
 constexpr std::size_t TIMER_ID_COUNT_MASK =
     (static_cast<std::size_t>(1) << TIMER_ID_COUNT_BIT) - 1;
 
-struct Timer::TimerNode
+struct TimerBase
 {
     TimerID id{TIMER_ID_INVALID};
     int64_t expire_time{0};
@@ -46,7 +46,7 @@ struct Timer::TimerNode
 
 static void ListTimerInsertTail(TimerBase *timer, TimerBase *head)
 {
-    MZX_CHECK(timer != nullptr && head != nullptr && "timer or head is null");
+    MZX_CHECK(timer != nullptr && head != nullptr);
     timer->next = head;
     timer->prev = head->prev;
     head->prev->next = timer;
@@ -69,6 +69,7 @@ static TimerBase *ListTimerPopFront(TimerBase *head)
 
 Timer::Timer(int64_t cur_time)
     : cur_time_(cur_time)
+    , next_time_(cur_time)
     , timer_wheel_list_(nullptr)
 {
     timer_wheel_list_ = new TimerBase *[TIMER_WHEEL_COUNT];
@@ -140,11 +141,12 @@ TimerBase *Timer::FindTimer(TimerID id)
 void Timer::InsertToWheel(TimerBase *timer)
 {
     MZX_CHECK(timer != nullptr && "timer is nullptr");
-    int64_t delay = timer->expire_time - cur_time_;
-    if (delay <= 0)
+    auto delay = timer->expire_time - cur_time_;
+    if (delay <= 1)
     {
         ListTimerInsertTail(
-            timer, &timer_wheel_list_[0][cur_time_ & TIMER_WHEEL_MASK[0]]);
+            timer,
+            &timer_wheel_list_[0][(cur_time_ + 1) & TIMER_WHEEL_MASK[0]]);
         return;
     }
     for (std::size_t i = 0; i < TIMER_WHEEL_COUNT; ++i)
@@ -159,9 +161,7 @@ void Timer::InsertToWheel(TimerBase *timer)
         }
     }
     auto i = TIMER_WHEEL_COUNT - 1;
-    auto index =
-        ((cur_time_ >> TIMER_WHEEL_OFFSET[i]) + (TIMER_WHEEL_MASK[i])) &
-        TIMER_WHEEL_MASK[i];
+    auto index = (cur_time_ >> TIMER_WHEEL_OFFSET[i]) & TIMER_WHEEL_MASK[i];
     ListTimerInsertTail(timer, &timer_wheel_list_[i][index]);
 }
 

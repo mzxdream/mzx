@@ -12,9 +12,9 @@ namespace mzx
 using TimerID = std::int64_t;
 constexpr TimerID TIMER_ID_INVALID = (TimerID)-1;
 
+struct TimerBase;
 class Timer final
 {
-    struct TimerNode;
 
 public:
     explicit Timer(int64_t cur_time = 0);
@@ -38,6 +38,7 @@ private:
 
 private:
     int64_t cur_time_{0};
+    int64_t next_time_{0};
     std::vector<TimerBase *> timer_list_;
     std::list<TimerBase *> timer_free_list_;
     TimerBase **timer_wheel_list_{nullptr};
