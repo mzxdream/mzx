@@ -43,23 +43,31 @@ struct TimerNode
     ListNode list_link;
 };
 
-TimerManager::TimerManager(int64_t cur_time)
-    : cur_time_(cur_time)
-    , next_time_(cur_time)
+TimerManager::TimerManager()
 {
+}
+
+TimerManager::~TimerManager()
+{
+}
+
+bool TimerManager::Init(int64_t cur_time)
+{
+    cur_time_ = cur_time + 1;
+    next_time_ = cur_time + 1;
     wheel_list_ = new List *[TIMER_WHEEL_COUNT];
     for (std::size_t i = 0; i < TIMER_WHEEL_COUNT; ++i)
     {
         wheel_list_[i] = new List[TIMER_WHEEL_SIZE[i]];
     }
+    return true;
 }
 
-TimerManager::~TimerManager()
+void TimerManager::Uninit()
 {
     for (auto &node : node_list_)
     {
-        auto *timer_node = MZX_CONTAINER_OF(node, TimerNode, list_link);
-        delete timer_node;
+        delete MZX_CONTAINER_OF(node, TimerNode, list_link);
     }
     node_list_.clear();
     free_list_.Clear();
@@ -89,12 +97,6 @@ static TimerNode *FindUsingTimerNode(const std::deque<ListNode *> &node_list,
     return id == timer_node->id && timer_node->is_using ? timer_node : nullptr;
 }
 
-int64_t TimerManager::ExpireTime(TimerID id) const
-{
-    auto *timer_node = FindUsingTimerNode(node_list_, id);
-    return timer_node ? timer_node->expire_time : -1;
-}
-
 int64_t TimerManager::LeftTime(TimerID id) const
 {
     auto *timer_node = FindUsingTimerNode(node_list_, id);
@@ -116,16 +118,15 @@ static void InsertTimerNodeToWheel(int64_t cur_time, TimerNode *timer_node,
     MZX_CHECK(timer_node != nullptr && wheel_list != nullptr);
     timer_node->list_link.Erase();
     auto delay = timer_node->expire_time - cur_time;
-    if (delay < 1)
+    if (delay <= 0)
     {
-        wheel_list[0][(cur_time + 1) & TIMER_WHEEL_MASK[0]].PushBack(
+        wheel_list[0][cur_time & TIMER_WHEEL_MASK[0]].PushBack(
             &timer_node->list_link);
         return;
     }
-    std::size_t i = 0;
-    for (; i < TIMER_WHEEL_COUNT; ++i)
+    for (std::size_t i = 0; i < TIMER_WHEEL_COUNT; ++i)
     {
-        if (static_cast<std::size_t>(delay >> TIMER_WHEEL_OFFSET[i]) <=
+        if (static_cast<std::size_t>(delay >> TIMER_WHEEL_OFFSET[i]) <
             TIMER_WHEEL_SIZE[i])
         {
             auto index = (timer_node->expire_time >> TIMER_WHEEL_OFFSET[i]) &
@@ -134,8 +135,9 @@ static void InsertTimerNodeToWheel(int64_t cur_time, TimerNode *timer_node,
             return;
         }
     }
-    --i;
-    auto index = (cur_time >> TIMER_WHEEL_OFFSET[i]) & TIMER_WHEEL_MASK[i];
+    auto i = TIMER_WHEEL_COUNT - 1;
+    auto index = ((cur_time >> TIMER_WHEEL_OFFSET[i]) + TIMER_WHEEL_MASK[i]) &
+                 TIMER_WHEEL_MASK[i];
     wheel_list[i][index].PushBack(&timer_node->list_link);
 }
 
@@ -160,7 +162,7 @@ TimerID TimerManager::SetTimer(std::function<void()> cb, int64_t delay,
             static_cast<TimerID>(node_list_.size() << TIMER_ID_COUNT_BIT);
         node_list_.emplace_back(&timer_node->list_link);
     }
-    timer_node->expire_time = cur_time_ + delay;
+    timer_node->expire_time = cur_time_ + delay - 1;
     timer_node->interval = interval;
     timer_node->cb = cb;
     timer_node->is_using = true;
@@ -198,8 +200,7 @@ static void TimerWheelCascade(int64_t cur_time, List **wheel_list,
     {
         return;
     }
-    auto index =
-        ((cur_time >> TIMER_WHEEL_OFFSET[i]) + 1) & TIMER_WHEEL_MASK[i];
+    auto index = (cur_time >> TIMER_WHEEL_OFFSET[i]) & TIMER_WHEEL_MASK[i];
     auto &wheel = wheel_list[i][index];
     ListNode *node = nullptr;
     while ((node = wheel.PopFront()) != nullptr)
@@ -213,18 +214,22 @@ static void TimerWheelCascade(int64_t cur_time, List **wheel_list,
     }
 }
 
-void TimerManager::Update(int64_t now_time)
+void TimerManager::Update(int64_t cur_time)
 {
-    if (now_time <= cur_time_)
+    if (cur_time < cur_time_)
     {
         return;
     }
-    next_time_ = now_time;
+    next_time_ = cur_time + 1;
     while (cur_time_ < next_time_)
     {
-        ++cur_time_;
         auto index = cur_time_ & TIMER_WHEEL_MASK[0];
+        if (index == 0)
+        {
+            TimerWheelCascade(cur_time_, wheel_list_, 1);
+        }
         auto &wheel = wheel_list_[0][index];
+        ++cur_time_;
         ListNode *node = nullptr;
         while ((node = wheel.PopFront()) != nullptr)
         {
@@ -243,10 +248,6 @@ void TimerManager::Update(int64_t now_time)
             {
                 MoveTimerNodeToFreeList(timer_node, &free_list_);
             }
-        }
-        if (index == 0)
-        {
-            TimerWheelCascade(cur_time_, wheel_list_, 1);
         }
     }
 }
