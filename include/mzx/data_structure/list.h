@@ -33,7 +33,6 @@ public:
     }
     MZX_NON_CONST_OVERLOAD(Next);
 
-private:
     void Insert(ListNode *prev, ListNode *next)
     {
         MZX_CHECK(prev != nullptr && next != nullptr);
