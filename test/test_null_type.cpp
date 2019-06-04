@@ -1,7 +1,8 @@
 #include <iostream>
 #include <mzx/null_type.h>
 
-template <typename T1 = mzx::NullType<>, typename T2 = mzx::NullType<>, typename T3 = mzx::NullType<>>
+template <typename T1 = mzx::NullType<>, typename T2 = mzx::NullType<>,
+          typename T3 = mzx::NullType<>>
 struct Test
 {
     Test(T1 a, T2 b, T3 c)

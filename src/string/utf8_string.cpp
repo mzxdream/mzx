@@ -72,7 +72,8 @@ std::string Utf8String::Substring(std::size_t index, std::size_t len)
     {
         return std::string(str_.c_str() + offset_list_[index]);
     }
-    return std::string(str_.c_str() + offset_list_[index], offset_list_[index + len] - offset_list_[index]);
+    return std::string(str_.c_str() + offset_list_[index],
+                       offset_list_[index + len] - offset_list_[index]);
 }
 
 Utf8String Utf8String::Utf8Substring(std::size_t index, std::size_t len)
@@ -85,7 +86,8 @@ Utf8String Utf8String::Utf8Substring(std::size_t index, std::size_t len)
     {
         return Utf8String(str_.c_str() + offset_list_[index]);
     }
-    return Utf8String(str_.c_str() + offset_list_[index], offset_list_[index + len] - offset_list_[index]);
+    return Utf8String(str_.c_str() + offset_list_[index],
+                      offset_list_[index + len] - offset_list_[index]);
 }
 
 std::size_t Utf8String::Length() const
@@ -106,11 +108,13 @@ std::string Utf8String::operator[](std::size_t index) const
     }
     if (index + 1 >= offset_list_.size())
     {
-        return std::string(str_.c_str() + offset_list_[index], str_.size() - offset_list_[index]);
+        return std::string(str_.c_str() + offset_list_[index],
+                           str_.size() - offset_list_[index]);
     }
     else
     {
-        return std::string(str_.c_str() + offset_list_[index], offset_list_[index + 1] - offset_list_[index]);
+        return std::string(str_.c_str() + offset_list_[index],
+                           offset_list_[index + 1] - offset_list_[index]);
     }
 }
 

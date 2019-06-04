@@ -19,7 +19,8 @@ int CPUCount()
 std::string Demangle(const char *name)
 {
     int status = -4;
-    std::unique_ptr<char, void (*)(void *)> res{abi::__cxa_demangle(name, nullptr, nullptr, &status), std::free};
+    std::unique_ptr<char, void (*)(void *)> res{
+        abi::__cxa_demangle(name, nullptr, nullptr, &status), std::free};
     return status == 0 ? res.get() : name;
 }
 
@@ -27,7 +28,8 @@ std::string BackTrace()
 {
     void *bt[128];
     auto bt_size = backtrace(bt, sizeof(bt) / sizeof(bt[0]));
-    std::unique_ptr<char *, void (*)(void *)> bt_symbols{backtrace_symbols(bt, bt_size), std::free};
+    std::unique_ptr<char *, void (*)(void *)> bt_symbols{
+        backtrace_symbols(bt, bt_size), std::free};
     std::ostringstream ss;
     ss << "backtrace begin\n";
     for (decltype(bt_size) i = 1; i < bt_size; ++i)
@@ -52,8 +54,9 @@ std::string BackTrace()
         {
             *mangled_end = '\0';
             int status = -4;
-            std::unique_ptr<char, void (*)(void *)> res{abi::__cxa_demangle(mangled_begin, nullptr, nullptr, &status),
-                                                        std::free};
+            std::unique_ptr<char, void (*)(void *)> res{
+                abi::__cxa_demangle(mangled_begin, nullptr, nullptr, &status),
+                std::free};
             *mangled_end = '+';
             if (status == 0)
             {

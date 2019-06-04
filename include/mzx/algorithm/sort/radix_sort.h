@@ -13,8 +13,11 @@ template <typename RandIt, typename Compare>
 void RadixSort(RandIt begin, RandIt end, Compare comp)
 {
     MZX_CHECK_STATIC(
-        std::is_same<std::random_access_iterator_tag, typename std::iterator_traits<RandIt>::iterator_category>::value);
-    MZX_CHECK_STATIC(std::is_integral<typename std::decay<decltype(*begin)>::type>::value);
+        std::is_same<
+            std::random_access_iterator_tag,
+            typename std::iterator_traits<RandIt>::iterator_category>::value);
+    MZX_CHECK_STATIC(
+        std::is_integral<typename std::decay<decltype(*begin)>::type>::value);
     MZX_CHECK(end > begin);
     using T = typename std::decay<decltype(*begin)>::type;
 

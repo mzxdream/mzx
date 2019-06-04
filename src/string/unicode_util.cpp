@@ -5,7 +5,8 @@
 namespace mzx
 {
 
-void ForeachUtf8Char(const char *utf8str, std::function<bool(const char *, std::size_t len)> cb)
+void ForeachUtf8Char(const char *utf8str,
+                     std::function<bool(const char *, std::size_t len)> cb)
 {
     if (!utf8str || !cb)
     {

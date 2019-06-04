@@ -9,7 +9,9 @@ template <typename RandIt, typename Compare>
 void BuddleSort(RandIt begin, RandIt end, Compare comp)
 {
     MZX_CHECK_STATIC(
-        std::is_same<std::random_access_iterator_tag, typename std::iterator_traits<RandIt>::iterator_category>::value);
+        std::is_same<
+            std::random_access_iterator_tag,
+            typename std::iterator_traits<RandIt>::iterator_category>::value);
     MZX_CHECK(end > begin);
     auto len = end - begin;
     auto iter_tmp = end - 1;

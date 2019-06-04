@@ -12,7 +12,9 @@ template <typename RandIt, typename Compare>
 void CountSort(RandIt begin, RandIt end, Compare comp)
 {
     MZX_CHECK_STATIC(
-        std::is_same<std::random_access_iterator_tag, typename std::iterator_traits<RandIt>::iterator_category>::value);
+        std::is_same<
+            std::random_access_iterator_tag,
+            typename std::iterator_traits<RandIt>::iterator_category>::value);
     MZX_CHECK_STATIC(std::is_integral<decltype(*begin - *begin)>::value);
     MZX_CHECK(end > begin);
     auto min_index = begin;

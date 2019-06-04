@@ -19,7 +19,6 @@ ListNode::~ListNode()
 
 List::List()
 {
-
 }
 
 List::~List()

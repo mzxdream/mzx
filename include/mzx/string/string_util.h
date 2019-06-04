@@ -118,7 +118,8 @@ inline std::vector<std::string> Split(const std::string &str, char delimiter)
     return v;
 }
 
-inline std::vector<std::string> Split(const std::string &str, const char *delimiter)
+inline std::vector<std::string> Split(const std::string &str,
+                                      const char *delimiter)
 {
     std::vector<std::string> v;
     std::size_t prev_pos = 0;

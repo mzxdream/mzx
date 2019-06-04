@@ -3,8 +3,10 @@
 
 #define TEST_0() std::cout << "TEST_0()" << std::endl;
 #define TEST_1(x) std::cout << "TEST_1(" << x << ")" << std::endl;
-#define TEST_2(x, y) std::cout << "TEST_2(" << x << "," << y << ")" << std::endl;
-#define TEST_3(x, y, z) std::cout << "TEST_3(" << x << "," << y << "," << z << ")" << std::endl;
+#define TEST_2(x, y)                                                           \
+    std::cout << "TEST_2(" << x << "," << y << ")" << std::endl;
+#define TEST_3(x, y, z)                                                        \
+    std::cout << "TEST_3(" << x << "," << y << "," << z << ")" << std::endl;
 #define TEST(...) MZX_VA_SELECT(TEST, __VA_ARGS__)
 
 int main(int argc, char *argv[])

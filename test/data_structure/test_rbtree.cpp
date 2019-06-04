@@ -81,8 +81,8 @@ int main(int argc, char *argv[])
     for (auto *node = rbtree.First(); node != nullptr;)
     {
         auto *tmp = node->Next();
-        std::cout << "remove:" << MZX_CONTAINER_OF(node, Test, rbtree_link)->a << " cur len:" << rbtree.Length()
-                  << std::endl;
+        std::cout << "remove:" << MZX_CONTAINER_OF(node, Test, rbtree_link)->a
+                  << " cur len:" << rbtree.Length() << std::endl;
         rbtree.Erase(node);
         node = tmp;
     }
@@ -92,7 +92,8 @@ int main(int argc, char *argv[])
         std::cout << MZX_CONTAINER_OF(node, Test, rbtree_link)->a << ",";
     }
     std::cout << std::endl;
-    std::vector<Test> ttt3{Test(0), Test(1), Test(2), Test(2), Test(3), Test(4), Test(6), Test(4), Test(4)};
+    std::vector<Test> ttt3{Test(0), Test(1), Test(2), Test(2), Test(3),
+                           Test(4), Test(6), Test(4), Test(4)};
     mzx::RBTree<int, TestKeyOfNode> rbtree3;
     for (auto &t : ttt3)
     {

@@ -17,8 +17,10 @@ public:
 
 public:
     const char *CharAt(std::size_t index, std::size_t *len = nullptr) const;
-    std::string Substring(std::size_t index, std::size_t len = static_cast<std::size_t>(-1));
-    Utf8String Utf8Substring(std::size_t index, std::size_t len = static_cast<std::size_t>(-1));
+    std::string Substring(std::size_t index,
+                          std::size_t len = static_cast<std::size_t>(-1));
+    Utf8String Utf8Substring(std::size_t index,
+                             std::size_t len = static_cast<std::size_t>(-1));
     std::size_t Length() const;
     const std::string &Data() const;
     std::string operator[](std::size_t index) const;
