@@ -1,42 +1,49 @@
 #ifndef __MZX_THREAD_H__
 #define __MZX_THREAD_H__
 
+#include <functional>
 #include <pthread.h>
 #include <string>
 
 namespace mzx
 {
 
+using ThreadID = pthread_t;
+constexpr THREAD_ID_INVALID = static_cast<ThreadID>(0);
+
 class Thread
 {
-public:
-    typedef pthread_t PID;
-    static const PID PID_INVALID = 0;
-
 protected:
     Thread();
+
+public:
+    explicit Thread(std::function<void()> run_cb);
     virtual ~Thread();
     Thread(const Thread &) = delete;
     Thread &operator=(const Thread &) = delete;
 
 public:
+    ThreadID ID() const;
+    bool Joinable() const;
+
     bool Start();
-    void Stop();
     bool Join();
-    bool StopAndJoin();
-    bool StopFlag() const;
-    PID GetPID() const;
-    static PID GetCurrentPID();
+    bool Cancel();
+    void CheckCancelPoint();
+    void Run();
+
+public:
+    static ThreadID CurrentID();
+    static bool Cancel(ThreadID id);
 
 private:
-    virtual void _Run() = 0;
+    virtual void _Run()
+    {
+    }
 
 private:
-    static void *ThreadMain(void *p_param);
-
-private:
-    PID pid_;
-    volatile bool stop_flag_;
+    volatile ThreadID thread_id_{THREAD_ID_INVALID};
+    std::function<void()> run_cb_;
 };
 
 } // namespace mzx

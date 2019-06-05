@@ -5,25 +5,44 @@ namespace mzx
 {
 
 Thread::Thread()
-    : pid_(PID_INVALID)
-    , stop_flag_(false)
 {
+}
+
+Thread::Thread(std::function<void()> run_cb)
+    : run_cb_(run_cb)
+{
+    MZX_CHECK(run_cb != nullptr);
 }
 
 Thread::~Thread()
 {
-    StopAndJoin();
+}
+
+ThreadID Thread::ID() const
+{
+    return thread_id_;
+}
+
+bool Thread::Joinable() const
+{
+    return thread_id_ != THREAD_ID_INVALID;
+}
+
+static void *ThreadMain(void *param)
+{
+    MZX_CHECK(param != nullptr);
+    static_cast<mzx::Thread *>(param)->Run();
+    return nullptr;
 }
 
 bool Thread::Start()
 {
-    if (pid_ != PID_INVALID)
+    if (Joinable())
     {
-        MZX_WARN("thread is running");
+        MZX_WARN("thread:", thread_id_, " is running");
         return false;
     }
-    stop_flag_ = false;
-    int err = pthread_create(&pid_, nullptr, &ThreadMain, this);
+    auto err = pthread_create(&thread_id_, nullptr, &ThreadMain, this);
     if (err != 0)
     {
         MZX_WARN("create thread failed:", err);
@@ -32,58 +51,59 @@ bool Thread::Start()
     return true;
 }
 
-void Thread::Stop()
-{
-    stop_flag_ = true;
-}
-
 bool Thread::Join()
 {
-    if (pid_ == PID_INVALID)
+    if (thread_id_ == THREAD_ID_INVALID)
     {
         return true;
     }
-    int err = pthread_join(pid_, nullptr);
+    int err = pthread_join(thread_id_, nullptr);
     if (err != 0)
     {
-        MZX_WARN("thread join failed:", err);
+        MZX_WARN("thread:", thread_id_, " join failed:", err);
         return false;
     }
-    pid_ = PID_INVALID;
+    thread_id_ = THREAD_ID_INVALID;
     return true;
 }
 
-bool Thread::StopAndJoin()
+bool Thread::Cancel()
 {
-    Stop();
-    return Join();
+    return Cancel(thread_id_);
 }
 
-bool Thread::StopFlag() const
+void Thread::CheckCancelPoint()
 {
-    return stop_flag_;
+    pthread_testcancel();
 }
 
-Thread::PID Thread::GetPID() const
+void Thread::Run()
 {
-    return pid_;
+    _Run();
+    if (run_cb_)
+    {
+        run_cb_();
+    }
 }
 
-Thread::PID Thread::GetCurrentPID()
+ThreadID Thread::CurrentID()
 {
     return pthread_self();
 }
 
-void *Thread::ThreadMain(void *param)
+bool Thread::Cancel(ThreadID id)
 {
-    Thread *th = static_cast<Thread *>(param);
-    if (!th)
+    if (id == THREAD_ID_INVALID)
     {
-        MZX_ERR("param is null");
-        return nullptr;
+        return true;
     }
-    th->_Run();
-    return nullptr;
+    int err = pthread_cancel(id);
+    if (err != 0)
+    {
+        MZX_WARN("thread:", id, " cancel failed:", err);
+        return false;
+    }
+    return true;
 }
 
 } // namespace mzx
