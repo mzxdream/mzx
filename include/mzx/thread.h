@@ -31,6 +31,7 @@ public:
     bool Cancel();
 
 public:
+    static void Sleep(unsigned ms);
     static ThreadID CurrentID();
     static void CheckCancelPoint();
     static bool Cancel(ThreadID id);

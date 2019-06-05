@@ -1,3 +1,5 @@
+#include <unistd.h>
+
 #include <mzx/logger.h>
 #include <mzx/thread.h>
 
@@ -63,6 +65,11 @@ bool Thread::Join()
 bool Thread::Cancel()
 {
     return Cancel(thread_id_);
+}
+
+void Thread::Sleep(unsigned ms)
+{
+    usleep(ms * 1000);
 }
 
 ThreadID Thread::CurrentID()
