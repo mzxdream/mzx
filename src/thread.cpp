@@ -18,7 +18,7 @@ Thread::Thread(std::function<void()> run_cb)
 
 Thread::~Thread()
 {
-    MZX_CHECK(joinable_);
+    MZX_CHECK(!joinable_);
 }
 
 ThreadID Thread::ID() const
@@ -38,10 +38,12 @@ bool Thread::Start()
         MZX_WARN("thread:", thread_id_, " is running");
         return false;
     }
+    joinable_ = true;
     auto err = pthread_create(&thread_id_, nullptr, &Thread::Run, this);
     if (err != 0)
     {
         MZX_WARN("create thread failed:", err);
+        joinable_ = false;
         return false;
     }
     return true;
