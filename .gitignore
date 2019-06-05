@@ -29,6 +29,6 @@
 
 # director
 build/*
-out_lib/*
+lib/*
 test/test
 *.swp
