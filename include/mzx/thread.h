@@ -9,7 +9,7 @@ namespace mzx
 {
 
 using ThreadID = pthread_t;
-constexpr THREAD_ID_INVALID = static_cast<ThreadID>(0);
+constexpr auto THREAD_ID_INVALID = static_cast<ThreadID>(0);
 
 class Thread
 {
@@ -29,12 +29,15 @@ public:
     bool Start();
     bool Join();
     bool Cancel();
-    void CheckCancelPoint();
-    void Run();
 
 public:
     static ThreadID CurrentID();
+    static void CheckCancelPoint();
     static bool Cancel(ThreadID id);
+
+private:
+    static void *Run(void *param);
+    static void CleanUp(void *param);
 
 private:
     virtual void _Run()
@@ -42,7 +45,8 @@ private:
     }
 
 private:
-    volatile ThreadID thread_id_{THREAD_ID_INVALID};
+    ThreadID thread_id_{THREAD_ID_INVALID};
+    volatile bool joinable_{false};
     std::function<void()> run_cb_;
 };
 

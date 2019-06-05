@@ -16,6 +16,7 @@ Thread::Thread(std::function<void()> run_cb)
 
 Thread::~Thread()
 {
+    MZX_CHECK(joinable_);
 }
 
 ThreadID Thread::ID() const
@@ -25,14 +26,7 @@ ThreadID Thread::ID() const
 
 bool Thread::Joinable() const
 {
-    return thread_id_ != THREAD_ID_INVALID;
-}
-
-static void *ThreadMain(void *param)
-{
-    MZX_CHECK(param != nullptr);
-    static_cast<mzx::Thread *>(param)->Run();
-    return nullptr;
+    return joinable_;
 }
 
 bool Thread::Start()
@@ -42,7 +36,7 @@ bool Thread::Start()
         MZX_WARN("thread:", thread_id_, " is running");
         return false;
     }
-    auto err = pthread_create(&thread_id_, nullptr, &ThreadMain, this);
+    auto err = pthread_create(&thread_id_, nullptr, &Thread::Run, this);
     if (err != 0)
     {
         MZX_WARN("create thread failed:", err);
@@ -53,7 +47,7 @@ bool Thread::Start()
 
 bool Thread::Join()
 {
-    if (thread_id_ == THREAD_ID_INVALID)
+    if (!Joinable())
     {
         return true;
     }
@@ -63,7 +57,6 @@ bool Thread::Join()
         MZX_WARN("thread:", thread_id_, " join failed:", err);
         return false;
     }
-    thread_id_ = THREAD_ID_INVALID;
     return true;
 }
 
@@ -72,31 +65,18 @@ bool Thread::Cancel()
     return Cancel(thread_id_);
 }
 
-void Thread::CheckCancelPoint()
-{
-    pthread_testcancel();
-}
-
-void Thread::Run()
-{
-    _Run();
-    if (run_cb_)
-    {
-        run_cb_();
-    }
-}
-
 ThreadID Thread::CurrentID()
 {
     return pthread_self();
 }
 
+void Thread::CheckCancelPoint()
+{
+    pthread_testcancel();
+}
+
 bool Thread::Cancel(ThreadID id)
 {
-    if (id == THREAD_ID_INVALID)
-    {
-        return true;
-    }
     int err = pthread_cancel(id);
     if (err != 0)
     {
@@ -104,6 +84,26 @@ bool Thread::Cancel(ThreadID id)
         return false;
     }
     return true;
+}
+
+void *Thread::Run(void *param)
+{
+    auto *th = static_cast<Thread *>(param);
+    MZX_CHECK(th != nullptr);
+    pthread_cleanup_push(&Thread::CleanUp, param);
+    _Run();
+    if (run_cb_)
+    {
+        run_cb_();
+    }
+    pthread_cleanup_pop(1);
+}
+
+void Thread::CleanUp(void *param)
+{
+    auto *th = static_cast<Thread *>(param);
+    MZX_CHECK(th != nullptr);
+    th->joinable_ = false;
 }
 
 } // namespace mzx
