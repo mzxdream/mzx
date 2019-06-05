@@ -30,4 +30,5 @@
 # director
 build/*
 test/test
+lib/*
 *.swp
