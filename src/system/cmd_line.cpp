@@ -2,33 +2,79 @@
 #include <list>
 #include <map>
 #include <mutex>
+#include <unistd.h>
+
 #include <mzx/system/cmd_line.h>
 #include <mzx/thread.h>
-#include <unistd.h>
 
 namespace mzx
 {
 
-class CmdLineWorkThread : public Thread
+static int KeyBoardHitReturn()
 {
-public:
-    virtual void _Run();
-};
+    struct timeval tv;
+    tv.tv_sec = 0;
+    tv.tv_usec = 0;
+    fd_set fds;
+    FD_ZERO(&fds);
+    FD_SET(STDIN_FILENO, &fds);
+    select(STDIN_FILENO + 1, &fds, NULL, NULL, &tv);
+    return FD_ISSET(STDIN_FILENO, &fds);
+}
 
-static std::map<std::string, CmdLine::Callback> cmd_callback_list;
 static CmdLine::Callback cmd_callback_default;
+static std::map<std::string, CmdLine::Callback> cmd_callback_list;
 static std::mutex cmd_mutex;
 static std::list<std::string> cmd_list;
-static CmdLineWorkThread cmd_thread;
+static Thread cmd_read_thread([]() {
+    printf("cmd>");
+    char cmd_buf[1024] = {0};
+    while (true)
+    {
+        fflush(stdout);
+        while (!KeyBoardHitReturn())
+        {
+            usleep(100);
+            Thread::CheckCancelPoint();
+        }
+        Thread::CheckCancelPoint();
+        char *cmd_str = fgets(cmd_buf, sizeof(cmd_buf), stdin);
+        if (cmd_str)
+        {
+            for (int i = 0; cmd_str[i]; ++i)
+            {
+                if (cmd_str[i] == '\r' || cmd_str[i] == '\n')
+                {
+                    cmd_str[i] = '\0';
+                    break;
+                }
+            }
+            if (cmd_str[0] == '\0')
+            {
+                printf("cmd>");
+                continue;
+            }
+            {
+                std::lock_guard<std::mutex> lock(cmd_mutex);
+                cmd_list.push_back(cmd_str);
+            }
+        }
+        else if (feof(stdin))
+        {
+            return;
+        }
+    }
+});
 
 bool CmdLine::Start()
 {
-    return cmd_thread.Start();
+    return cmd_read_thread.Start();
 }
 
 void CmdLine::Stop()
 {
-    cmd_thread.StopAndJoin();
+    cmd_read_thread.Cancel();
+    cmd_read_thread.Join();
 }
 
 void CmdLine::Regist(const CmdLine::Callback &callback)
@@ -84,61 +130,6 @@ void CmdLine::Execute()
     {
         printf("\ncmd>");
         fflush(stdout);
-    }
-}
-
-static int KeyBoardHitReturn()
-{
-    struct timeval tv;
-    tv.tv_sec = 0;
-    tv.tv_usec = 0;
-    fd_set fds;
-    FD_ZERO(&fds);
-    FD_SET(STDIN_FILENO, &fds);
-    select(STDIN_FILENO + 1, &fds, NULL, NULL, &tv);
-    return FD_ISSET(STDIN_FILENO, &fds);
-}
-
-void CmdLineWorkThread::_Run()
-{
-    printf("cmd>");
-    char cmd_buf[1024] = {0};
-    while (!StopFlag())
-    {
-        fflush(stdout);
-        while (!KeyBoardHitReturn() && !StopFlag())
-        {
-            usleep(100);
-        }
-        if (StopFlag())
-        {
-            return;
-        }
-        char *cmd_str = fgets(cmd_buf, sizeof(cmd_buf), stdin);
-        if (cmd_str)
-        {
-            for (int i = 0; cmd_str[i]; ++i)
-            {
-                if (cmd_str[i] == '\r' || cmd_str[i] == '\n')
-                {
-                    cmd_str[i] = '\0';
-                    break;
-                }
-            }
-            if (cmd_str[0] == '\0')
-            {
-                printf("cmd>");
-                continue;
-            }
-            {
-                std::lock_guard<std::mutex> lock(cmd_mutex);
-                cmd_list.push_back(cmd_str);
-            }
-        }
-        else if (feof(stdin))
-        {
-            return;
-        }
     }
 }
 

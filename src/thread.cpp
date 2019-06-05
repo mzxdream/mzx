@@ -91,10 +91,10 @@ void *Thread::Run(void *param)
     auto *th = static_cast<Thread *>(param);
     MZX_CHECK(th != nullptr);
     pthread_cleanup_push(&Thread::CleanUp, param);
-    _Run();
-    if (run_cb_)
+    th->_Run();
+    if (th->run_cb_)
     {
-        run_cb_();
+        (th->run_cb_)();
     }
     pthread_cleanup_pop(1);
 }
