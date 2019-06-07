@@ -106,6 +106,7 @@ void *Thread::Run(void *param)
         (th->run_cb_)();
     }
     pthread_cleanup_pop(1);
+    return nullptr;
 }
 
 void Thread::CleanUp(void *param)
