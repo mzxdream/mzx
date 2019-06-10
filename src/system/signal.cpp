@@ -6,35 +6,36 @@ namespace mzx
 
 static std::map<SignalType, Signal::Callback> signal_callback_list;
 
-static void OnSignal(SignalType type)
+static void OnSignal(int type)
 {
-    auto iter_callback = signal_callback_list.find(type);
+    auto iter_callback =
+        signal_callback_list.find(static_cast<SignalType>(type));
     if (iter_callback != signal_callback_list.end())
     {
         if (iter_callback->second)
         {
-            (iter_callback->second)(type);
+            (iter_callback->second)(static_cast<SignalType>(type));
         }
     }
 }
 
-void Signal::Hook(SignalType type, const Signal::Callback &callback)
+void Signal::Hook(SignalType type, Signal::Callback callback)
 {
     signal_callback_list[type] = callback;
-    signal(type, OnSignal);
+    signal(static_cast<int>(type), OnSignal);
 }
 
 void Signal::Unhook(SignalType type)
 {
     signal_callback_list.erase(type);
-    signal(type, 0);
+    signal(static_cast<int>(type), 0);
 }
 
 void Signal::UnhookAll()
 {
     for (auto &iter_callback : signal_callback_list)
     {
-        signal(iter_callback.first, 0);
+        signal(static_cast<int>(iter_callback.first), 0);
     }
     signal_callback_list.clear();
 }

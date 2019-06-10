@@ -7,7 +7,11 @@
 namespace mzx
 {
 
-using SignalType = int;
+enum class SignalType : int
+{
+    Interrupt = SIGINT,
+    Terminal = SIGTERM,
+};
 
 class Signal
 {
@@ -15,7 +19,7 @@ public:
     using Callback = std::function<void(SignalType)>;
 
 public:
-    static void Hook(SignalType type, const Callback &callback);
+    static void Hook(SignalType type, Callback cb);
     static void Unhook(SignalType type);
     static void UnhookAll();
 };
