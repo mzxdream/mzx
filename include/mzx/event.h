@@ -148,7 +148,7 @@ public:
             iter_event = event_list_.erase(iter_event);
         }
     }
-    void Invoke(T type, Args... args) const
+    void Invoke(T type, Args &&... args) const
     {
         auto iter_event = event_list_.find(type);
         if (iter_event == event_list_.end())
