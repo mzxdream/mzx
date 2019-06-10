@@ -90,6 +90,11 @@ public:
     {
         event_manager_.Invoke(T::CLASS_INDEX, &arg);
     }
+    template <typename T, typename... Args>
+    void InvokeEmplace(Args &&... args)
+    {
+        event_manager_.Invoke(T::CLASS_INDEX, &T(std::forward<Args>(args)...));
+    }
 
 private:
     EventManager<SimpleEventBase::ClassIndexType, void(const SimpleEventBase *)>
