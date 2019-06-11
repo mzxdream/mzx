@@ -64,16 +64,22 @@ public:
 
 public:
     template <typename T>
-    EventID AddListener(Listener listener)
+    EventID AddListener(Listener listener, void *identifier = nullptr)
     {
         MZX_CHECK_STATIC(std::is_base_of<SimpleEvent<T>, T>::value);
-        return event_manager_.AddListener(T::CLASS_INDEX, listener);
+        return event_manager_.AddListener(T::CLASS_INDEX, listener, identifier);
     }
     template <typename T>
     void RemoveListener(EventID id)
     {
         MZX_CHECK_STATIC(std::is_base_of<SimpleEvent<T>, T>::value);
         return event_manager_.RemoveListener(T::CLASS_INDEX, id);
+    }
+    template <typename T>
+    void RemoveListener(void *identifier)
+    {
+        MZX_CHECK_STATIC(std::is_base_of<SimpleEvent<T>, T>::value);
+        return event_manager_.RemoveListener(T::CLASS_INDEX, identifier);
     }
     template <typename T>
     void RemoveEvent()
