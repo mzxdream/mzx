@@ -18,4 +18,12 @@ SimpleEventBase::ClassIndexType SimpleEventBase::ClassIndexCount()
     return class_index_counter_;
 }
 
+SimpleEventManager::SimpleEventManager()
+{
+}
+
+SimpleEventManager::~SimpleEventManager()
+{
+}
+
 } // namespace mzx
