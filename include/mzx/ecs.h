@@ -181,39 +181,59 @@ private:
     std::vector<ComponentBase *> component_list_;
 };
 
-class EntitySystemBase
+template <typename R>
+class EntitySystemBase;
+
+template <typename R, typename... Args>
+class EntitySystemBase<R(Args...)>
 {
 public:
     using ClassIndexType = std::size_t;
 
 public:
-    EntitySystemBase();
-    virtual ~EntitySystemBase() = 0;
+    EntitySystemBase()
+    {
+    }
+    virtual ~EntitySystemBase()
+    {
+    }
     EntitySystemBase(const EntitySystemBase &) = delete;
     EntitySystemBase &operator=(const EntitySystemBase &) = delete;
 
 public:
-    bool Init();
-    void Uninit();
-    void Update();
+    R Update(Args... args)
+    {
+        return _Update(args...);
+    }
 
 private:
-    virtual bool _Init();
-    virtual void _Uninit();
-    virtual void _Update();
+    virtual R _Update(Args... args) = 0;
 
 public:
-    static ClassIndexType ClassIndexCount();
+    static ClassIndexType ClassIndexCount()
+    {
+        return class_index_counter_;
+    }
+
     virtual ClassIndexType ClassIndex() const = 0;
 
 protected:
     static ClassIndexType class_index_counter_;
 };
 
-template <typename T>
-class EntitySystem : public EntitySystemBase
+template <typename R, typename... Args>
+typename EntitySystemBase<R(Args...)>::ClassIndexType
+    EntitySystemBase<R(Args...)>::class_index_counter_ = 0;
+
+template <typename T, typename R>
+class EntitySystem;
+
+template <typename T, typename R, typename... Args>
+class EntitySystem<T, R(Args...)> : public EntitySystemBase<R(Args...)>
 {
 public:
+    using ClassIndexType =
+        typename EntitySystemBase<R(Args...)>::ClassIndexType;
     const static ClassIndexType CLASS_INDEX;
 
 public:
@@ -233,66 +253,97 @@ public:
     }
 };
 
-template <typename T>
-const EntitySystemBase::ClassIndexType EntitySystem<T>::CLASS_INDEX =
-    EntitySystemBase::class_index_counter_++;
+template <typename T, typename R, typename... Args>
+const typename EntitySystem<T, R(Args...)>::ClassIndexType
+    EntitySystem<T, R(Args...)>::CLASS_INDEX =
+        EntitySystemBase<R(Args...)>::class_index_counter_++;
 
-class EntitySystemManager final
+template <typename R>
+class EntitySystemManager;
+
+template <typename R, typename... Args>
+class EntitySystemManager<R(Args...)> final
 {
-    using SystemNode = ListSafeNode<EntitySystemBase>;
+    using SystemNode = ListSafeNode<EntitySystemBase<R(Args...)>>;
 
 public:
-    EntitySystemManager();
-    ~EntitySystemManager();
+    EntitySystemManager()
+        : systems_(EntitySystemBase<R(Args...)>::ClassIndexCount())
+    {
+    }
+    ~EntitySystemManager()
+    {
+        RemoveAllSystem();
+    }
     EntitySystemManager(const EntitySystemManager &) = delete;
     EntitySystemManager &operator=(const EntitySystemManager &) = delete;
 
 public:
-    template <typename T, typename... Args>
-    T *AddSystem(Args &&... args)
+    template <typename T>
+    T *AddSystem()
     {
-        MZX_CHECK_STATIC(std::is_base_of<EntitySystem<T>, T>::value);
+        MZX_CHECK_STATIC(
+            std::is_base_of<EntitySystem<T, R(Args...)>, T>::value);
         MZX_CHECK(systems_[T::CLASS_INDEX] == nullptr);
-        auto *system = new T(std::forward<Args>(args)...);
-        if (!system->Init())
-        {
-            delete system;
-            return nullptr;
-        }
-        auto *system_node = new SystemNode(system);
+        auto *system_node = new SystemNode(new T());
         system_list_.PushBack(&system_node->list_link_);
         systems_[T::CLASS_INDEX] = system_node;
-        return system;
+        return system_node->Get();
     }
     template <typename T>
     void RemoveSystem()
     {
-        MZX_CHECK_STATIC(std::is_base_of<EntitySystem<T>, T>::value);
+        MZX_CHECK_STATIC(
+            std::is_base_of<EntitySystem<T, R(Args...)>, T>::value);
         auto *system_node = systems_[T::CLASS_INDEX];
         if (!system_node)
         {
             return;
         }
         systems_[T::CLASS_INDEX] = nullptr;
-        auto *system = system_node->Detach();
-        if (system)
+        delete system_node->Detach();
+    }
+    void RemoveAllSystem()
+    {
+        for (auto *node = system_list_.Begin(); node != system_list_.End();)
         {
-            system->Uninit();
-            delete system;
+            auto *system_node = MZX_CONTAINER_OF(node, SystemNode, list_link_);
+            system_node->IncrRef();
+            auto *system = system_node->Detach();
+            if (system)
+            {
+                systems_[system->ClassIndex()] = nullptr;
+                delete system;
+            }
+            node = node->Next();
+            system_node->DecrRef();
         }
     }
-    void RemoveAllSystem();
     template <typename T>
-    void Update()
+    void Update(Args... args)
     {
-        MZX_CHECK_STATIC(std::is_base_of<EntitySystem<T>, T>::value);
+        MZX_CHECK_STATIC(
+            std::is_base_of<EntitySystem<T, R(Args...)>, T>::value);
         auto *system_node = systems_[T::CLASS_INDEX];
         if (system_node && system_node->Get())
         {
-            system_node->Get()->Update();
+            system_node->Get()->Update(args...);
         }
     }
-    void UpdateAll();
+    void UpdateAll(Args... args)
+    {
+        for (auto *node = system_list_.Begin(); node != system_list_.End();)
+        {
+            auto *system_node = MZX_CONTAINER_OF(node, SystemNode, list_link_);
+            system_node->IncrRef();
+            if (system_node->Get())
+            {
+                system_node->Get()->Update(args...);
+            }
+            node = node->Next();
+            system_node->DecrRef();
+        }
+    }
 
 private:
     std::vector<SystemNode *> systems_;
