@@ -9,7 +9,7 @@ namespace mzx
 class DateTime
 {
 public:
-    static int64_t NowMilliSeconds();
+    static int64_t NowMilliseconds();
 };
 
 } // namespace mzx

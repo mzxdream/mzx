@@ -7,7 +7,7 @@
 namespace mzx
 {
 
-int64_t DateTime::NowMilliSeconds()
+int64_t DateTime::NowMilliseconds()
 {
     struct timeval tv;
     gettimeofday(&tv, nullptr);
