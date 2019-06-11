@@ -68,7 +68,7 @@ inline std::string TrimRight(const std::string &str, const char *trim)
     return std::string();
 }
 
-inline std::string Trim(const std::string &str, char trim)
+inline std::string Trim(const std::string &str, char trim = ' ')
 {
     auto begin_pos = str.find_first_not_of(trim);
     if (begin_pos == std::string::npos)
@@ -98,7 +98,8 @@ inline std::string Trim(const std::string &str, const char *trim)
     return str.substr(begin_pos, end_pos + 1 - begin_pos);
 }
 
-inline std::vector<std::string> Split(const std::string &str, char delimiter)
+inline std::vector<std::string> Split(const std::string &str,
+                                      char delimiter = ' ')
 {
     std::vector<std::string> v;
     std::size_t prev_pos = 0;

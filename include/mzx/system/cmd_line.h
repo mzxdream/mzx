@@ -3,6 +3,7 @@
 
 #include <functional>
 #include <string>
+#include <vector>
 
 namespace mzx
 {
@@ -10,7 +11,7 @@ namespace mzx
 class CmdLine
 {
 public:
-    using Callback = std::function<void(const std::string &)>;
+    using Callback = std::function<void(const std::vector<std::string> &)>;
 
 public:
     static bool Start();

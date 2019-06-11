@@ -4,6 +4,7 @@
 #include <mutex>
 #include <unistd.h>
 
+#include <mzx/string/string_util.h>
 #include <mzx/system/cmd_line.h>
 #include <mzx/thread.h>
 
@@ -112,18 +113,23 @@ void CmdLine::Execute()
     }
     for (auto &cmd : cmd_execute_list)
     {
-        auto iter_callback = cmd_callback_list.find(cmd);
+        auto args = Split(cmd);
+        if (args.empty())
+        {
+            continue;
+        }
+        auto iter_callback = cmd_callback_list.find(args[0]);
         if (iter_callback != cmd_callback_list.end())
         {
             if (iter_callback->second)
             {
-                (iter_callback->second)(cmd);
+                (iter_callback->second)(args);
                 continue;
             }
         }
         if (cmd_callback_default)
         {
-            cmd_callback_default(cmd);
+            cmd_callback_default(args);
         }
     }
     if (!cmd_execute_list.empty())
