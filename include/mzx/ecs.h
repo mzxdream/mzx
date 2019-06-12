@@ -17,12 +17,9 @@ class Entity;
 
 class ComponentBase
 {
-    friend Entity;
-
 public:
     using ClassIndexType = std::size_t;
 
-protected:
     ComponentBase();
     ComponentBase(const ComponentBase &) = delete;
     ComponentBase &operator=(const ComponentBase &) = delete;
@@ -39,12 +36,9 @@ protected:
 template <typename T>
 class Component final : public ComponentBase
 {
-    friend Entity;
-
 public:
     const static ClassIndexType CLASS_INDEX;
 
-protected:
     template <typename... Args>
     explicit Component(Args &&... args)
         : raw_data_(std::forward<Args>(args)...)
