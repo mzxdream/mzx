@@ -26,6 +26,7 @@ public:
     virtual ~ComponentBase() = 0;
 
 public:
+    virtual ComponentBase *Clone() const = 0;
     virtual ClassIndexType ClassIndex() const = 0;
     static ClassIndexType ClassIndexCount();
 
@@ -56,6 +57,10 @@ public:
         return &raw_data_;
     }
     MZX_NON_CONST_OVERLOAD(Get);
+    virtual ComponentBase *Clone() const
+    {
+        return new Component<T>(raw_data_);
+    }
     virtual ClassIndexType ClassIndex() const override
     {
         return CLASS_INDEX;
@@ -146,15 +151,25 @@ public:
         return HasComponent<T>() && HasComponent<V, Args...>();
     }
     template <typename T, typename... Args>
-    T *AddComponent(Args &&... args)
+    Component<T> *AddComponent(Args &&... args)
     {
         MZX_CHECK(component_list_[Component<T>::CLASS_INDEX] == nullptr);
         auto *component = new Component<T>(std::forward<Args>(args)...);
         component_list_[Component<T>::CLASS_INDEX] = component;
         entity_manager_.OnAddComponent(this, component);
         return component == component_list_[Component<T>::CLASS_INDEX]
-                   ? component->Get()
+                   ? component
                    : nullptr;
+    }
+    ComponentBase *AddComponent(const ComponentBase *component_image)
+    {
+        MZX_CHECK(component_image != nullptr);
+        MZX_CHECK(component_list_[component_image->ClassIndex()] == nullptr);
+        auto class_index = component_image->ClassIndex();
+        auto *component = component_image->Clone();
+        component_list_[class_index] = component;
+        entity_manager_.OnAddComponent(this, component);
+        return component == component_list_[class_index] ? component : nullptr;
     }
     template <typename T>
     void RemoveComponent()
