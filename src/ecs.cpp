@@ -27,6 +27,11 @@ EntityManager::~EntityManager()
     RemoveAllEntity();
 }
 
+std::size_t EntityManager::EntityCount() const
+{
+    return entities_.size();
+}
+
 Entity *EntityManager::GetEntity(EntityID id) const
 {
     auto iter_entity = entities_.find(id);

@@ -94,6 +94,7 @@ public:
     EntityManager &operator=(const EntityManager &) = delete;
 
 public:
+    std::size_t EntityCount() const;
     Entity *GetEntity(EntityID id) const;
     ComponentChangedEvent &ComponentAddEvent();
     ComponentChangedEvent &ComponentRemoveEvent();
