@@ -133,14 +133,20 @@ private:
 public:
     EntityID ID() const;
     template <typename T>
-    T *GetComponent() const
+    const T *GetComponent() const
     {
         auto *component = component_list_[Component<T>::CLASS_INDEX];
         if (!component)
         {
             return nullptr;
         }
-        return static_cast<Component<T> *>(component)->Get();
+        return static_cast<const Component<T> *>(component)->Get();
+    }
+    template <typename T>
+    T *GetComponent()
+    {
+        return const_cast<T *>(
+            static_cast<const Entity *>(this)->GetComponent<T>());
     }
     template <typename T>
     bool HasComponent() const
