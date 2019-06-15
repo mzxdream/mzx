@@ -104,6 +104,8 @@ public:
     void RemoveEntity(EntityID id);
     void RemoveAllEntity();
     void ForeachEntity(std::function<bool(Entity *)> cb);
+    template <typename... Args>
+    void ForeachEntity(std::function<bool(Entity *)> cb);
 
 private:
     void OnAddComponent(Entity *, ComponentBase *);
@@ -211,6 +213,19 @@ private:
     EntityManager &entity_manager_;
     std::vector<ComponentBase *> component_list_;
 };
+
+template <typename... Args>
+void EntityManager::ForeachEntity(std::function<bool(Entity *)> cb)
+{
+    MZX_CHECK(cb != nullptr);
+    ForeachEntity([&cb](Entity *entity) {
+        if (entity->HasComponent<Args...>())
+        {
+            return cb(entity);
+        }
+        return nullptr;
+    });
+}
 
 template <typename R>
 class EntitySystemBase;
