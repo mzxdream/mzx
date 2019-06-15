@@ -2,6 +2,7 @@
 #define __MZX_MATH_H__
 
 #include <climits>
+#include <cmath>
 #include <type_traits>
 
 namespace mzx
@@ -49,6 +50,8 @@ inline unsigned short NextPower2Index(T val)
     }
     return index;
 }
+
+#define MZX_ISZERO(num) (std::fpclassify(num) == FP_ZERO)
 
 } // namespace mzx
 

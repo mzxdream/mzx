@@ -1,6 +1,8 @@
 #ifndef __MZX_VECTOR3_H__
 #define __MZX_VECTOR3_H__
 
+#include <mzx/algorithm/math.h>
+
 namespace mzx
 {
 
@@ -120,6 +122,27 @@ public:
     Vector3<T> operator/(T d) const
     {
         return Vector3<T>(x_ / d, y_ / d, z_ / d);
+    }
+    T SqrtMagnitude() const
+    {
+        return x_ * x_ + y_ * y_ + z_ * z_;
+    }
+    T Magnitude() const
+    {
+        auto sqrt_magnitude = SqrtMagnitude();
+        return MZX_ISZERO(sqrt_magnitude)
+                   ? 0
+                   : static_cast<T>(sqrt(sqrt_magnitude));
+    }
+    void Normalize()
+    {
+        auto len = Magnitude();
+        if (!MZX_ISZERO(len))
+        {
+            x_ /= len;
+            y_ /= len;
+            z_ /= len;
+        }
     }
 
 private:
