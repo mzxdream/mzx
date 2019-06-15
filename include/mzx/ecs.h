@@ -161,16 +161,6 @@ public:
                    ? component
                    : nullptr;
     }
-    ComponentBase *AddComponent(const ComponentBase *component_image)
-    {
-        MZX_CHECK(component_image != nullptr);
-        MZX_CHECK(component_list_[component_image->ClassIndex()] == nullptr);
-        auto class_index = component_image->ClassIndex();
-        auto *component = component_image->Clone();
-        component_list_[class_index] = component;
-        entity_manager_.OnAddComponent(this, component);
-        return component == component_list_[class_index] ? component : nullptr;
-    }
     template <typename T>
     void RemoveComponent()
     {
@@ -183,6 +173,37 @@ public:
         }
     }
     void RemoveAllComponent();
+    ComponentBase *CopyComponent(const ComponentBase *component_image)
+    {
+        MZX_CHECK(component_image != nullptr);
+        MZX_CHECK(component_list_[component_image->ClassIndex()] == nullptr);
+        auto *component = component_image->Clone();
+        auto class_index = component->ClassIndex();
+        component_list_[class_index] = component;
+        entity_manager_.OnAddComponent(this, component);
+        return component == component_list_[class_index] ? component : nullptr;
+    }
+    bool AttachComponent(ComponentBase *component)
+    {
+        MZX_CHECK(component != nullptr);
+        MZX_CHECK(component_list_[component->ClassIndex()] == nullptr);
+        auto class_index = component->ClassIndex();
+        component_list_[class_index] = component;
+        entity_manager_.OnAddComponent(this, component);
+        return component == component_list_[class_index] ? component : nullptr;
+    }
+    template <typename T>
+    Component<T> *DetachComponent()
+    {
+        auto *component = component_list_[Component<T>::CLASS_INDEX];
+        if (!component)
+        {
+            return nullptr;
+        }
+        component_list_[Component<T>::CLASS_INDEX] = nullptr;
+        entity_manager_.OnRemoveComponent(this, component);
+        return static_cast<Component<T> *>(component);
+    }
     void ForeachComponent(std::function<bool(ComponentBase *)> cb);
 
 private:
