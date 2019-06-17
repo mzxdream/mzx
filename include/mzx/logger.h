@@ -100,8 +100,6 @@ private:
     MZX_LOG_IF(mzx::Logger::Level::Fatal, !(EXPRESSION),                       \
                "CHECK failed:" #EXPRESSION " ", ##__VA_ARGS__)
 
-#define MZX_CHECK_STATIC_1(...) static_assert(__VA_ARGS__, #__VA_ARGS__)
-#define MZX_CHECK_STATIC_2(...) static_assert(__VA_ARGS__)
-#define MZX_CHECK_STATIC(...) MZX_VA_SELECT(MZX_CHECK_STATIC, __VA_ARGS__)
+#define MZX_CHECK_STATIC(...) static_assert(__VA_ARGS__)
 
 #endif
