@@ -337,11 +337,11 @@ public:
         MZX_CHECK_STATIC(
             std::is_base_of<EntitySystem<T, R(Args...)>, T>::value);
         MZX_CHECK(systems_[T::CLASS_INDEX] == nullptr);
-        auto *system_node =
-            new SystemNode(new T(std::forward<SystemArgs>(args)...));
+        auto *system = new T(std::forward<SystemArgs>(args)...);
+        auto *system_node = new SystemNode(system);
         system_list_.PushBack(&system_node->list_link_);
         systems_[T::CLASS_INDEX] = system_node;
-        return system_node->Get();
+        return system;
     }
     template <typename T>
     void RemoveSystem()
