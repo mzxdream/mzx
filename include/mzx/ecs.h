@@ -331,13 +331,14 @@ public:
     EntitySystemManager &operator=(const EntitySystemManager &) = delete;
 
 public:
-    template <typename T>
-    T *AddSystem()
+    template <typename T, typename... SystemArgs>
+    T *AddSystem(SystemArgs &&... args)
     {
         MZX_CHECK_STATIC(
             std::is_base_of<EntitySystem<T, R(Args...)>, T>::value);
         MZX_CHECK(systems_[T::CLASS_INDEX] == nullptr);
-        auto *system_node = new SystemNode(new T());
+        auto *system_node =
+            new SystemNode(new T(std::forward<SystemArgs>(args)...));
         system_list_.PushBack(&system_node->list_link_);
         systems_[T::CLASS_INDEX] = system_node;
         return system_node->Get();
