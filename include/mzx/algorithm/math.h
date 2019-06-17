@@ -52,6 +52,7 @@ inline unsigned short NextPower2Index(T val)
 }
 
 #define MZX_ISZERO(num) (std::fpclassify(num) == FP_ZERO)
+#define MZX_ISEQUAL(num1, num2) MZX_ISZERO(num1 - num2)
 
 } // namespace mzx
 

@@ -52,7 +52,8 @@ public:
 public:
     bool operator==(const Vector3<T> &v) const
     {
-        return x_ == v.x_ && y_ == v.y_ && z_ == v.z_;
+        return MZX_ISEQUAL(x_, v.x_) && MZX_ISEQUAL(y_, v.y_) &&
+               MZX_ISEQUAL(z_, v.z_);
     }
     bool operator!=(const Vector3<T> &v) const
     {
@@ -134,15 +135,20 @@ public:
                    ? 0
                    : static_cast<T>(sqrt(sqrt_magnitude));
     }
-    void Normalize()
+    bool Normalize(T t = static_cast<T>(1))
     {
         auto len = Magnitude();
         if (!MZX_ISZERO(len))
         {
-            x_ /= len;
-            y_ /= len;
-            z_ /= len;
+            return false;
         }
+        x_ *= t;
+        y_ *= t;
+        z_ *= t;
+        x_ /= len;
+        y_ /= len;
+        z_ /= len;
+        return true;
     }
 
 private:
