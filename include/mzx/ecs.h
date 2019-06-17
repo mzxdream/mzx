@@ -229,7 +229,7 @@ void EntityManager::ForeachEntity(std::function<bool(Entity *)> cb)
         {
             return cb(entity);
         }
-        return nullptr;
+        return true;
     });
 }
 
