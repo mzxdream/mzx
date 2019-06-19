@@ -51,7 +51,7 @@ public:
         MZX_CHECK(listener != nullptr);
         auto *listener_info = new ListenerInfo();
         listener_info->id =
-            static_cast<EventID>(identifier ? identifier : listener_info);
+            reinterpret_cast<EventID>(identifier ? identifier : listener_info);
         listener_info->listener = listener;
         auto *listener_node = new ListenerNode(listener_info);
         listener_list_.PushBack(&listener_node->list_link_);
@@ -61,7 +61,7 @@ public:
     void RemoveListener(EventID id)
     {
         auto range = listener_index_.equal_range(id);
-        for (auto iter = range.first; iter != range.second; ++iter)
+        for (auto iter = range.first; iter != range.second;)
         {
             delete iter->second->Detach();
             iter = listener_index_.erase(iter);
@@ -70,7 +70,7 @@ public:
     void RemoveListener(void *identifier)
     {
         MZX_CHECK_STATIC(sizeof(EventID) >= sizeof(void *));
-        return RemoveListener(static_cast<EventID>(identifier));
+        return RemoveListener(reinterpret_cast<EventID>(identifier));
     }
     void RemoveAllListener()
     {
