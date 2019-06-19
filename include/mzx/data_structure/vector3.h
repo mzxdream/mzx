@@ -135,27 +135,43 @@ public:
                    ? 0
                    : static_cast<T>(sqrt(sqrt_magnitude));
     }
-    bool Normalize(T t = static_cast<T>(1))
+    bool Normalize()
     {
         auto len = Magnitude();
-        if (!MZX_ISZERO(len))
+        if (MZX_ISZERO(len))
         {
             return false;
         }
-        x_ *= t;
-        y_ *= t;
-        z_ *= t;
         x_ /= len;
         y_ /= len;
         z_ /= len;
         return true;
+    }
+    static Vector3<T> Normalize(const Vector3<T> &v)
+    {
+        auto len = v.Magnitude();
+        if (MZX_ISZERO(len))
+        {
+            return Vector3<T>::ZERO;
+        }
+        return Vector3<T>(v.x_ / len, v.y_ / len, v.z_ / len);
+    }
+    static T Distance(const Vector3<T> &v, const Vector3<T> &u)
+    {
+        return (u - v).Magnitude();
     }
 
 private:
     T x_;
     T y_;
     T z_;
+
+public:
+    static const Vector3<T> ZERO;
 };
+
+template <typename T>
+const Vector3<T> Vector3<T>::ZERO = Vector3<T>(0, 0, 0);
 
 } // namespace mzx
 
