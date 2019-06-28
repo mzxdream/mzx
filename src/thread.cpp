@@ -31,6 +31,11 @@ bool Thread::Joinable() const
     return joinable_;
 }
 
+bool Thread::IsCurrentThread() const
+{
+    return thread_id_ == Thread::CurrentID();
+}
+
 bool Thread::Start()
 {
     if (Joinable())

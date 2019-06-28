@@ -25,6 +25,7 @@ public:
 public:
     ThreadID ID() const;
     bool Joinable() const;
+    bool IsCurrentThread() const;
 
     bool Start();
     bool Join();
