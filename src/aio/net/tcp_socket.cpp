@@ -24,7 +24,6 @@ static bool SetNonBlock(int fd)
     return true;
 }
 
-#if 0
 static bool SetCloseOnExec(int fd)
 {
     MZX_CHECK(fd < 0);
@@ -38,7 +37,6 @@ static bool SetCloseOnExec(int fd)
     }
     return true;
 }
-#endif
 
 TcpSocket::TcpSocket(AIOServer &aio_server)
     : aio_server_(aio_server)
@@ -96,6 +94,12 @@ bool TcpSocket::Open(bool is_ipv6)
     if (!SetNonBlock(sock_))
     {
         MZX_ERR("set socket:", sock_, " non block failed");
+        Close();
+        return false;
+    }
+    if (!SetCloseOnExec(sock_))
+    {
+        MZX_ERR("set socket:", sock_, " close on exec failed");
         Close();
         return false;
     }
@@ -167,6 +171,12 @@ bool TcpSocket::Accept(TcpSocket *sock, NetAddress *addr)
     if (!SetNonBlock(accept_sock))
     {
         MZX_ERR("set socker:", accept_sock, " non block failed");
+        close(accept_sock);
+        return false;
+    }
+    if (!SetCloseOnExec(accept_sock))
+    {
+        MZX_ERR("set socket:", accept_sock, " close on exec failed");
         close(accept_sock);
         return false;
     }
