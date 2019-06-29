@@ -27,6 +27,8 @@ private:
     virtual void _Run() override;
 
 private:
+    int epoll_fd_{-1};
+    int wakeup_fd_{-1};
     std::mutex exec_queue_mtx;
     std::list<ExecFunc> exec_queue_;
 };

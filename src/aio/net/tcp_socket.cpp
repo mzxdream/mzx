@@ -154,33 +154,33 @@ bool TcpSocket::Listen(int backlog)
 bool TcpSocket::Accept(TcpSocket *sock, NetAddress *addr)
 {
     MZX_CHECK(sock != nullptr && !sock->IsOpen());
-    int accept_sock = -1;
+    int peer_sock = -1;
     if (addr)
     {
         auto len = addr->Length();
-        accept_sock = accept(sock_, addr->Address(), &len);
+        peer_sock = accept(sock_, addr->Address(), &len);
     }
     else
     {
-        accept_sock = accept(sock_, nullptr, nullptr);
+        peer_sock = accept(sock_, nullptr, nullptr);
     }
-    if (accept_sock < 0)
+    if (peer_sock < 0)
     {
         return false;
     }
-    if (!SetNonBlock(accept_sock))
+    if (!SetNonBlock(peer_sock))
     {
-        MZX_ERR("set socker:", accept_sock, " non block failed");
-        close(accept_sock);
+        MZX_ERR("set socker:", peer_sock, " non block failed");
+        close(peer_sock);
         return false;
     }
-    if (!SetCloseOnExec(accept_sock))
+    if (!SetCloseOnExec(peer_sock))
     {
-        MZX_ERR("set socket:", accept_sock, " close on exec failed");
-        close(accept_sock);
+        MZX_ERR("set socket:", peer_sock, " close on exec failed");
+        close(peer_sock);
         return false;
     }
-    sock->sock_ = accept_sock;
+    sock->sock_ = peer_sock;
     return true;
 }
 
