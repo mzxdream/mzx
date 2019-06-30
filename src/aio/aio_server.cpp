@@ -9,6 +9,7 @@ namespace mzx
 {
 
 AIOServer::AIOServer()
+    : thread_(std::bind(&AIOServer::Run, this))
 {
     epoll_fd_ = epoll_create1(EPOLL_CLOEXEC);
     MZX_CHECK(epoll_fd_ >= 0);
@@ -20,7 +21,7 @@ AIOServer::AIOServer()
 
 AIOServer::~AIOServer()
 {
-    Stop();
+    MZX_CHECK(thread_.Joinable());
     if (wakeup_handler_)
     {
         delete wakeup_handler_;
@@ -29,17 +30,32 @@ AIOServer::~AIOServer()
     close(epoll_fd_);
 }
 
-void AIOServer::Stop()
+bool AIOServer::Start()
+{
+    return thread_.Start();
+}
+
+bool AIOServer::Stop()
 {
     stop_flag_ = true;
     Wakeup();
-    Join();
+    return true;
+}
+
+bool AIOServer::Join()
+{
+    return thread_.Join();
+}
+
+bool AIOServer::CanExecImmediately() const
+{
+    return thread_.Joinable() || thread_.IsCurrentThread();
 }
 
 void AIOServer::Exec(ExecFunc func)
 {
     MZX_CHECK(func != nullptr);
-    if (IsCurrentThread())
+    if (CanExecImmediately())
     {
         func();
     }
@@ -56,7 +72,7 @@ void AIOServer::Post(ExecFunc func)
     {
         Wakeup();
     }
-    exec_queue_.push_back(func);
+    exec_queue_.push_back(std::move(func));
 }
 
 void AIOServer::Wakeup()
@@ -73,7 +89,7 @@ void AIOServer::OnWakeup()
 
 void AIOServer::HandleExecQueue()
 {
-    MZX_CHECK(IsCurrentThread());
+    MZX_CHECK(CanExecImmediately());
     while (!exec_queue_.empty())
     {
         auto exec_func = std::move(exec_queue_.front());
@@ -82,7 +98,7 @@ void AIOServer::HandleExecQueue()
     }
 }
 
-void AIOServer::_Run()
+void AIOServer::Run()
 {
 }
 

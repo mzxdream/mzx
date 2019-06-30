@@ -11,7 +11,7 @@
 namespace mzx
 {
 
-class AIOServer final : public Thread
+class AIOServer final
 {
 public:
     using ExecFunc = std::function<void()>;
@@ -21,7 +21,10 @@ public:
     AIOServer(const AIOServer &) = delete;
     AIOServer &operator=(const AIOServer &) = delete;
 
-    void Stop();
+    bool Start();
+    bool Stop();
+    bool Join();
+    bool CanExecImmediately() const;
     void Exec(ExecFunc func);
     void Post(ExecFunc func);
 
@@ -29,8 +32,7 @@ private:
     void Wakeup();
     void OnWakeup();
     void HandleExecQueue();
-
-    virtual void _Run() override;
+    void Run();
 
 private:
     int epoll_fd_{-1};
@@ -38,6 +40,7 @@ private:
     AIOHandler *wakeup_handler_{nullptr};
     std::mutex exec_queue_mtx_;
     std::list<ExecFunc> exec_queue_;
+    Thread thread_;
     volatile bool stop_flag_{false};
 };
 
