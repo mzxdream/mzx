@@ -2,17 +2,18 @@
 #include <sys/epoll.h>
 
 #include <mzx/aio/aio_handler.h>
+#include <mzx/aio/aio_server.h>
 #include <mzx/logger.h>
 
 namespace mzx
 {
 
-AIOHandler::AIOHandler(int fd, int efd)
-    : fd_(fd)
-    , efd_(efd)
+AIOHandler::AIOHandler(AIOServer &aio_server, int fd)
+    : aio_server_(aio_server)
+    , fd_(fd)
 {
     MZX_CHECK(fd_ >= 0);
-    MZX_CHECK(efd_ >= 0);
+    MZX_CHECK(aio_server_.epoll_fd_ >= 0);
 }
 
 AIOHandler::~AIOHandler()
@@ -76,7 +77,8 @@ void AIOHandler::EnableRead(bool enable)
         {
             return;
         }
-        if (EpollCtl(efd_, fd_, events_, events_ | EPOLLIN | EPOLLET, this))
+        if (EpollCtl(aio_server_.epoll_fd_, fd_, events_,
+                     events_ | EPOLLIN | EPOLLET, this))
         {
             events_ |= (EPOLLIN | EPOLLET);
         }
@@ -87,7 +89,8 @@ void AIOHandler::EnableRead(bool enable)
         {
             return;
         }
-        if (EpollCtl(efd_, fd_, events_, events_ & ~EPOLLIN, this))
+        if (EpollCtl(aio_server_.epoll_fd_, fd_, events_, events_ & ~EPOLLIN,
+                     this))
         {
             events_ &= ~EPOLLIN;
         }
@@ -102,7 +105,8 @@ void AIOHandler::EnableWrite(bool enable)
         {
             return;
         }
-        if (EpollCtl(efd_, fd_, events_, events_ | EPOLLOUT | EPOLLET, this))
+        if (EpollCtl(aio_server_.epoll_fd_, fd_, events_,
+                     events_ | EPOLLOUT | EPOLLET, this))
         {
             events_ |= (EPOLLOUT | EPOLLET);
         }
@@ -113,7 +117,8 @@ void AIOHandler::EnableWrite(bool enable)
         {
             return;
         }
-        if (EpollCtl(efd_, fd_, events_, events_ & ~EPOLLOUT, this))
+        if (EpollCtl(aio_server_.epoll_fd_, fd_, events_, events_ & ~EPOLLOUT,
+                     this))
         {
             events_ &= ~EPOLLOUT;
         }
@@ -128,8 +133,8 @@ void AIOHandler::EnableAll(bool enable)
         {
             return;
         }
-        if (EpollCtl(efd_, fd_, events_, events_ | EPOLLIN | EPOLLOUT | EPOLLET,
-                     this))
+        if (EpollCtl(aio_server_.epoll_fd_, fd_, events_,
+                     events_ | EPOLLIN | EPOLLOUT | EPOLLET, this))
         {
             events_ |= (EPOLLIN | EPOLLOUT | EPOLLET);
         }
@@ -140,7 +145,7 @@ void AIOHandler::EnableAll(bool enable)
         {
             return;
         }
-        if (EpollCtl(efd_, fd_, events_, 0, this))
+        if (EpollCtl(aio_server_.epoll_fd_, fd_, events_, 0, this))
         {
             events_ = 0;
         }
@@ -151,7 +156,7 @@ void AIOHandler::HandleEvent(int events)
 {
     if (events & EPOLLERR)
     {
-        MZX_ERR("epoll:", efd_, " fd:", fd_, " error");
+        MZX_ERR("epoll:", aio_server_.epoll_fd_, " fd:", fd_, " error");
         if (close_cb_)
         {
             close_cb_(Error(ErrorType::Unknown));

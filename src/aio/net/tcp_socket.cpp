@@ -1,5 +1,4 @@
 #include <errno.h>
-#include <fcntl.h>
 #include <sys/socket.h>
 #include <unistd.h>
 
@@ -10,49 +9,22 @@
 namespace mzx
 {
 
-static bool SetNonBlock(int fd)
-{
-    MZX_CHECK(fd < 0);
-    auto flags = fcntl(fd, F_GETFL, 0);
-    flags |= O_NONBLOCK;
-    auto ret = fcntl(fd, F_SETFL, flags);
-    if (ret == -1)
-    {
-        MZX_ERR("set non block fd:", fd, " failed");
-        return false;
-    }
-    return true;
-}
-
-static bool SetCloseOnExec(int fd)
-{
-    MZX_CHECK(fd < 0);
-    auto flags = fcntl(fd, F_GETFD, 0);
-    flags |= FD_CLOEXEC;
-    auto ret = fcntl(fd, F_SETFD, flags);
-    if (ret == -1)
-    {
-        MZX_ERR("set close on exec fd:", fd, " failed");
-        return false;
-    }
-    return true;
-}
-
-TcpSocket::TcpSocket(AIOServer &aio_server)
-    : aio_server_(aio_server)
+TcpSocket::TcpSocket()
 {
 }
 
-TcpSocket::TcpSocket(AIOServer &aio_server, bool is_ipv6)
-    : aio_server_(aio_server)
+TcpSocket::TcpSocket(bool is_ipv6)
 {
     Open(is_ipv6);
 }
 
-TcpSocket::TcpSocket(AIOServer &aio_server, const NetAddress &addr)
-    : aio_server_(aio_server)
+TcpSocket::TcpSocket(const NetAddress &addr, bool reuse_addr)
 {
     Open(addr.IsIPv6());
+    if (reuse_addr)
+    {
+        SetReuseAddr();
+    }
     Bind(addr);
 }
 
@@ -61,9 +33,9 @@ TcpSocket::~TcpSocket()
     Close();
 }
 
-AIOServer &TcpSocket::GetAIOServer()
+int TcpSocket::GetSock() const
 {
-    return aio_server_;
+    return sock_;
 }
 
 bool TcpSocket::IsOpen() const

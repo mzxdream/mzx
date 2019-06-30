@@ -16,7 +16,7 @@ AIOServer::AIOServer()
     MZX_CHECK(epoll_fd_ >= 0);
     wakeup_fd_ = eventfd(0, EFD_NONBLOCK | EFD_CLOEXEC);
     MZX_CHECK(wakeup_fd_ >= 0);
-    wakeup_handler_ = new AIOHandler(wakeup_fd_, epoll_fd_);
+    wakeup_handler_ = new AIOHandler(*this, wakeup_fd_);
     wakeup_handler_->EnableRead();
 }
 

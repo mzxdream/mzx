@@ -13,6 +13,8 @@ namespace mzx
 
 class AIOServer final
 {
+    friend AIOHandler;
+
 public:
     using ExecFunc = std::function<void()>;
 

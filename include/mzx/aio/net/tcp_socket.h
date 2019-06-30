@@ -10,15 +10,15 @@ namespace mzx
 class TcpSocket final
 {
 public:
-    TcpSocket(AIOServer &aio_server);
-    TcpSocket(AIOServer &aio_server, bool is_ipv6);
-    TcpSocket(AIOServer &aio_server, const NetAddress &addr);
+    TcpSocket();
+    TcpSocket(bool is_ipv6);
+    TcpSocket(const NetAddress &addr, bool reuse_addr = true);
     ~TcpSocket();
     TcpSocket(const TcpSocket &) = delete;
     TcpSocket &operator=(const TcpSocket &) = delete;
 
 public:
-    AIOServer &GetAIOServer();
+    int GetSock() const;
     bool IsOpen() const;
 
     bool Open(bool is_ipv6);
@@ -29,7 +29,6 @@ public:
     bool Accept(TcpSocket *sock, NetAddress *addr = nullptr);
 
 private:
-    AIOServer &aio_server_;
     int sock_{-1};
 };
 

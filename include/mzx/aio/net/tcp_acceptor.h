@@ -2,7 +2,10 @@
 #define __MZX_TCP_ACCEPTOR_H__
 
 #include <functional>
+#include <list>
+#include <map>
 
+#include <mzx/aio/aio_handler.h>
 #include <mzx/aio/aio_server.h>
 #include <mzx/aio/net/net_define.h>
 #include <mzx/aio/net/tcp_socket.h>
@@ -30,11 +33,19 @@ public:
     bool SetReuseAddr();
     bool Listen(int backlog = 128);
 
-    void AsyncAccept(TcpSocket *socket, AcceptCallback cb,
+    void AsyncAccept(TcpSocket *sock, AcceptCallback cb,
                      bool forcePost = false);
 
 private:
+    AIOHandler &GetHandler();
+    void OnAddAccept(TcpSocket *sock, AcceptCallback cb);
+    void OnCanAccept();
+
+private:
+    AIOServer &aio_server_;
     TcpSocket sock_;
+    AIOHandler *aio_handler_{nullptr};
+    std::list<std::pair<TcpSocket *, AcceptCallback>> accept_list_;
 };
 
 }; // namespace mzx

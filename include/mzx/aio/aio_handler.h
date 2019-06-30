@@ -19,7 +19,7 @@ public:
     using WriteCallback = std::function<void()>;
     using CloseCallback = std::function<void(const Error &)>;
 
-    explicit AIOHandler(int fd, int efd);
+    explicit AIOHandler(AIOServer &aio_server, int fd);
     ~AIOHandler();
     AIOHandler(const AIOHandler &) = delete;
     AIOHandler &operator=(const AIOHandler &) = delete;
@@ -37,8 +37,8 @@ private:
     void HandleEvent(int events);
 
 private:
+    AIOServer &aio_server_;
     int fd_{-1};
-    int efd_{-1};
     int events_{0};
     ReadCallback read_cb_;
     WriteCallback write_cb_;
