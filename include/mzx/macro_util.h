@@ -47,4 +47,6 @@
         (type *)((char *)__mptr - (std::size_t) & (((type *)0)->member));      \
     })
 
+#define MZX_ARRAY_SIZE(arr) (sizeof(arr) / sizeof(arr[0]))
+
 #endif

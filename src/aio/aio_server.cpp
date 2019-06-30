@@ -4,6 +4,7 @@
 
 #include <mzx/aio/aio_server.h>
 #include <mzx/logger.h>
+#include <mzx/macro_util.h>
 
 namespace mzx
 {
@@ -100,6 +101,32 @@ void AIOServer::HandleExecQueue()
 
 void AIOServer::Run()
 {
+    epoll_event events[1024];
+    std::list<ExecFunc> exec_list;
+    while (!stop_flag_)
+    {
+        auto nevents =
+            epoll_wait(epoll_fd_, events, MZX_ARRAY_SIZE(events), -1);
+        if (nevents == -1)
+        {
+            if (errno != EINTR)
+            {
+                MZX_FATAL("epoll wait failed err:", errno);
+            }
+        }
+        else
+        {
+            for (int i = 0; i < nevents; ++i)
+            {
+                auto &ee = events[i];
+                auto *aio_handler = static_cast<AIOHandler *>(ee.data.ptr);
+                if (ee.events & EPOLLERR)
+                {
+                    aio_handler->HandleClose(Error(ErrorType::Unknown));
+                }
+            }
+        }
+    }
 }
 
 } // namespace mzx

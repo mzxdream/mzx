@@ -8,8 +8,11 @@
 namespace mzx
 {
 
+class AIOServer;
+
 class AIOHandler final
 {
+    friend AIOServer;
 public:
     using ReadCallback = std::function<void()>;
     using WriteCallback = std::function<void()>;
@@ -29,6 +32,10 @@ public:
     void EnableWrite(bool enable = true);
     void EnableAll(bool enable = true);
 
+private:
+    void HandleRead();
+    void HandleWrite();
+    void HandleClose(const Error &e);
 private:
     int fd_{-1};
     int efd_{-1};

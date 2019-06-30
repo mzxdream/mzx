@@ -6,36 +6,35 @@
 namespace mzx
 {
 
-enum class ErrorNo
+enum class ErrorType
 {
     Sucess = 0,
     Unknown = 1,
 };
 
-struct Error
+class Error
 {
+public:
     Error() = default;
-    Error(ErrorNo eno)
-        : errorno(eno)
-    {
-    }
-    Error(ErrorNo eno, const std::string &msg)
-        : errorno(eno)
-        , message(msg)
-    {
-    }
+    Error(int eno);
+    Error(ErrorType t);
+    Error(ErrorType t, const std::string &msg);
 
+public:
+    ErrorType Type() const;
+    const std::string &Message() const;
     operator bool() const
     {
-        return errorno != ErrorNo::Sucess;
+        return type_ != ErrorType::Sucess;
     }
     bool operator!() const
     {
-        return errorno == ErrorNo::Sucess;
+        return type_ == ErrorType::Sucess;
     }
 
-    ErrorNo errorno{ErrorNo::Sucess};
-    std::string message;
+private:
+    ErrorType type_{ErrorType::Sucess};
+    std::string message_;
 };
 
 }; // namespace mzx
