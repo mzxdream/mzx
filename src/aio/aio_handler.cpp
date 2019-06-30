@@ -147,4 +147,39 @@ void AIOHandler::EnableAll(bool enable)
     }
 }
 
+void AIOHandler::HandleEvent(int events)
+{
+    if (events & EPOLLERR)
+    {
+        MZX_ERR("epoll:", efd_, " fd:", fd_, " error");
+        if (close_cb_)
+        {
+            close_cb_(Error(ErrorType::Unknown));
+            return;
+        }
+    }
+    if (events & (EPOLLHUP | EPOLLRDHUP))
+    {
+        if (close_cb_)
+        {
+            close_cb_(Error());
+            return;
+        }
+    }
+    if (events & EPOLLIN)
+    {
+        if (read_cb_)
+        {
+            read_cb_();
+        }
+    }
+    if (events & EPOLLOUT)
+    {
+        if (write_cb_)
+        {
+            write_cb_();
+        }
+    }
+}
+
 } // namespace mzx
