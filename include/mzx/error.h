@@ -8,7 +8,7 @@ namespace mzx
 
 enum class ErrorType
 {
-    Sucess = 0,
+    Success = 0,
     Unknown = 1,
 };
 
@@ -23,17 +23,22 @@ public:
 public:
     ErrorType Type() const;
     const std::string &Message() const;
+
+    void SetType(int eno);
+    void SetType(ErrorType t);
+    void SetMessage(const std::string &msg);
+
     operator bool() const
     {
-        return type_ != ErrorType::Sucess;
+        return type_ != ErrorType::Success;
     }
     bool operator!() const
     {
-        return type_ == ErrorType::Sucess;
+        return type_ == ErrorType::Success;
     }
 
 private:
-    ErrorType type_{ErrorType::Sucess};
+    ErrorType type_{ErrorType::Success};
     std::string message_;
 };
 

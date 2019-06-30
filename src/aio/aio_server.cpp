@@ -88,17 +88,6 @@ void AIOServer::OnWakeup()
     read(wakeup_fd_, &tmp, sizeof(tmp));
 }
 
-void AIOServer::HandleExecQueue()
-{
-    MZX_CHECK(CanExecImmediately());
-    while (!exec_queue_.empty())
-    {
-        auto exec_func = std::move(exec_queue_.front());
-        exec_queue_.pop_front();
-        exec_func();
-    }
-}
-
 void AIOServer::Run()
 {
     epoll_event events[1024];
@@ -120,12 +109,18 @@ void AIOServer::Run()
             {
                 auto &ee = events[i];
                 auto *aio_handler = static_cast<AIOHandler *>(ee.data.ptr);
-                if (ee.events & EPOLLERR)
-                {
-                    aio_handler->HandleClose(Error(ErrorType::Unknown));
-                }
+                aio_handler->HandleEvent(ee.events);
             }
         }
+        {
+            std::lock_guard<std::mutex> lock(exec_queue_mtx_);
+            exec_list.swap(exec_queue_);
+        }
+        for (auto &exec_func : exec_list)
+        {
+            exec_func();
+        }
+        exec_list.clear();
     }
 }
 

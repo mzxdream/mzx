@@ -31,7 +31,6 @@ public:
 private:
     void Wakeup();
     void OnWakeup();
-    void HandleExecQueue();
     void Run();
 
 private:
