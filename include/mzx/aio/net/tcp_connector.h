@@ -13,13 +13,97 @@
 namespace mzx
 {
 
+class TcpAcceptor;
+
 class TcpConnector final
 {
-public:
-    using ReadCallback = std::function<void(const Error &)>;
+    friend TcpAcceptor;
 
-    explicit TcpConnector();
+public:
+    using ConnectCallback = std::function<void(const Error &)>;
+    using ReadCallback = std::function<void(const Error &)>;
+    using WriteCallback = std::function<void(const Error &)>;
+
+    struct ConnectInfo
+    {
+        ConnectInfo() = default;
+        ConnectInfo(const NetAddress &a, ConnectCallback c)
+            : addr(a)
+            , cb(c)
+        {
+        }
+        NetAddress addr;
+        ConnectCallback cb;
+    };
+
+    struct ReadInfo
+    {
+        ReadInfo() = default;
+        ReadInfo(char *d, std::size_t s, std::size_t r, ReadCallback c)
+            : data(d)
+            , size(s)
+            , read_size(r)
+            , cb(c)
+        {
+        }
+        char *data{nullptr};
+        std::size_t size{0};
+        std::size_t read_size{0};
+        ReadCallback cb;
+    };
+
+    struct WriteInfo
+    {
+        WriteInfo() = default;
+        WriteInfo(const char *d, std::size_t s, std::size_t w, WriteCallback c)
+            : data(d)
+            , size(s)
+            , write_size(w)
+            , cb(c)
+        {
+        }
+        const char *data{nullptr};
+        std::size_t size{0};
+        std::size_t write_size{0};
+        WriteCallback cb;
+    };
+
+    explicit TcpConnector(AIOServer &aio_server);
+    explicit TcpConnector(AIOServer &aio_server, const NetAddress &addr,
+                          bool reuse_addr = true);
+    ~TcpConnector();
+    TcpConnector(const TcpConnector &) = delete;
+    TcpConnector &operator=(const TcpConnector &) = delete;
+
+public:
+    AIOServer &GetAIOServer();
+    bool Open(bool is_ipv6 = false);
+    bool Bind(const NetAddress &addr);
+    bool SetReuseAddr();
+
+    void AsyncConnect(const NetAddress &addr, ConnectCallback cb,
+                      bool forcePost = false);
+    void AsyncRead(char *data, std::size_t size, ReadCallback cb,
+                   bool forcePost = false);
+    void AsyncWrite(const char *data, std::size_t size, WriteCallback cb,
+                    bool forcePost = false);
+
 private:
+    void OnAddConnect(const NetAddress &addr, ConnectCallback cb);
+    void OnAddRead(char *data, std::size_t size, ReadCallback cb);
+    void OnAddWrite(const char *data, std::size_t size, WriteCallback cb);
+    void OnConnect();
+    void OnRead();
+    void OnWrite();
+
+private:
+    AIOServer &aio_server_;
+    TcpSocket sock_;
+    bool is_connected_{false};
+    AIOHandler aio_handler_;
+    std::list<ConnectInfo> connect_list_;
+    std::list<ReadInfo> read_list_;
+    std::list<WriteInfo> write_list_;
 };
 
 } // namespace mzx

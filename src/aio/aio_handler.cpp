@@ -8,6 +8,12 @@
 namespace mzx
 {
 
+AIOHandler::AIOHandler(AIOServer &aio_server)
+    : aio_server_(aio_server)
+{
+    MZX_CHECK(aio_server_.epoll_fd_ >= 0);
+}
+
 AIOHandler::AIOHandler(AIOServer &aio_server, int fd)
     : aio_server_(aio_server)
     , fd_(fd)
@@ -19,6 +25,12 @@ AIOHandler::AIOHandler(AIOServer &aio_server, int fd)
 AIOHandler::~AIOHandler()
 {
     EnableAll(false);
+}
+
+void AIOHandler::SetFD(int fd)
+{
+    MZX_CHECK(fd >= 0);
+    fd_ = fd;
 }
 
 void AIOHandler::SetReadCallback(ReadCallback cb)

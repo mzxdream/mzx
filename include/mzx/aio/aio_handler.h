@@ -19,12 +19,14 @@ public:
     using WriteCallback = std::function<void()>;
     using CloseCallback = std::function<void(const Error &)>;
 
+    explicit AIOHandler(AIOServer &aio_server);
     explicit AIOHandler(AIOServer &aio_server, int fd);
     ~AIOHandler();
     AIOHandler(const AIOHandler &) = delete;
     AIOHandler &operator=(const AIOHandler &) = delete;
 
 public:
+    void SetFD(int fd);
     void SetReadCallback(ReadCallback cb);
     void SetWriteCallback(WriteCallback cb);
     void SetCloseCallback(CloseCallback cb);

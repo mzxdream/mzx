@@ -6,6 +6,7 @@ namespace mzx
 
 TcpAcceptor::TcpAcceptor(AIOServer &aio_server)
     : aio_server_(aio_server)
+    , aio_handler_(aio_server)
 {
 }
 
@@ -13,16 +14,14 @@ TcpAcceptor::TcpAcceptor(AIOServer &aio_server, const NetAddress &addr,
                          bool reuse_addr)
     : aio_server_(aio_server)
     , sock_(addr, reuse_addr)
+    , aio_handler_(aio_server)
 {
+    aio_handler_.SetFD(sock_.sock());
     Listen();
 }
 
 TcpAcceptor::~TcpAcceptor()
 {
-    if (aio_handler_)
-    {
-        delete aio_handler_;
-    }
 }
 
 AIOServer &TcpAcceptor::GetAIOServer()
@@ -32,7 +31,12 @@ AIOServer &TcpAcceptor::GetAIOServer()
 
 bool TcpAcceptor::Open(bool is_ipv6)
 {
-    return sock_.Open(is_ipv6);
+    if (sock_.Open(is_ipv6))
+    {
+        aio_handler_.SetFD(sock_.sock());
+        return true;
+    }
+    return false;
 }
 
 bool TcpAcceptor::Bind(const NetAddress &addr)
@@ -50,62 +54,59 @@ bool TcpAcceptor::Listen(int backlog)
     return sock_.Listen(backlog);
 }
 
-void TcpAcceptor::AsyncAccept(TcpSocket *sock, AcceptCallback cb,
+void TcpAcceptor::AsyncAccept(TcpConnector *conn, AcceptCallback cb,
                               bool forcePost)
 {
-    MZX_CHECK(sock != nullptr && cb != nullptr);
-    if (forcePost)
-    {
-        aio_server_.Post(std::bind(&TcpAcceptor::OnAddAccept, this, sock, cb));
-    }
-    else
-    {
-        aio_server_.Exec(std::bind(&TcpAcceptor::OnAddAccept, this, sock, cb));
-    }
+    MZX_CHECK(conn != nullptr && cb != nullptr);
+    aio_server_.Exec(std::bind(&TcpAcceptor::OnAddAccept, this, conn, cb),
+                     forcePost);
 }
 
-AIOHandler &TcpAcceptor::GetHandler()
+void TcpAcceptor::OnAddAccept(TcpConnector *conn, AcceptCallback cb)
 {
-    if (!aio_handler_)
+    if (accept_list_.empty())
     {
-        aio_handler_ = new AIOHandler(aio_server_, sock_.GetSock());
+        auto error = sock_.Accept(&conn->sock_);
+        if (!error)
+        {
+            conn->is_connected_ = true;
+            cb(error);
+            return;
+        }
+        if (error.Type() != Error::Again &&
+            error.Type() != Error::ConnetAbort && error.Type() != Error::Proto)
+        {
+            cb(error);
+            return;
+        }
+        aio_handler_.SetReadCallback(std::bind(&TcpAcceptor::OnAccept, this));
+        aio_handler_.EnableRead();
     }
-    return *aio_handler_;
+    accept_list_.emplace_back(sock, cb);
 }
 
-void TcpAcceptor::OnCanAccept()
+void TcpAcceptor::OnAccept()
 {
     while (!accept_list_.empty())
     {
         auto &info = accept_list_.front();
-        if (!sock_.Accept(info.first))
+        auto error = sock_.Accept(&info.conn->sock_);
+        if (error)
         {
+            if (error != Error::Again)
+            {
+                // TODO
+            }
             break;
         }
-        (info.second)(Error());
+        info.conn->is_connected = true;
+        (info.cb)(error);
+        accept_list_.pop_front();
     }
     if (accept_list_.empty())
     {
-        GetHandler().EnableRead(false);
+        aio_handler_.EnableRead(false);
     }
-}
-
-void TcpAcceptor::OnAddAccept(TcpSocket *sock, AcceptCallback cb)
-{
-    if (accept_list_.empty())
-    {
-        if (sock_.Accept(sock))
-        {
-            cb(Error());
-        }
-        else
-        {
-            GetHandler().SetReadCallback(
-                std::bind(&TcpAcceptor::OnCanAccept, this));
-            GetHandler().EnableRead();
-        }
-    }
-    accept_list_.emplace_back(sock, cb);
 }
 
 } // namespace mzx
