@@ -123,7 +123,7 @@ bool TcpSocket::Listen(int backlog)
     return true;
 }
 
-bool TcpSocket::Accept(TcpSocket *sock, NetAddress *addr)
+Error TcpSocket::Accept(TcpSocket *sock, NetAddress *addr)
 {
     MZX_CHECK(sock != nullptr && !sock->IsOpen());
     int peer_sock = -1;
@@ -138,22 +138,61 @@ bool TcpSocket::Accept(TcpSocket *sock, NetAddress *addr)
     }
     if (peer_sock < 0)
     {
-        return false;
+        return Error(errno);
     }
     if (!SetNonBlock(peer_sock))
     {
         MZX_ERR("set socker:", peer_sock, " non block failed");
         close(peer_sock);
-        return false;
+        return Error(Error::Unknown);
     }
     if (!SetCloseOnExec(peer_sock))
     {
         MZX_ERR("set socket:", peer_sock, " close on exec failed");
         close(peer_sock);
-        return false;
+        return Error(Error::Unknown);
     }
     sock->sock_ = peer_sock;
-    return true;
+    return Error();
+}
+
+Error TcpSocket::Connect(const NetAddress &addr)
+{
+    auto ret = connect(sock_, addr.Address(), addr.Length());
+    if (ret < 0)
+    {
+        return Error(errno);
+    }
+    return Error();
+}
+
+Error TcpSocket::Read(char *data, std::size_t size, std::size_t *read_size)
+{
+    auto ret = read(sock_, data, size);
+    if (ret < 0)
+    {
+        return Error(errno);
+    }
+    if (read_size)
+    {
+        *read_size = (std::size_t)ret;
+    }
+    return Error();
+}
+
+Error TcpSocket::Write(const char *data, std::size_t size,
+                       std::size_t *write_size)
+{
+    auto ret = write(sock_, data, size);
+    if (ret < 0)
+    {
+        return Error(errno);
+    }
+    if (write_size)
+    {
+        *write_size = (std::size_t)ret;
+    }
+    return Error();
 }
 
 } // namespace mzx

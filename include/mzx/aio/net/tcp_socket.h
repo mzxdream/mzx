@@ -1,8 +1,8 @@
 #ifndef __MZX_TCP_SOCKET_H__
 #define __MZX_TCP_SOCKET_H__
 
-#include <mzx/aio/aio_server.h>
 #include <mzx/aio/net/net_define.h>
+#include <mzx/error.h>
 
 namespace mzx
 {
@@ -26,7 +26,12 @@ public:
     bool Bind(const NetAddress &addr);
     bool SetReuseAddr();
     bool Listen(int backlog);
-    bool Accept(TcpSocket *sock, NetAddress *addr = nullptr);
+
+    Error Accept(TcpSocket *sock, NetAddress *addr = nullptr);
+    Error Connect(const NetAddress &addr);
+    Error Read(char *data, std::size_t size, std::size_t *read_size = nullptr);
+    Error Write(const char *data, std::size_t size,
+                std::size_t *write_size = nullptr);
 
 private:
     int sock_{-1};
