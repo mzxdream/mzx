@@ -11,7 +11,6 @@ namespace mzx
 AIOHandler::AIOHandler(AIOServer &aio_server)
     : aio_server_(aio_server)
 {
-    MZX_CHECK(aio_server_.epoll_fd_ >= 0);
 }
 
 AIOHandler::AIOHandler(AIOServer &aio_server, int fd)
@@ -19,7 +18,6 @@ AIOHandler::AIOHandler(AIOServer &aio_server, int fd)
     , fd_(fd)
 {
     MZX_CHECK(fd_ >= 0);
-    MZX_CHECK(aio_server_.epoll_fd_ >= 0);
 }
 
 AIOHandler::~AIOHandler()
@@ -29,7 +27,7 @@ AIOHandler::~AIOHandler()
 
 void AIOHandler::SetFD(int fd)
 {
-    MZX_CHECK(fd >= 0);
+    MZX_CHECK(fd >= 0 && fd_ < 0);
     fd_ = fd;
 }
 
@@ -83,6 +81,7 @@ static bool EpollCtl(int efd, int fd, int prev_events, int events, void *ptr)
 
 void AIOHandler::EnableRead(bool enable)
 {
+    MZX_CHECK(fd_ >= 0);
     if (enable)
     {
         if (events_ & EPOLLIN)
@@ -111,6 +110,7 @@ void AIOHandler::EnableRead(bool enable)
 
 void AIOHandler::EnableWrite(bool enable)
 {
+    MZX_CHECK(fd_ >= 0);
     if (enable)
     {
         if (events_ & EPOLLOUT)
@@ -139,6 +139,7 @@ void AIOHandler::EnableWrite(bool enable)
 
 void AIOHandler::EnableAll(bool enable)
 {
+    MZX_CHECK(fd_ >= 0);
     if (enable)
     {
         if ((events_ & EPOLLIN) && (events_ & EPOLLOUT))
@@ -171,17 +172,26 @@ void AIOHandler::HandleEvent(int events)
         MZX_ERR("epoll:", aio_server_.epoll_fd_, " fd:", fd_, " error");
         if (close_cb_)
         {
-            close_cb_(Error(ErrorType::Unknown));
-            return;
+            int err = 0;
+            auto err_len = (socklen_t)sizeof(err);
+            if (getsockopt(fd_, SOL_SOCKET, SO_ERROR, &err, &err_len) == 0)
+            {
+                close_cb_(Error(err));
+            }
+            else
+            {
+                close_cb_(Error(ErrorType::Unknown));
+            }
         }
+        return;
     }
     if (events & (EPOLLHUP | EPOLLRDHUP))
     {
         if (close_cb_)
         {
             close_cb_(Error());
-            return;
         }
+        return;
     }
     if (events & EPOLLIN)
     {
