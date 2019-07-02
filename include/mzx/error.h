@@ -11,6 +11,10 @@ enum class ErrorType
     Success = 0,
     Unknown,
     InProgress,
+    Interrupt,
+    Again,
+    ConnectorAbort,
+    ConnectRefuse,
 };
 
 class Error

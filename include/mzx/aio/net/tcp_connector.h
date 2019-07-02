@@ -27,45 +27,45 @@ public:
     struct ConnectInfo
     {
         ConnectInfo() = default;
-        ConnectInfo(const NetAddress &a, ConnectCallback c)
-            : addr(a)
-            , cb(c)
+        ConnectInfo(const NetAddress &a, ConnectCallback cb)
+            : address(a)
+            , callback(cb)
         {
         }
-        NetAddress addr;
-        ConnectCallback cb;
+        NetAddress address;
+        ConnectCallback callback;
     };
 
     struct ReadInfo
     {
         ReadInfo() = default;
-        ReadInfo(char *d, std::size_t s, std::size_t r, ReadCallback c)
+        ReadInfo(char *d, std::size_t s, std::size_t r, ReadCallback cb)
             : data(d)
             , size(s)
             , read_size(r)
-            , cb(c)
+            , callback(cb)
         {
         }
         char *data{nullptr};
         std::size_t size{0};
         std::size_t read_size{0};
-        ReadCallback cb;
+        ReadCallback callback;
     };
 
     struct WriteInfo
     {
         WriteInfo() = default;
-        WriteInfo(const char *d, std::size_t s, std::size_t w, WriteCallback c)
+        WriteInfo(const char *d, std::size_t s, std::size_t w, WriteCallback cb)
             : data(d)
             , size(s)
             , write_size(w)
-            , cb(c)
+            , callback(cb)
         {
         }
         const char *data{nullptr};
         std::size_t size{0};
         std::size_t write_size{0};
-        WriteCallback cb;
+        WriteCallback callback;
     };
 
     explicit TcpConnector(AIOServer &aio_server);
@@ -95,6 +95,7 @@ private:
     void OnConnect();
     void OnRead();
     void OnWrite();
+    void OnClose(const Error &error);
 
 private:
     AIOServer &aio_server_;

@@ -3,7 +3,6 @@
 
 #include <functional>
 #include <list>
-#include <map>
 
 #include <mzx/aio/aio_handler.h>
 #include <mzx/aio/aio_server.h>
@@ -22,13 +21,13 @@ public:
     struct AcceptInfo
     {
         AcceptInfo() = default;
-        AcceptInfo(TcpConnector *c, AcceptCallback f)
-            : conn(c)
-            , cb(f)
+        AcceptInfo(TcpConnector *conn, AcceptCallback cb)
+            : connector(conn)
+            , callback(cb)
         {
         }
-        TcpConnector *conn{nullptr};
-        AcceptCallback cb;
+        TcpConnector *connector{nullptr};
+        AcceptCallback callback;
     };
 
     explicit TcpAcceptor(AIOServer &aio_server);
@@ -51,6 +50,7 @@ public:
 private:
     void OnAddAccept(TcpConnector *conn, AcceptCallback cb);
     void OnAccept();
+    void OnClose(const Error &error);
 
 private:
     AIOServer &aio_server_;

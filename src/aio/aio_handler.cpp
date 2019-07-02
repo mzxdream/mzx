@@ -1,5 +1,7 @@
 #include <cstring>
 #include <sys/epoll.h>
+#include <sys/socket.h>
+#include <unistd.h>
 
 #include <mzx/aio/aio_handler.h>
 #include <mzx/aio/aio_server.h>
@@ -27,7 +29,7 @@ AIOHandler::~AIOHandler()
 
 void AIOHandler::SetFD(int fd)
 {
-    MZX_CHECK(fd >= 0 && fd_ < 0);
+    MZX_CHECK(fd >= 0);
     fd_ = fd;
 }
 

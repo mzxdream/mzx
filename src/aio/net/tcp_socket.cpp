@@ -144,13 +144,13 @@ Error TcpSocket::Accept(TcpSocket *sock, NetAddress *addr)
     {
         MZX_ERR("set socker:", peer_sock, " non block failed");
         close(peer_sock);
-        return Error(Error::Unknown);
+        return Error(ErrorType::Unknown);
     }
     if (!SetCloseOnExec(peer_sock))
     {
         MZX_ERR("set socket:", peer_sock, " close on exec failed");
         close(peer_sock);
-        return Error(Error::Unknown);
+        return Error(ErrorType::Unknown);
     }
     sock->sock_ = peer_sock;
     return Error();

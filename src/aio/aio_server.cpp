@@ -40,7 +40,6 @@ void AIOServer::Stop()
 {
     stop_flag_ = true;
     Wakeup();
-    return true;
 }
 
 bool AIOServer::Join()

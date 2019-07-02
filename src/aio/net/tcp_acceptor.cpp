@@ -16,7 +16,9 @@ TcpAcceptor::TcpAcceptor(AIOServer &aio_server, const NetAddress &addr,
     , sock_(addr, reuse_addr)
     , aio_handler_(aio_server)
 {
-    aio_handler_.SetFD(sock_.sock());
+    aio_handler_.SetFD(sock_.GetSock());
+    aio_handler_.SetCloseCallback(
+        std::bind(&TcpAcceptor::OnClose, this, std::placeholders::_1));
     Listen();
 }
 
@@ -33,7 +35,9 @@ bool TcpAcceptor::Open(bool is_ipv6)
 {
     if (sock_.Open(is_ipv6))
     {
-        aio_handler_.SetFD(sock_.sock());
+        aio_handler_.SetFD(sock_.GetSock());
+        aio_handler_.SetCloseCallback(
+            std::bind(&TcpAcceptor::OnClose, this, std::placeholders::_1));
         return true;
     }
     return false;
@@ -66,23 +70,33 @@ void TcpAcceptor::OnAddAccept(TcpConnector *conn, AcceptCallback cb)
 {
     if (accept_list_.empty())
     {
-        auto error = sock_.Accept(&conn->sock_);
-        if (!error)
+        while (true)
         {
-            conn->is_connected_ = true;
+            auto error = sock_.Accept(&conn->sock_);
+            if (!error)
+            {
+                conn->is_connected_ = true;
+                cb(error);
+                return;
+            }
+            if (error.Type() == ErrorType::Interrupt ||
+                error.Type() == ErrorType::ConnectorAbort)
+            {
+                continue;
+            }
+            if (error.Type() == ErrorType::Again)
+            {
+                aio_handler_.SetReadCallback(
+                    std::bind(&TcpAcceptor::OnAccept, this));
+                aio_handler_.EnableRead();
+                break;
+            }
             cb(error);
+            OnClose(error);
             return;
         }
-        if (error.Type() != Error::Again &&
-            error.Type() != Error::ConnetAbort && error.Type() != Error::Proto)
-        {
-            cb(error);
-            return;
-        }
-        aio_handler_.SetReadCallback(std::bind(&TcpAcceptor::OnAccept, this));
-        aio_handler_.EnableRead();
     }
-    accept_list_.emplace_back(sock, cb);
+    accept_list_.emplace_back(conn, cb);
 }
 
 void TcpAcceptor::OnAccept()
@@ -90,23 +104,44 @@ void TcpAcceptor::OnAccept()
     while (!accept_list_.empty())
     {
         auto &info = accept_list_.front();
-        auto error = sock_.Accept(&info.conn->sock_);
-        if (error)
+        while (true)
         {
-            if (error != Error::Again)
+            auto error = sock_.Accept(&info.connector->sock_);
+            if (!error)
             {
-                // TODO
+                info.connector->is_connected_ = true;
+                (info.callback)(error);
+                break;
             }
-            break;
+            if (error.Type() == ErrorType::Interrupt ||
+                error.Type() == ErrorType::ConnectorAbort)
+            {
+                continue;
+            }
+            if (error.Type() == ErrorType::Again)
+            {
+                return;
+            }
+            OnClose(error);
+            return;
         }
-        info.conn->is_connected = true;
-        (info.cb)(error);
         accept_list_.pop_front();
     }
     if (accept_list_.empty())
     {
-        aio_handler_.EnableRead(false);
+        // aio_handler_.EnableRead(false);
     }
+}
+
+void TcpAcceptor::OnClose(const Error &error)
+{
+    for (auto &info : accept_list_)
+    {
+        (info.callback)(error);
+    }
+    accept_list_.clear();
+    aio_handler_.EnableAll(false);
+    sock_.Close();
 }
 
 } // namespace mzx

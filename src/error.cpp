@@ -11,6 +11,14 @@ static ErrorType ToErrorType(int err)
     {
         case EINPROGRESS:
             return ErrorType::InProgress;
+        case EINTR:
+            return ErrorType::Interrupt;
+        case EAGAIN:
+            return ErrorType::Again;
+        case ECONNABORTED:
+            return ErrorType::ConnectorAbort;
+        case ECONNREFUSED:
+            return ErrorType::ConnectRefuse;
         default:
             return ErrorType::Unknown;
     }
