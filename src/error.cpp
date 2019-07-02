@@ -9,6 +9,8 @@ static ErrorType ToErrorType(int err)
 {
     switch (err)
     {
+        case EINPROGRESS:
+            return ErrorType::InProgress;
         default:
             return ErrorType::Unknown;
     }

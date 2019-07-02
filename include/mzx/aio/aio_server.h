@@ -24,11 +24,10 @@ public:
     AIOServer &operator=(const AIOServer &) = delete;
 
     bool Start();
-    bool Stop();
+    void Stop();
     bool Join();
     bool CanExecImmediately() const;
-    void Exec(ExecFunc func);
-    void Post(ExecFunc func);
+    void Exec(ExecFunc func, bool forcePost = false);
 
 private:
     void Wakeup();

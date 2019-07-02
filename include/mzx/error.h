@@ -9,7 +9,8 @@ namespace mzx
 enum class ErrorType
 {
     Success = 0,
-    Unknown = 1,
+    Unknown,
+    InProgress,
 };
 
 class Error

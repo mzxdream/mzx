@@ -36,7 +36,7 @@ bool AIOServer::Start()
     return thread_.Start();
 }
 
-bool AIOServer::Stop()
+void AIOServer::Stop()
 {
     stop_flag_ = true;
     Wakeup();
@@ -50,30 +50,25 @@ bool AIOServer::Join()
 
 bool AIOServer::CanExecImmediately() const
 {
-    return thread_.Joinable() || thread_.IsCurrentThread();
+    return !thread_.Joinable() || thread_.IsCurrentThread();
 }
 
-void AIOServer::Exec(ExecFunc func)
+void AIOServer::Exec(ExecFunc func, bool forcePost)
 {
     MZX_CHECK(func != nullptr);
-    if (CanExecImmediately())
+    if (!forcePost && CanExecImmediately())
     {
         func();
     }
     else
     {
-        Post(std::move(func));
+        std::lock_guard<std::mutex> lock(exec_queue_mtx_);
+        if (exec_queue_.empty())
+        {
+            Wakeup();
+        }
+        exec_queue_.push_back(std::move(func));
     }
-}
-
-void AIOServer::Post(ExecFunc func)
-{
-    std::lock_guard<std::mutex> lock(exec_queue_mtx_);
-    if (exec_queue_.empty())
-    {
-        Wakeup();
-    }
-    exec_queue_.push_back(std::move(func));
 }
 
 void AIOServer::Wakeup()
@@ -92,6 +87,7 @@ void AIOServer::Run()
 {
     epoll_event events[1024];
     std::list<ExecFunc> exec_list;
+    stop_flag_ = false;
     while (!stop_flag_)
     {
         auto nevents =
