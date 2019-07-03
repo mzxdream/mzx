@@ -80,6 +80,7 @@ public:
     bool Open(bool is_ipv6 = false);
     bool Bind(const NetAddress &addr);
     bool SetReuseAddr();
+    void Close();
 
     void AsyncConnect(const NetAddress &addr, ConnectCallback cb,
                       bool forcePost = false);

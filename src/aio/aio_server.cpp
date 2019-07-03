@@ -22,7 +22,7 @@ AIOServer::AIOServer()
 
 AIOServer::~AIOServer()
 {
-    MZX_CHECK(thread_.Joinable());
+    MZX_CHECK(!thread_.Joinable());
     if (wakeup_handler_)
     {
         delete wakeup_handler_;

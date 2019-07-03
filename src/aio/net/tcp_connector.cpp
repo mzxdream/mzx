@@ -51,6 +51,11 @@ bool TcpConnector::SetReuseAddr()
     return sock_.SetReuseAddr();
 }
 
+void TcpConnector::Close()
+{
+    aio_server_.Exec(std::bind(&TcpConnector::OnCloseActive, this));
+}
+
 void TcpConnector::AsyncConnect(const NetAddress &addr, ConnectCallback cb,
                                 bool forcePost)
 {
@@ -97,8 +102,7 @@ void TcpConnector::OnAddConnect(const NetAddress &addr, ConnectCallback cb)
             {
                 continue;
             }
-            if (error.Type() == ErrorType::InProgress ||
-                error.Type() == ErrorType::ConnectRefuse)
+            if (error.Type() == ErrorType::InProgress)
             {
                 aio_handler_.SetWriteCallback(
                     std::bind(&TcpConnector::OnConnect, this));
@@ -301,7 +305,6 @@ void TcpConnector::OnClose(const Error &error)
     }
     write_list_.clear();
     aio_handler_.EnableAll(false);
-    sock_.Close();
 }
 
 } // namespace mzx

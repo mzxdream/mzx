@@ -171,19 +171,17 @@ void AIOHandler::HandleEvent(int events)
 {
     if (events & EPOLLERR)
     {
-        MZX_ERR("epoll:", aio_server_.epoll_fd_, " fd:", fd_, " error");
+        int err = 0;
+        auto err_len = (socklen_t)sizeof(err);
+        Error error(ErrorType::Unknown);
+        if (getsockopt(fd_, SOL_SOCKET, SO_ERROR, &err, &err_len) == 0)
+        {
+            error.SetType(err);
+        }
+        MZX_ERR("epoll:", aio_server_.epoll_fd_, " fd:", fd_, " error:", err);
         if (close_cb_)
         {
-            int err = 0;
-            auto err_len = (socklen_t)sizeof(err);
-            if (getsockopt(fd_, SOL_SOCKET, SO_ERROR, &err, &err_len) == 0)
-            {
-                close_cb_(Error(err));
-            }
-            else
-            {
-                close_cb_(Error(ErrorType::Unknown));
-            }
+            close_cb_(error);
         }
         return;
     }
