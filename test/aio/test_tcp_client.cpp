@@ -68,7 +68,7 @@ int main(int argc, char *argv[])
     mzx::TcpConnector connector(aio_server);
     connector.Open();
     connector.AsyncConnect(
-        mzx::NetAddress(8082),
+        mzx::NetAddress(8082, "127.0.0.1"),
         std::bind(OnConnect, &connector, std::placeholders::_1));
     aio_server.Start();
     aio_server.Join();
