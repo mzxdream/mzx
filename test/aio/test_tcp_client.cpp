@@ -47,7 +47,9 @@ void OnConnect(mzx::TcpConnector *conn, const mzx::Error &error)
     if (error)
     {
         std::cout << "error:" << (int)error.Type() << std::endl;
-        conn->GetAIOServer().Stop();
+        mzx::Thread::Sleep(5000);
+        conn->AsyncConnect(mzx::NetAddress(8082),
+                           std::bind(OnConnect, conn, std::placeholders::_1));
         return;
     }
     std::cout << "connect success" << std::endl;

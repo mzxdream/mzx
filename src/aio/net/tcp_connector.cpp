@@ -207,8 +207,9 @@ void TcpConnector::OnConnect()
     aio_handler_.EnableWrite(false);
     if (connect_cb_)
     {
-        connect_cb_(Error());
+        auto callback = connect_cb_;
         connect_cb_ = nullptr;
+        callback(Error());
     }
 }
 
@@ -233,6 +234,7 @@ void TcpConnector::OnRead()
                 if (info.read_size == info.size)
                 {
                     (info.callback)(error);
+                    read_list_.pop_front();
                     break;
                 }
                 return;
@@ -248,7 +250,6 @@ void TcpConnector::OnRead()
             OnClose(error);
             return;
         }
-        read_list_.pop_front();
     }
     if (read_list_.empty())
     {
@@ -277,6 +278,7 @@ void TcpConnector::OnWrite()
                 if (info.write_size == info.size)
                 {
                     (info.callback)(error);
+                    write_list_.pop_front();
                     break;
                 }
                 return;
@@ -292,7 +294,6 @@ void TcpConnector::OnWrite()
             OnClose(error);
             return;
         }
-        write_list_.pop_front();
     }
     if (write_list_.empty())
     {
@@ -307,8 +308,9 @@ void TcpConnector::OnClose(const Error &error)
     {
         if (connect_cb_)
         {
-            connect_cb_(error);
+            auto callback = connect_cb_;
             connect_cb_ = nullptr;
+            callback(error);
         }
         else
         {
