@@ -53,89 +53,89 @@ bool TcpConnector::SetReuseAddr()
 
 void TcpConnector::Close()
 {
-    aio_server_.Exec(std::bind(&TcpConnector::OnCloseActive, this));
+    sock_.Close();
 }
 
-void TcpConnector::AsyncConnect(const NetAddress &addr, ConnectCallback cb,
-                                bool forcePost)
+void TcpConnector::AsyncConnect(const NetAddress &addr, ConnectCallback cb)
 {
     MZX_CHECK(cb != nullptr);
-    aio_server_.Exec(std::bind(&TcpConnector::OnAddConnect, this, addr, cb),
-                     forcePost);
+    aio_server_.Exec(std::bind(&TcpConnector::OnAddConnect, this, addr, cb));
 }
 
-void TcpConnector::AsyncRead(char *data, std::size_t size, ReadCallback cb,
-                             bool forcePost)
+void TcpConnector::AsyncRead(char *data, std::size_t size, ReadCallback cb)
 {
     MZX_CHECK(data != nullptr && size > 0 && cb != nullptr);
-    aio_server_.Exec(std::bind(&TcpConnector::OnAddRead, this, data, size, cb),
-                     forcePost);
+    aio_server_.Exec(std::bind(&TcpConnector::OnAddRead, this, data, size, cb));
 }
 
 void TcpConnector::AsyncWrite(const char *data, std::size_t size,
-                              WriteCallback cb, bool forcePost)
+                              WriteCallback cb)
 {
     MZX_CHECK(data != nullptr && size > 0 && cb != nullptr);
-    aio_server_.Exec(std::bind(&TcpConnector::OnAddWrite, this, data, size, cb),
-                     forcePost);
+    aio_server_.Exec(
+        std::bind(&TcpConnector::OnAddWrite, this, data, size, cb));
 }
 
 void TcpConnector::OnAddConnect(const NetAddress &addr, ConnectCallback cb)
 {
-    if (connect_list_.empty())
+    if (is_connected_ || connect_cb_)
     {
-        if (is_connected_)
-        {
-            cb(Error());
-            return;
-        }
-        while (true)
-        {
-            auto error = sock_.Connect(addr);
-            if (!error)
-            {
-                is_connected_ = true;
-                cb(error);
-                return;
-            }
-            if (error.Type() == ErrorType::Interrupt)
-            {
-                continue;
-            }
-            if (error.Type() == ErrorType::InProgress)
-            {
-                aio_handler_.SetWriteCallback(
-                    std::bind(&TcpConnector::OnConnect, this));
-                aio_handler_.EnableWrite();
-                break;
-            }
-            cb(error);
-            OnClose(error);
-            return;
-        }
+        cb(Error(ErrorType::RepeatConnect));
+        return;
     }
-    connect_list_.emplace_back(addr, cb);
+    while (true)
+    {
+        auto error = sock_.Connect(addr);
+        if (!error)
+        {
+            is_connected_ = true;
+            cb(error);
+            return;
+        }
+        if (error.Type() == ErrorType::Interrupt)
+        {
+            continue;
+        }
+        if (error.Type() == ErrorType::InProgress ||
+            error.Type() == ErrorType::Again)
+        {
+            remote_addr_ = addr;
+            connect_cb_ = cb;
+            aio_handler_.SetWriteCallback(
+                std::bind(&TcpConnector::OnConnect, this));
+            aio_handler_.EnableWrite();
+            return;
+        }
+        cb(error);
+        OnClose(error);
+        return;
+    }
 }
 
 void TcpConnector::OnAddRead(char *data, std::size_t size, ReadCallback cb)
 {
+    if (!is_connected_)
+    {
+        cb(ErrorType::NotConnected);
+        return;
+    }
     std::size_t read_size = 0;
-    if (read_list_.empty() && is_connected_)
+    if (read_list_.empty())
     {
         while (true)
         {
             auto error = sock_.Read(data, size, &read_size);
             if (!error)
             {
-                if (read_size < size)
+                if (read_size == size)
                 {
-                    aio_handler_.SetReadCallback(
-                        std::bind(&TcpConnector::OnRead, this));
-                    aio_handler_.EnableRead();
-                    break;
+                    cb(error);
+                    return;
                 }
-                cb(error);
-                return;
+                aio_handler_.SetReadCallback(
+                    std::bind(&TcpConnector::OnRead, this));
+                aio_handler_.EnableRead();
+                break;
             }
             if (error.Type() == ErrorType::Interrupt)
             {
@@ -159,23 +159,28 @@ void TcpConnector::OnAddRead(char *data, std::size_t size, ReadCallback cb)
 void TcpConnector::OnAddWrite(const char *data, std::size_t size,
                               WriteCallback cb)
 {
+    if (!is_connected_)
+    {
+        cb(ErrorType::NotConnected);
+        return;
+    }
     std::size_t write_size = 0;
-    if (write_list_.empty() && is_connected_)
+    if (write_list_.empty())
     {
         while (true)
         {
             auto error = sock_.Write(data, size, &write_size);
             if (!error)
             {
-                if (write_size < size)
+                if (write_size == size)
                 {
-                    aio_handler_.SetWriteCallback(
-                        std::bind(&TcpConnector::OnWrite, this));
-                    aio_handler_.EnableWrite();
-                    break;
+                    cb(error);
+                    return;
                 }
-                cb(error);
-                return;
+                aio_handler_.SetWriteCallback(
+                    std::bind(&TcpConnector::OnWrite, this));
+                aio_handler_.EnableWrite();
+                break;
             }
             if (error.Type() == ErrorType::Interrupt)
             {
@@ -200,18 +205,21 @@ void TcpConnector::OnConnect()
 {
     is_connected_ = true;
     aio_handler_.EnableWrite(false);
-    for (auto &info : connect_list_)
+    if (connect_cb_)
     {
-        (info.callback)(Error());
+        connect_cb_(Error());
+        connect_cb_ = nullptr;
     }
-    connect_list_.clear();
-    OnRead();
-    OnWrite();
 }
 
 void TcpConnector::OnRead()
 {
-    while (!read_list_.empty() && is_connected_)
+    if (!is_connected_)
+    {
+        MZX_FATAL("not connect but recv read event");
+        return;
+    }
+    while (!read_list_.empty())
     {
         std::size_t read_size = 0;
         auto &info = read_list_.front();
@@ -222,12 +230,12 @@ void TcpConnector::OnRead()
             if (!error)
             {
                 info.read_size += read_size;
-                if (info.read_size < info.size)
+                if (info.read_size == info.size)
                 {
-                    return;
+                    (info.callback)(error);
+                    break;
                 }
-                (info.callback)(error);
-                break;
+                return;
             }
             if (error.Type() == ErrorType::Interrupt)
             {
@@ -250,7 +258,12 @@ void TcpConnector::OnRead()
 
 void TcpConnector::OnWrite()
 {
-    while (!write_list_.empty() && is_connected_)
+    if (!is_connected_)
+    {
+        MZX_FATAL("not connect buy recv write event");
+        return;
+    }
+    while (!write_list_.empty())
     {
         std::size_t write_size = 0;
         auto &info = write_list_.front();
@@ -261,12 +274,12 @@ void TcpConnector::OnWrite()
             if (!error)
             {
                 info.write_size += write_size;
-                if (info.write_size < info.size)
+                if (info.write_size == info.size)
                 {
-                    return;
+                    (info.callback)(error);
+                    break;
                 }
-                (info.callback)(error);
-                break;
+                return;
             }
             if (error.Type() == ErrorType::Interrupt)
             {
@@ -289,22 +302,35 @@ void TcpConnector::OnWrite()
 
 void TcpConnector::OnClose(const Error &error)
 {
-    for (auto &info : connect_list_)
-    {
-        (info.callback)(error);
-    }
-    connect_list_.clear();
-    for (auto &info : read_list_)
-    {
-        (info.callback)(error);
-    }
-    read_list_.clear();
-    for (auto &info : write_list_)
-    {
-        (info.callback)(error);
-    }
-    write_list_.clear();
     aio_handler_.EnableAll(false);
+    if (!is_connected_)
+    {
+        if (connect_cb_)
+        {
+            connect_cb_(error);
+            connect_cb_ = nullptr;
+        }
+        else
+        {
+            MZX_FATAL("not connected and not connecting but recv close event");
+        }
+    }
+    else
+    {
+        MZX_FATAL_IF(connect_cb_, "is connected buy connecting not null");
+        is_connected_ = false;
+        for (auto &info : read_list_)
+        {
+            (info.callback)(error);
+        }
+        read_list_.clear();
+        for (auto &info : write_list_)
+        {
+            (info.callback)(error);
+        }
+        write_list_.clear();
+        sock_.Close();
+    }
 }
 
 } // namespace mzx

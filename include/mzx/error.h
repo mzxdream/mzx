@@ -13,8 +13,10 @@ enum class ErrorType
     InProgress,
     Interrupt,
     Again,
-    ConnectorAbort,
+    ConnectAbort,
     ConnectRefuse,
+    RepeatConnect,
+    NotConnected,
 };
 
 class Error

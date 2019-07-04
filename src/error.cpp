@@ -16,7 +16,7 @@ static ErrorType ToErrorType(int err)
         case EAGAIN:
             return ErrorType::Again;
         case ECONNABORTED:
-            return ErrorType::ConnectorAbort;
+            return ErrorType::ConnectAbort;
         case ECONNREFUSED:
             return ErrorType::ConnectRefuse;
         default:

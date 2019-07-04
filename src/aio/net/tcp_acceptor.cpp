@@ -58,12 +58,15 @@ bool TcpAcceptor::Listen(int backlog)
     return sock_.Listen(backlog);
 }
 
-void TcpAcceptor::AsyncAccept(TcpConnector *conn, AcceptCallback cb,
-                              bool forcePost)
+void TcpAcceptor::Close()
+{
+    sock_.Close();
+}
+
+void TcpAcceptor::AsyncAccept(TcpConnector *conn, AcceptCallback cb)
 {
     MZX_CHECK(conn != nullptr && cb != nullptr);
-    aio_server_.Exec(std::bind(&TcpAcceptor::OnAddAccept, this, conn, cb),
-                     forcePost);
+    aio_server_.Exec(std::bind(&TcpAcceptor::OnAddAccept, this, conn, cb));
 }
 
 void TcpAcceptor::OnAddAccept(TcpConnector *conn, AcceptCallback cb)
@@ -80,7 +83,7 @@ void TcpAcceptor::OnAddAccept(TcpConnector *conn, AcceptCallback cb)
                 return;
             }
             if (error.Type() == ErrorType::Interrupt ||
-                error.Type() == ErrorType::ConnectorAbort)
+                error.Type() == ErrorType::ConnectAbort)
             {
                 continue;
             }
@@ -114,7 +117,7 @@ void TcpAcceptor::OnAccept()
                 break;
             }
             if (error.Type() == ErrorType::Interrupt ||
-                error.Type() == ErrorType::ConnectorAbort)
+                error.Type() == ErrorType::ConnectAbort)
             {
                 continue;
             }

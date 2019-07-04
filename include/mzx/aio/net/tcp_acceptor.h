@@ -43,9 +43,9 @@ public:
     bool Bind(const NetAddress &addr);
     bool SetReuseAddr();
     bool Listen(int backlog = 128);
+    void Close();
 
-    void AsyncAccept(TcpConnector *conn, AcceptCallback cb,
-                     bool forcePost = false);
+    void AsyncAccept(TcpConnector *conn, AcceptCallback cb);
 
 private:
     void OnAddAccept(TcpConnector *conn, AcceptCallback cb);

@@ -24,18 +24,6 @@ public:
     using ReadCallback = std::function<void(const Error &)>;
     using WriteCallback = std::function<void(const Error &)>;
 
-    struct ConnectInfo
-    {
-        ConnectInfo() = default;
-        ConnectInfo(const NetAddress &a, ConnectCallback cb)
-            : address(a)
-            , callback(cb)
-        {
-        }
-        NetAddress address;
-        ConnectCallback callback;
-    };
-
     struct ReadInfo
     {
         ReadInfo() = default;
@@ -82,12 +70,9 @@ public:
     bool SetReuseAddr();
     void Close();
 
-    void AsyncConnect(const NetAddress &addr, ConnectCallback cb,
-                      bool forcePost = false);
-    void AsyncRead(char *data, std::size_t size, ReadCallback cb,
-                   bool forcePost = false);
-    void AsyncWrite(const char *data, std::size_t size, WriteCallback cb,
-                    bool forcePost = false);
+    void AsyncConnect(const NetAddress &addr, ConnectCallback cb);
+    void AsyncRead(char *data, std::size_t size, ReadCallback cb);
+    void AsyncWrite(const char *data, std::size_t size, WriteCallback cb);
 
 private:
     void OnAddConnect(const NetAddress &addr, ConnectCallback cb);
@@ -103,7 +88,8 @@ private:
     TcpSocket sock_;
     bool is_connected_{false};
     AIOHandler aio_handler_;
-    std::list<ConnectInfo> connect_list_;
+    NetAddress remote_addr_;
+    ConnectCallback connect_cb_;
     std::list<ReadInfo> read_list_;
     std::list<WriteInfo> write_list_;
 };
