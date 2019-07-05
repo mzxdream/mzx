@@ -10,13 +10,28 @@ namespace mzx
 
 class AIOServer;
 
+struct AIOOperation
+{
+public:
+    AIOOperation() = default;
+    virtual ~AIOOperation() = 0;
+
+    virtual bool Perform()
+    {
+        return true;
+    }
+    virtual void Complete()
+    {
+    }
+};
+
 class AIOHandler final
 {
     friend AIOServer;
 
 public:
-    using ReadCallback = std::function<void()>;
-    using WriteCallback = std::function<void()>;
+    using ReadCallback = std::function<void(const Error &)>;
+    using WriteCallback = std::function<void(const Error &)>;
 
     explicit AIOHandler(AIOServer &aio_server);
     explicit AIOHandler(AIOServer &aio_server, int fd);
@@ -26,12 +41,11 @@ public:
 
 public:
     bool Assign(int fd);
-    void SetReadCallback(ReadCallback cb);
-    void SetWriteCallback(WriteCallback cb);
-
-    void EnableRead(bool enable = true);
-    void EnableWrite(bool enable = true);
-    void EnableAll(bool enable = true);
+    void Close();
+    void StartRead(ReadCallback cb);
+    void StartWrite(WriteCallback cb);
+    void StopRead();
+    void StopWrite();
 
 private:
     void HandleEvent(int events);
