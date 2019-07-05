@@ -27,10 +27,15 @@ AIOHandler::~AIOHandler()
     EnableAll(false);
 }
 
-void AIOHandler::SetFD(int fd)
+bool AIOHandler::Assign(int fd)
 {
-    MZX_CHECK(fd >= 0);
+    if (fd_ >= 0 || fd < 0)
+    {
+        MZX_WARN("fd_ is ", fd_, " fd is ", fd);
+        return false;
+    }
     fd_ = fd;
+    return true;
 }
 
 void AIOHandler::SetReadCallback(ReadCallback cb)
@@ -41,11 +46,6 @@ void AIOHandler::SetReadCallback(ReadCallback cb)
 void AIOHandler::SetWriteCallback(WriteCallback cb)
 {
     write_cb_ = cb;
-}
-
-void AIOHandler::SetCloseCallback(CloseCallback cb)
-{
-    close_cb_ = cb;
 }
 
 static bool EpollCtl(int efd, int fd, int prev_events, int events, void *ptr)
@@ -68,7 +68,7 @@ static bool EpollCtl(int efd, int fd, int prev_events, int events, void *ptr)
         }
         op = EPOLL_CTL_ADD;
     }
-    epoll_event ee;
+    epoll_event ee = {0, {0}};
     ee.events = events;
     ee.data.ptr = ptr;
     int ret = epoll_ctl(efd, op, fd, &ee);

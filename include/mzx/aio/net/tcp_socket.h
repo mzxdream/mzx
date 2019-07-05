@@ -18,10 +18,10 @@ public:
     TcpSocket &operator=(const TcpSocket &) = delete;
 
 public:
-    int GetSock() const;
     bool IsOpen() const;
-
+    int RawSock() const;
     bool Open(bool is_ipv6);
+    bool Assign(int raw_sock);
     void Close();
     bool Bind(const NetAddress &addr);
     bool SetReuseAddr();

@@ -5,6 +5,7 @@
 #include <fcntl.h>
 #include <netinet/in.h>
 
+#include <mzx/error.h>
 #include <mzx/logger.h>
 
 namespace mzx
@@ -36,6 +37,17 @@ inline bool SetCloseOnExec(int fd)
         return false;
     }
     return true;
+}
+
+inline Error GetSocketError(int sock)
+{
+    int err = 0;
+    auto err_len = (socklen_t)sizeof(err);
+    if (getsockopt(sock, SOL_SOCKET, SO_ERROR, &err, &err_len) == 0)
+    {
+        return Error(err);
+    }
+    return Error(ErrorType::Unknown);
 }
 
 class NetAddress final

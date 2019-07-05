@@ -33,14 +33,14 @@ TcpSocket::~TcpSocket()
     Close();
 }
 
-int TcpSocket::GetSock() const
-{
-    return sock_;
-}
-
 bool TcpSocket::IsOpen() const
 {
     return sock_ >= 0;
+}
+
+int TcpSocket::RawSock() const
+{
+    return sock_;
 }
 
 bool TcpSocket::Open(bool is_ipv6)
@@ -60,7 +60,7 @@ bool TcpSocket::Open(bool is_ipv6)
     }
     if (sock_ < 0)
     {
-        MZX_ERR("create socket failed err:", sock_);
+        MZX_ERR("create socket failed err:", errno);
         return false;
     }
     if (!SetNonBlock(sock_))
@@ -75,6 +75,17 @@ bool TcpSocket::Open(bool is_ipv6)
         Close();
         return false;
     }
+    return true;
+}
+
+bool TcpSocket::Assign(int raw_sock)
+{
+    if (IsOpen())
+    {
+        MZX_WARN("sock:", sock_, " is opened");
+        return false;
+    }
+    sock_ = raw_sock;
     return true;
 }
 

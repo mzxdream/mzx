@@ -26,6 +26,7 @@ static ErrorType ToErrorType(int err)
 
 Error::Error(int eno)
     : type_(ToErrorType(eno))
+    , message_(strerror(eno))
 {
 }
 
@@ -53,6 +54,7 @@ const std::string &Error::Message() const
 void Error::SetType(int eno)
 {
     type_ = ToErrorType(eno);
+    message_ = strerror(eno);
 }
 
 void Error::SetType(ErrorType t)

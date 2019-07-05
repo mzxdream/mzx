@@ -1,6 +1,7 @@
 #ifndef __MZX_ERROR_H__
 #define __MZX_ERROR_H__
 
+#include <iostream>
 #include <string>
 
 namespace mzx
@@ -17,6 +18,7 @@ enum class ErrorType
     ConnectRefuse,
     RepeatConnect,
     NotConnected,
+    ShutDown,
 };
 
 class Error
@@ -50,5 +52,12 @@ private:
 };
 
 }; // namespace mzx
+
+inline std::ostream &operator<<(std::ostream &os, const mzx::Error &error)
+{
+    os << "type:" << static_cast<int>(error.Type()) << ","
+       << "message:" << error.Message();
+    return os;
+}
 
 #endif
