@@ -4,32 +4,60 @@
 #include <functional>
 #include <list>
 #include <mutex>
+#include <mzx/data_structure/list.h>
 
-#include <mzx/aio/aio_handler.h>
+#include <mzx/aio/aio_operation.h>
 #include <mzx/thread.h>
 
 namespace mzx
 {
 
-class AIOServer final
+class AIOServer;
+
+class AIOHandler
 {
-    friend AIOHandler;
+    friend AIOServer;
+
+private:
+    explicit AIOHandler(AIOServer &aio_server, int fd);
+    ~AIOHandler();
+    AIOHandler(const AIOHandler &) = delete;
+    AIOHandler &operator=(const AIOHandler &) = delete;
 
 public:
-    using ExecFunc = std::function<void()>;
+    void StartRead();
+    void StartWrite();
 
+private:
+    AIOServer &aio_server_;
+    int fd_{-1};
+    int registered_events_{0};
+    std::list<AIOOperation *> read_list_;
+    std::list<AIOOperation *> write_list_;
+    std::mutex mutex_;
+    mzx::ListNode list_link_;
+};
+
+class AIOServer final
+{
+public:
     explicit AIOServer();
     virtual ~AIOServer();
     AIOServer(const AIOServer &) = delete;
     AIOServer &operator=(const AIOServer &) = delete;
 
+public:
     bool Start();
     void Stop();
     bool Join();
-    bool CanExecImmediately() const;
-    void Exec(ExecFunc func, bool forcePost = false);
+
+    AIOHandler *RegisterHandler(int fd, Error *error = nullptr);
+    void DeregisterHandler(AIOHandler *handler);
+
+    void Post(std::function<void()> func);
 
 private:
+    bool CanExecImmediately() const;
     void Wakeup();
     void OnWakeup();
     void Run();
@@ -38,8 +66,10 @@ private:
     int epoll_fd_{-1};
     int wakeup_fd_{-1};
     AIOHandler *wakeup_handler_{nullptr};
-    std::mutex exec_queue_mtx_;
-    std::list<ExecFunc> exec_queue_;
+    List handler_list_;
+    std::mutex handler_mutex_;
+    std::list<AIOOperation *> complete_list_;
+    std::mutex complete_mutex_;
     Thread thread_;
     volatile bool stop_flag_{false};
 };
