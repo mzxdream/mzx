@@ -1,3 +1,4 @@
+#include <cstring>
 #include <errno.h>
 
 #include <mzx/error.h>
