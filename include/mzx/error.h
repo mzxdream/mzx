@@ -1,63 +1,50 @@
 #ifndef __MZX_ERROR_H__
 #define __MZX_ERROR_H__
 
-#include <iostream>
-#include <string>
+#include <mzx/singleton.h>
+#include <system_error>
 
 namespace mzx
 {
 
-enum class ErrorType
+enum class ErrorCode
 {
-    Success = 0,
-    Unknown,
-    InProgress,
-    Interrupt,
-    Again,
-    ConnectAbort,
-    ConnectRefuse,
-    RepeatConnect,
-    NotConnected,
-    ShutDown,
+    kSuccess = 0,
+    kUnknown,
+    kReadOverLimit,
+    kWriteOverLimit,
 };
 
-class Error
+class ErrorCategory : public std::error_category
 {
 public:
-    Error() = default;
-    Error(int eno);
-    Error(ErrorType t);
-    Error(ErrorType t, const std::string &msg);
-
-public:
-    ErrorType Type() const;
-    const std::string &Message() const;
-
-    void SetType(int eno);
-    void SetType(ErrorType t);
-    void SetMessage(const std::string &msg);
-
-    operator bool() const
-    {
-        return type_ != ErrorType::Success;
-    }
-    bool operator!() const
-    {
-        return type_ == ErrorType::Success;
-    }
-
-private:
-    ErrorType type_{ErrorType::Success};
-    std::string message_;
+    virtual const char *name() const noexcept override;
+    virtual std::string message(int err) const override;
 };
 
-}; // namespace mzx
-
-inline std::ostream &operator<<(std::ostream &os, const mzx::Error &error)
+inline const std::error_category &GetErrorCategory()
 {
-    os << "type:" << static_cast<int>(error.Type()) << ","
-       << "message:" << error.Message();
-    return os;
+    return mzx::Singleton<ErrorCategory>::Instance();
 }
+
+} // namespace mzx
+
+namespace std
+{
+
+template <>
+struct is_error_code_enum<mzx::ErrorCode> : true_type
+{
+};
+
+error_code make_error_code(mzx::ErrorCode ec)
+{
+    return {
+        static_cast<int>(ec),
+        mzx::GetErrorCategory(),
+    };
+}
+
+} // namespace std
 
 #endif
