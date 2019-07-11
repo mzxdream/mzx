@@ -44,11 +44,13 @@ void NetConnector::Close()
 
 void NetConnector::Write(const char *data, std::size_t size)
 {
-    MZX_CHECK(data != nullptr && size > 0 && size <= NET_MSG_MAX_LENGTH);
-    auto *msg = new char[size + sizeof(NetMsgLenType)];
-    auto msg_length = ToNetMsgLen(static_cast<NetMsgLenType>(size));
-    memcpy(msg, &msg_length, sizeof(NetMsgLenType));
-    memcpy(msg + sizeof(NetMsgLenType), data, size);
+    MZX_CHECK(data != nullptr && size > 0 && size <= kNetMessageMaxLength);
+    auto msg_length =
+        static_cast<NetMessageLengthType>(size + kNetMessageLengthSize);
+    auto *msg = new char[msg_length];
+    auto msg_net_length = ToNetMessageLength(msg_length);
+    memcpy(msg, &msg_net_length, kNetMessageLengthSize);
+    memcpy(msg + kNetMessageLengthSize, data, size);
     asio::async_write(sock_, asio::buffer(msg, msg_length),
                       [this, msg, msg_length](std::error_code ec, std::size_t) {
                           if (ec)
@@ -86,11 +88,22 @@ void NetConnector::ReadLength()
 
 void NetConnector::ReadContent()
 {
-    auto msg_length = ToHostMsgLen(msg_length_);
-    if (msg_length > NET_MSG_MAX_LENGTH)
+    auto msg_length = ToHostMessageLength(msg_length_);
+    if (msg_length > kNetMessageMaxLength)
     {
-        // TODO net_worker_.PostOut([]);
+        net_worker_.PostOut([this]() {
+            if (close_cb_)
+            {
+                close_cb_(std::make_error_code(ErrorCode::kReadOverLimit));
+            }
+        });
         return;
+    }
+    if (msg_length == 0)
+    {
+        ReadLength();
+        // TODO heartbeat
+        continue;
     }
     char *msg = new char[msg_length];
     asio::async_read(sock_, asio::buffer(msg, msg_length),
@@ -108,7 +121,6 @@ void NetConnector::ReadContent()
                          }
                          else
                          {
-
                              net_worker_.PostOut([this, ec]() {
                                  if (close_cb_)
                                  {

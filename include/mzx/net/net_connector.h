@@ -5,6 +5,7 @@
 #include <cstdint>
 #include <memory>
 
+#include <mzx/error.h>
 #include <mzx/net/net_define.h>
 
 namespace mzx
@@ -43,7 +44,7 @@ private:
     asio::ip::tcp::socket sock_;
     ReadCallback read_cb_;
     CloseCallback close_cb_;
-    NetMsgLenType msg_length_{0};
+    NetMessageLengthType msg_length_{0};
 };
 
 } // namespace mzx
