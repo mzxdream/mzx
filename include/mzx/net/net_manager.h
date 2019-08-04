@@ -20,9 +20,6 @@ public:
     NetManager &operator=(const NetManager &) = delete;
 
 public:
-    bool Init();
-    void Uninit();
-
     NetID AddAcceptor(const NetAcceptorConfInfo &info);
     void RemoveAcceptor(NetID id);
     NetID AddPeerConnector(const NetPeerConnectorConfInfo &info);
