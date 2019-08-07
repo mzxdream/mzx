@@ -9,6 +9,43 @@ namespace mzx
 
 using NetID = uint64_t;
 
+enum class NetError
+{
+    kSuccess,
+    kUnknown,
+};
+
+enum class NetInputType : char
+{
+    kSendMessage,
+    kStartListen,
+    kStopListen,
+    kConnect,
+    kDisconnect,
+};
+
+struct NetInput
+{
+    NetInputType type;
+    int fd;
+    char *data;
+    std::size_t size;
+};
+
+enum class NetOutputType : char
+{
+    kRecvMessage,
+    kConnect,
+    kNewConnect,
+    kDisconnect,
+};
+
+struct NetOutput
+{
+    NetOutputType type;
+    NetError error;
+};
+
 struct NetAcceptorConfInfo
 {
     std::string ip;
