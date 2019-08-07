@@ -74,9 +74,29 @@ std::string BackTrace()
 
 std::string ExecName()
 {
-    char exec_name[PATH_MAX] = {0};
-    readlink("/proc/self/exe", exec_name, PATH_MAX);
+    char exec_name[PATH_MAX + 1] = {0};
+    readlink("/proc/self/exe", exec_name,
+             sizeof(exec_name) / sizeof(exec_name[0]) - 1);
     return exec_name;
+}
+
+std::string Addr2Line(const char *exec_name, const char *addr)
+{
+    if (!exec_name || !addr)
+    {
+        return std::string();
+    }
+    std::stringstream ss;
+    ss << "addr2line -i -e " << exec_name << " " << addr;
+    auto *pfp = popen(ss.str().c_str(), "r");
+    if (!pfp)
+    {
+        return std::string();
+    }
+    char addr_info[PATH_MAX + 1] = {0};
+    fgets(addr_info, sizeof(addr_info) / sizeof(addr_info[0]) - 1, pfp);
+    pclose(pfp);
+    return addr_info;
 }
 
 } // namespace mzx
