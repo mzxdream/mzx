@@ -1,6 +1,7 @@
 #include <cstdlib>
 #include <cxxabi.h>
 #include <execinfo.h>
+#include <linux/limits.h>
 #include <memory>
 #include <sstream>
 #include <unistd.h>
@@ -69,6 +70,13 @@ std::string BackTrace()
     }
     ss << "backtrace end\n";
     return ss.str();
+}
+
+std::string ExecName()
+{
+    char exec_name[PATH_MAX] = {0};
+    readlink("/proc/self/exe", exec_name, PATH_MAX);
+    return exec_name;
 }
 
 } // namespace mzx

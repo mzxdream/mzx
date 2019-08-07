@@ -9,6 +9,7 @@ namespace mzx
 int CPUCount();
 std::string Demangle(const char *name);
 std::string BackTrace();
+std::string ExecName();
 
 } // namespace mzx
 
