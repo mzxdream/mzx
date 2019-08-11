@@ -4,14 +4,18 @@
 #include <atomic>
 #include <cstdlib>
 #include <functional>
+#include <type_traits>
 
 #include <mzx/logger.h>
 
 namespace mzx
 {
 
+template <typename T, bool pod = std::is_pod<T>::value>
+class SRSWQueue;
+
 template <typename T>
-class SRSWQueue final
+class SRSWQueue<T, false> final
 {
 public:
     explicit SRSWQueue(std::size_t max_size)
@@ -55,9 +59,9 @@ public:
     {
         if (write_index >= read_index)
         {
-            return max_size_ - 1 - write_index + read_index;
+            return max_size_ - write_index + read_index - 1;
         }
-        return read_index - 1 - write_index;
+        return read_index - write_index - 1;
     }
 
     std::size_t WriteAvailable() const
@@ -119,7 +123,7 @@ public:
     {
         MZX_CHECK(data != nullptr);
         auto write_index = write_index_.load(std::memory_order_acquire);
-        auto read_index = read_index_.load(memory_order_relaxed);
+        auto read_index = read_index_.load(std::memory_order_relaxed);
         if (write_index == read_index)
         {
             return false;
@@ -136,7 +140,7 @@ public:
     {
         MZX_CHECK(cb != nullptr && max_size != 0);
         auto write_index = write_index_.load(std::memory_order_acquire);
-        auto read_index = read_index_.load(memory_order_relaxed);
+        auto read_index = read_index_.load(std::memory_order_relaxed);
         auto read_avail = ReadAvailable(write_index, read_index);
         if (read_avail == 0)
         {
