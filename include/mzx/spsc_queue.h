@@ -1,5 +1,5 @@
-#ifndef __MZX_SRSW_QUEUE_H__
-#define __MZX_SRSW_QUEUE_H__
+#ifndef __MZX_SPSC_QUEUE_H__
+#define __MZX_SPSC_QUEUE_H__
 
 #include <atomic>
 #include <cstdlib>
@@ -11,64 +11,47 @@
 namespace mzx
 {
 
-template <typename T, bool pod = std::is_pod<T>::value>
-class SRSWQueue;
-
 template <typename T>
-class SRSWQueue<T, false> final
+class SPSCQueue final
 {
 public:
-    explicit SRSWQueue(std::size_t max_size)
+    explicit SPSCQueue(std::size_t max_size)
         : max_size_(max_size + 1)
     {
         MZX_CHECK(max_size_ > 1);
         data_ = static_cast<char *>(malloc(sizeof(T) * max_size_));
     }
-    ~SRSWQueue()
+
+    ~SPSCQueue()
     {
         T out;
         while (Pop(&out))
         {
         }
         free(data_);
-        data_ = nullptr;
     }
-    SRSWQueue(const SRSWQueue &) = delete;
-    SRSWQueue &operator=(const SRSWQueue &) = delete;
+
+    SPSCQueue(const SPSCQueue &) = delete;
+    SPSCQueue &operator=(const SPSCQueue &) = delete;
 
 public:
-    std::size_t ReadAvailable(std::size_t write_index,
-                              std::size_t read_index) const
-    {
-        if (write_index >= read_index)
-        {
-            return write_index - read_index;
-        }
-        return write_index + max_size_ - read_index;
-    }
-
     std::size_t ReadAvailable() const
     {
         auto write_index = write_index_.load(std::memory_order_acquire);
         auto read_index = read_index_.load(std::memory_order_relaxed);
-        return ReadAvailable(write_index, read_index);
-    }
-
-    std::size_t WriteAvailable(std::size_t write_index,
-                               std::size_t read_index) const
-    {
-        if (write_index >= read_index)
-        {
-            return max_size_ - write_index + read_index - 1;
-        }
-        return read_index - write_index - 1;
+        return ReadAvailable(write_index, read_index, max_size_);
     }
 
     std::size_t WriteAvailable() const
     {
         auto write_index = write_index_.load(std::memory_order_relaxed);
         auto read_index = read_index_.load(std::memory_order_acquire);
-        return WriteAvailable(write_index, read_index);
+        return WriteAvailable(write_index, read_index, max_size_);
+    }
+
+    bool MaxSize() const
+    {
+        return max_size_;
     }
 
     std::size_t NextIndex(std::size_t index)
@@ -89,34 +72,32 @@ public:
         {
             return false;
         }
-        new (Data(write_index)) T(data);
+        new (Data() + write_index) T(data);
         write_index_.store(next_index, std::memory_order_release);
         return true;
     }
 
-    std::size_t Write(std::function<void(T &)> cb, std::size_t max_size = -1)
+    std::size_t Product(std::function<void(T &)> cb,
+                        std::size_t count = (std::size_t)-1)
     {
-        MZX_CHECK(cb != nullptr && max_size != 0);
+        MZX_CHECK(cb != nullptr && count > 0);
         auto write_index = write_index_.load(std::memory_order_relaxed);
         auto read_index = read_index_.load(std::memory_order_acquire);
-        auto write_avail = WriteAvailable(write_index, read_index);
+        auto write_avail = WriteAvailable(write_index, read_index, max_size_);
         if (write_avail == 0)
         {
             return 0;
         }
-        if (max_size > write_avail)
+        count = std::min(count, write_avail);
+        for (std::size_t i = 0; i < count; ++i)
         {
-            max_size = write_avail;
-        }
-        for (std::size_t i = 0; i < max_size; ++i)
-        {
-            auto *data = Data(write_index);
-            data->T();
-            cb(*data);
+            auto &tmp = Data()[write_index];
+            tmp.T();
+            cb(tmp);
             write_index = NextIndex(write_index);
         }
         write_index_.store(write_index, std::memory_order_release);
-        return max_size;
+        return count;
     }
 
     bool Pop(T *data)
@@ -128,17 +109,18 @@ public:
         {
             return false;
         }
-        auto &tmp = Data(read_index);
-        *data = tmp;
+        auto &tmp = Data()[read_index];
+        *data = *tmp;
         tmp.~T();
-        read_index_.store(NextIndex(read_index), std::memory_order_release);
+        auto next_index = NextIndex(read_index);
+        read_index_.store(next_index, std::memory_order_release);
         return true;
     }
 
-    std::size_t Read(std::function<void(const T &)> cb,
-                     std::size_t max_size = -1)
+    std::size_t Consume(std::function<void(const T &)> cb,
+                        std::size_t count = (std::size_t)-1)
     {
-        MZX_CHECK(cb != nullptr && max_size != 0);
+        MZX_CHECK(cb != nullptr && count > 0);
         auto write_index = write_index_.load(std::memory_order_acquire);
         auto read_index = read_index_.load(std::memory_order_relaxed);
         auto read_avail = ReadAvailable(write_index, read_index);
@@ -146,25 +128,49 @@ public:
         {
             return 0;
         }
-        if (max_size > read_avail)
+        count = std::min(count, read_avail);
+        for (std::size_t i = 0; i < count; ++i)
         {
-            max_size = read_avail;
-        }
-        for (std::size_t i = 0; i < max_size; ++i)
-        {
-            auto *data = Data(read_index);
-            cb(*data);
-            data->~T();
+            auto &tmp = Data()[read_index];
+            cb(tmp);
+            tmp.~T();
             read_index = NextIndex(read_index);
         }
         read_index_.store(read_index, std::memory_order_release);
-        return read_avail;
+        return count;
     }
 
 private:
-    T *Data(std::size_t index)
+    T *Data()
     {
-        return static_cast<T *>(data_)[index];
+        return static_cast<T *>(data_);
+    }
+
+    const T *Data() const
+    {
+        return static_cast<const T *>(data_);
+    }
+
+    static std::size_t ReadAvailable(std::size_t write_index,
+                                     std::size_t read_index,
+                                     std::size_t max_size)
+    {
+        if (write_index >= read_index)
+        {
+            return write_index - read_index;
+        }
+        return write_index + max_size - read_index;
+    }
+
+    static std::size_t WriteAvailable(std::size_t write_index,
+                                      std::size_t read_index,
+                                      std::size_t max_size)
+    {
+        if (write_index >= read_index)
+        {
+            return max_size - write_index + read_index - 1;
+        }
+        return read_index - write_index - 1;
     }
 
 private:
