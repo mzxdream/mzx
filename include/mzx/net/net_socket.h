@@ -1,100 +1,35 @@
 #ifndef __MZX_NET_SOCKET_H__
 #define __MZX_NET_SOCKET_H__
 
-#include <fcntl.h>
-#include <unistd.h>
-
-#include <mzx/net/net_define.h>
+#include <mzx/net/net_address.h>
+#include <mzx/net/net_error.h>
 
 namespace mzx
 {
 
-inline int CreateTcpSocket(bool is_ipv6 = false, NetError *error = nullptr)
-{
-    int sock = socket(is_ipv6 ? PF_INET6 : PF_INET, SOCK_STREAM, 0);
-    if (error)
-    {
-        *error = sock == -1 ? NetError::kUnknown : NetError::kSuccess;
-    }
-    return sock;
-}
+using NetSocketID = int;
+constexpr NetSocketID kNetSocketIDInvalid = (NetSocketID)-1;
 
-inline NetError SetNonBlock(int sock)
+class NetSocket
 {
-    MZX_CHECK(sock != -1);
-    auto flags = fcntl(sock, F_GETFL, 0);
-    if (flags == -1)
-    {
-        return NetError::kUnknown;
-    }
-    flags |= O_NONBLOCK;
-    flags = fcntl(sock, F_SETFL, flags);
-    if (flags == -1)
-    {
-        return NetError::kUnknown;
-    }
-    return NetError::kSuccess;
-}
-
-inline NetError SetCloseOnExec(int sock)
-{
-    MZX_CHECK(sock != -1);
-    auto flags = fcntl(sock, F_GETFD, 0);
-    if (flags == -1)
-    {
-        return NetError::kUnknown;
-    }
-    flags |= FD_CLOEXEC;
-    flags = fcntl(sock, F_SETFD, flags);
-    if (flags == -1)
-    {
-        return NetError::kUnknown;
-    }
-    return NetError::kSuccess;
-}
-
-inline NetError Bind(int sock, const NetAddress &addr)
-{
-    MZX_CHECK(sock != -1);
-    if (bind(sock, addr.Address(), addr.Length()) == -1)
-    {
-        return NetError::kUnknown;
-    }
-    return NetError::kSuccess;
-}
-
-inline int CreateAcceptor(const NetAddress &addr, NetError *error = nullptr)
-{
-    int sock = CreateTcpSocket(addr.IsIPv6(), error);
-    if (sock == -1)
-    {
-        return sock;
-    }
-    NetError err = NetError::kSuccess;
-    do
-    {
-        err = SetNonBlock(sock);
-        if (err != NetError::kSuccess)
-        {
-            break;
-        }
-        err = SetCloseOnExec(sock);
-        if (err != NetError::kSuccess)
-        {
-            break;
-        }
-    } while (0);
-    if (err != NetError::kSuccess)
-    {
-        close(sock);
-        sock = -1;
-    }
-    if (error)
-    {
-        *error = err;
-    }
-    return sock;
-}
+public:
+    static NetSocketID CreateTcpSocket(bool is_ipv6 = false);
+    static void DestroySocket(NetSocketID sock);
+    static NetError SetNonBlock(NetSocketID sock);
+    static NetError SetCloseOnExec(NetSocketID sock);
+    static NetError Bind(NetSocketID sock, const NetAddress &addr);
+    static NetSocketID CreateTcpAcceptor(const NetAddress &addr,
+                                         NetError *error = nullptr);
+    static NetError SetReuseAddr(NetSocketID sock);
+    static NetError Listen(NetSocketID sock, int backlog = 128);
+    static NetSocketID Accept(NetSocketID sock, NetAddress *addr = nullptr,
+                              NetError *error = nullptr);
+    static NetError Connect(NetSocketID sock, const NetAddress &addr);
+    static int Read(NetSocketID sock, char *data, std::size_t size,
+                    NetError *error = nullptr);
+    static int Write(NetSocketID sock, const char *data, std::size_t size,
+                     NetError *error = nullptr);
+};
 
 } // namespace mzx
 
