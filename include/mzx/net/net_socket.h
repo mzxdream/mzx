@@ -1,8 +1,8 @@
 #ifndef __MZX_NET_SOCKET_H__
 #define __MZX_NET_SOCKET_H__
 
+#include <mzx/error.h>
 #include <mzx/net/net_address.h>
-#include <mzx/net/net_error.h>
 
 namespace mzx
 {
@@ -18,27 +18,25 @@ class NetSocket
 {
 public:
     static NetSocketID CreateTcpSocket(bool is_ipv6 = false,
-                                       NetError *error = nullptr,
-                                       int flags = 0);
+                                       Error *error = nullptr, int flags = 0);
     static NetSocketID CreateTcpSocket(const NetAddress &addr,
-                                       NetError *error = nullptr,
-                                       int flags = 0);
+                                       Error *error = nullptr, int flags = 0);
     static void DestroySocket(NetSocketID sock);
-    static NetError Bind(NetSocketID sock, const NetAddress &addr);
-    static NetError Listen(NetSocketID sock, int backlog = 128);
+    static Error Bind(NetSocketID sock, const NetAddress &addr);
+    static Error Listen(NetSocketID sock, int backlog = 128);
     static NetSocketID Accept(NetSocketID sock, int flags = 0,
-                              NetError *error = nullptr,
+                              Error *error = nullptr,
                               NetAddress *addr = nullptr);
-    static NetError Connect(NetSocketID sock, const NetAddress &addr);
+    static Error Connect(NetSocketID sock, const NetAddress &addr);
     static int Read(NetSocketID sock, char *data, std::size_t size,
-                    NetError *error = nullptr);
+                    Error *error = nullptr);
     static int Write(NetSocketID sock, const char *data, std::size_t size,
-                     NetError *error = nullptr);
+                     Error *error = nullptr);
 
-    static NetError SetNonBlock(NetSocketID sock);
-    static NetError SetCloseOnExec(NetSocketID sock);
-    static NetError SetReuseAddr(NetSocketID sock);
-    static NetError SetFlags(NetSocketID sock, int flags = 0);
+    static Error SetNonBlock(NetSocketID sock);
+    static Error SetCloseOnExec(NetSocketID sock);
+    static Error SetReuseAddr(NetSocketID sock);
+    static Error SetFlags(NetSocketID sock, int flags = 0);
 };
 
 } // namespace mzx

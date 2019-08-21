@@ -4,7 +4,10 @@
 #include <functional>
 
 #include <mzx/logger.h>
+#include <mzx/error.h>
 #include <mzx/net/net_define.h>
+#include <mzx/net/net_address.h>
+#include <mzx/net/net_buffer.h>
 
 namespace mzx
 {
@@ -14,7 +17,7 @@ struct NetAcceptorConf final
     NetAddress addr;
     std::function<void(NetConnectionID, const char *, std::size_t)> recv_cb;
     std::function<void(NetConnectionID, const NetAddress &)> connect_cb;
-    std::function<void(NetConnectionID, NetError)> disconnect_cb;
+    std::function<void(NetConnectionID, Error)> disconnect_cb;
 };
 
 class NetMaster;
@@ -43,14 +46,14 @@ public:
 public:
     void OnRecv(NetConnectionID connection_id, NetBuffer *buffer);
     void OnConnected(NetConnectionID connection_id, const NetAddress &addr);
-    void OnDisconnected(NetConnectionID connection_id, NetError error);
+    void OnDisconnected(NetConnectionID connection_id, Error error);
 
 private:
     NetConnectionID id_{kNetConnectionIDInvalid};
     int sock_{-1};
     std::function<void(NetConnectionID, const char *, std::size_t)> recv_cb_;
     std::function<void(NetConnectionID, const NetAddress &)> connect_cb_;
-    std::function<void(NetConnectionID, NetError)> disconnect_cb_;
+    std::function<void(NetConnectionID, Error)> disconnect_cb_;
 };
 
 } // namespace mzx

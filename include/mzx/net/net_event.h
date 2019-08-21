@@ -1,7 +1,10 @@
 #ifndef __MZX_NET_EVENT_H__
 #define __MZX_NET_EVENT_H__
 
+#include <mzx/error.h>
 #include <mzx/net/net_define.h>
+#include <mzx/net/net_buffer.h>
+#include <mzx/net/net_address.h>
 
 namespace mzx
 {
@@ -62,7 +65,7 @@ struct NetEventConnected
 
 struct NetEventDisconnected
 {
-    NetError error;
+    Error error;
 };
 
 struct NetOutputEvent
