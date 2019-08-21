@@ -7,50 +7,53 @@
 namespace mzx
 {
 
-NetSocketID NetSocket::CreateTcpSocket(bool is_ipv6)
+NetSocketID NetSocket::CreateTcpSocket(bool is_ipv6, NetError *error, int flags)
 {
-    return socket(is_ipv6 ? PF_INET6 : PF_INET, SOCK_STREAM, 0);
+    auto sock = socket(is_ipv6 ? PF_INET6 : PF_INET, SOCK_STREAM, 0);
+    if (sock == kNetSocketIDInvalid)
+    {
+        if (error)
+        {
+            *error = ToNetError(errno);
+        }
+        return kNetSocketIDInvalid;
+    }
+    auto err = SetFlags(sock, flags);
+    if (err != NetError::kSuccess)
+    {
+        if (error)
+        {
+            *error = ToNetError(errno);
+        }
+        DestroySocket(sock);
+        return kNetSocketIDInvalid;
+    }
+    return sock;
+}
+
+NetSocketID NetSocket::CreateTcpSocket(const NetAddress &addr, NetError *error,
+                                       int flags)
+{
+    auto sock = CreateTcpSocket(addr.IsIPv6(), error, flags);
+    if (sock != kNetSocketIDInvalid)
+    {
+        auto err = Bind(sock, addr);
+        if (err != NetError::kSuccess)
+        {
+            if (error)
+            {
+                *error = err;
+            }
+            DestroySocket(sock);
+            return kNetSocketIDInvalid;
+        }
+    }
+    return sock;
 }
 
 void NetSocket::DestroySocket(NetSocketID sock)
 {
     close(sock);
-}
-
-NetError NetSocket::SetNonBlock(NetSocketID sock)
-{
-    auto flags = fcntl(sock, F_GETFL, 0);
-    if (flags == -1)
-    {
-        MZX_ERR("get sock:", sock, " flags failed");
-        return NetError::kUnknown;
-    }
-    flags |= O_NONBLOCK;
-    flags = fcntl(sock, F_SETFL, flags);
-    if (flags == -1)
-    {
-        MZX_ERR("set sock:", sock, " flags failed");
-        return NetError::kUnknown;
-    }
-    return NetError::kSuccess;
-}
-
-NetError NetSocket::SetCloseOnExec(NetSocketID sock)
-{
-    auto flags = fcntl(sock, F_GETFD, 0);
-    if (flags == -1)
-    {
-        MZX_ERR("get sock:", sock, " flags failed");
-        return NetError::kUnknown;
-    }
-    flags |= FD_CLOEXEC;
-    flags = fcntl(sock, F_SETFD, flags);
-    if (flags == -1)
-    {
-        MZX_ERR("set sock:", sock, " flags failed");
-        return NetError::kUnknown;
-    }
-    return NetError::kSuccess;
 }
 
 NetError NetSocket::Bind(NetSocketID sock, const NetAddress &addr)
@@ -59,77 +62,23 @@ NetError NetSocket::Bind(NetSocketID sock, const NetAddress &addr)
     {
         MZX_ERR("bind sock:", sock, " ip:", addr.IP(), " port:", addr.Port(),
                 " failed");
-        return NetError::kUnknown;
-    }
-    return NetError::kSuccess;
-}
-
-static NetError SetTcpAcceptor(NetSocketID sock, const NetAddress &addr)
-{
-    NetError err = NetError::kSuccess;
-    if ((err = NetSocket::SetNonBlock(sock)) != NetError::kSuccess)
-    {
-        MZX_ERR("set sock:", sock, " non block failed");
-        return err;
-    }
-    if ((err = NetSocket::SetCloseOnExec(sock)) != NetError::kSuccess)
-    {
-        MZX_ERR("set sock:", sock, " close on exec failed");
-        return err;
-    }
-    if ((err = NetSocket::Bind(sock, addr)) != NetError::kSuccess)
-    {
-        MZX_ERR("bind sock:", sock, " failed ip:", addr.IP(),
-                " port:", addr.Port());
-        return err;
-    }
-    return err;
-}
-
-NetSocketID NetSocket::CreateTcpAcceptor(const NetAddress &addr,
-                                         NetError *error)
-{
-    auto sock = CreateTcpSocket(addr.IsIPv6());
-    if (sock == -1)
-    {
-        MZX_ERR("create sock failed ip:", addr.IP(), " port:", addr.Port());
-        return sock;
-    }
-    auto err = SetTcpAcceptor(sock, addr);
-    if (err != NetError::kSuccess)
-    {
-        MZX_ERR("set sock:", sock, " failed");
-        DestroySocket(sock);
-        return kNetSocketIDInvalid;
-    }
-    return sock;
-}
-
-NetError NetSocket::SetReuseAddr(NetSocketID sock)
-{
-    int enable = 1;
-    auto ret = setsockopt(sock, SOL_SOCKET, SO_REUSEADDR, &enable, sizeof(int));
-    if (ret < 0)
-    {
-        MZX_ERR("set sock:", sock, " reuse failed");
-        return NetError::kUnknown;
+        return ToNetError(errno);
     }
     return NetError::kSuccess;
 }
 
 NetError NetSocket::Listen(NetSocketID sock, int backlog)
 {
-    auto ret = listen(sock, backlog);
-    if (ret < 0)
+    if (listen(sock, backlog) == -1)
     {
         MZX_ERR("listen socket:", sock, " backlog:", backlog, " failed");
-        return NetError::kUnknown;
+        return ToNetError(errno);
     }
     return NetError::kSuccess;
 }
 
-NetSocketID NetSocket::Accept(NetSocketID sock, NetAddress *addr,
-                              NetError *error)
+NetSocketID NetSocket::Accept(NetSocketID sock, int flags, NetError *error,
+                              NetAddress *addr)
 {
     NetSocketID accept_sock = kNetSocketIDInvalid;
     if (addr)
@@ -147,6 +96,17 @@ NetSocketID NetSocket::Accept(NetSocketID sock, NetAddress *addr,
         {
             *error = ToNetError(errno);
         }
+        return kNetSocketIDInvalid;
+    }
+    auto err = SetFlags(sock, flags);
+    if (err != NetError::kSuccess)
+    {
+        if (error)
+        {
+            *error = ToNetError(errno);
+        }
+        DestroySocket(accept_sock);
+        return kNetSocketIDInvalid;
     }
     return accept_sock;
 }
@@ -188,6 +148,82 @@ int NetSocket::Write(NetSocketID sock, const char *data, std::size_t size,
         }
     }
     return ret;
+}
+
+NetError NetSocket::SetNonBlock(NetSocketID sock)
+{
+    auto flags = fcntl(sock, F_GETFL, 0);
+    if (flags == -1)
+    {
+        MZX_ERR("get sock:", sock, " flags failed");
+        return NetError::kUnknown;
+    }
+    flags |= O_NONBLOCK;
+    flags = fcntl(sock, F_SETFL, flags);
+    if (flags == -1)
+    {
+        MZX_ERR("set sock:", sock, " flags failed");
+        return NetError::kUnknown;
+    }
+    return NetError::kSuccess;
+}
+
+NetError NetSocket::SetCloseOnExec(NetSocketID sock)
+{
+    auto flags = fcntl(sock, F_GETFD, 0);
+    if (flags == -1)
+    {
+        MZX_ERR("get sock:", sock, " flags failed");
+        return NetError::kUnknown;
+    }
+    flags |= FD_CLOEXEC;
+    flags = fcntl(sock, F_SETFD, flags);
+    if (flags == -1)
+    {
+        MZX_ERR("set sock:", sock, " flags failed");
+        return NetError::kUnknown;
+    }
+    return NetError::kSuccess;
+}
+
+NetError NetSocket::SetReuseAddr(NetSocketID sock)
+{
+    int enable = 1;
+    auto ret = setsockopt(sock, SOL_SOCKET, SO_REUSEADDR, &enable, sizeof(int));
+    if (ret < 0)
+    {
+        MZX_ERR("set sock:", sock, " reuse failed");
+        return NetError::kUnknown;
+    }
+    return NetError::kSuccess;
+}
+
+NetError NetSocket::SetFlags(NetSocketID sock, int flags)
+{
+    if (flags <= 0)
+    {
+        return NetError::kSuccess;
+    }
+    NetError err = NetError::kSuccess;
+    if ((flags & kNetSocketFlagNonBlock) &&
+        (err = NetSocket::SetNonBlock(sock)) != NetError::kSuccess)
+    {
+        MZX_ERR("set sock:", sock, " non block failed");
+        return err;
+    }
+    if ((flags & kNetSocketFlagCloseOnExec) &&
+        (err = NetSocket::SetCloseOnExec(sock)) != NetError::kSuccess)
+    {
+        MZX_ERR("set sock:", sock, " close on exec failed");
+        return err;
+    }
+    if ((flags & kNetSocketFlagReuseAddr) &&
+        (err = NetSocket::SetReuseAddr(sock)) != NetError::kSuccess)
+    {
+        MZX_ERR("set sock:", sock, " reuse addr failed");
+        return err;
+    }
+    return err;
 }
 
 } // namespace mzx
