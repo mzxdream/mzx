@@ -2,7 +2,6 @@
 #define __MZX_LIST_H__
 
 #include <mzx/logger.h>
-#include <mzx/macro_const_overload.h>
 
 namespace mzx
 {
@@ -22,16 +21,24 @@ public:
     {
         return next_ != this;
     }
+
     const ListNode *Prev() const
     {
         return prev_;
     }
-    MZX_NON_CONST_OVERLOAD(Prev);
+    ListNode *Prev()
+    {
+        return prev_;
+    }
+
     const ListNode *Next() const
     {
         return next_;
     }
-    MZX_NON_CONST_OVERLOAD(Next);
+    ListNode *Next()
+    {
+        return next_;
+    }
 
     void Insert(ListNode *prev, ListNode *next)
     {
@@ -67,22 +74,38 @@ public:
     {
         return head_.next_;
     }
-    MZX_NON_CONST_OVERLOAD(Begin);
+    ListNode *Begin()
+    {
+        return head_.next_;
+    }
+
     const ListNode *End() const
     {
         return &head_;
     }
-    MZX_NON_CONST_OVERLOAD(End);
+    ListNode *End()
+    {
+        return &head_;
+    }
+
     const ListNode *RBegin() const
     {
         return head_.prev_;
     }
-    MZX_NON_CONST_OVERLOAD(RBegin);
+    ListNode *RBegin()
+    {
+        return head_.prev_;
+    }
+
     const ListNode *REnd() const
     {
         return &head_;
     }
-    MZX_NON_CONST_OVERLOAD(REnd);
+    ListNode *REnd()
+    {
+        return &head_;
+    }
+
     bool Empty() const
     {
         return head_.next_ == &head_;

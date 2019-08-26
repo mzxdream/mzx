@@ -46,6 +46,18 @@ inline NetConnectionID NextNetConnectionID(NetConnectionID id)
     return (id & 0xF0000000FFFFFFFF) + incr;
 }
 
+struct NetConf
+{
+    std::size_t work_count{1};
+    std::size_t connector_count{1024};
+    std::size_t input_event_count{2048};
+    std::size_t output_event_count{2048};
+    std::size_t input_buffer_count{2048};
+    std::size_t input_buffer_size{20480};
+    std::size_t output_buffer_count{2048};
+    std::size_t output_buffer_size{2048};
+};
+
 } // namespace mzx
 
 #endif
