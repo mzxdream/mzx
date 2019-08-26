@@ -24,7 +24,7 @@ struct NetEventSend
 
 struct NetEventAccept
 {
-    int accept_sock{-1};
+    int sock{-1};
 };
 
 struct NetEventPeerConnect

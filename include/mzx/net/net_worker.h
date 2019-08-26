@@ -34,6 +34,7 @@ struct NetPeerConnector
 {
     NetConnectionID id{kNetConnectionIDInvalid};
     NetSocketID sock{kNetSocketIDInvalid};
+    Error error;
     NetHandler handler;
 };
 
@@ -42,6 +43,7 @@ struct NetConnector
     NetConnectionID id{kNetConnectionIDInvalid};
     NetSocketID sock{kNetSocketIDInvalid};
     NetAcceptor *acceptor{nullptr};
+    Error error;
     NetHandler handler;
     ListNode list_link;
 };
@@ -69,15 +71,18 @@ public:
 private:
     // worker thread
     NetBuffer *GetFreeOutputBuffer(std::size_t size);
-    void FreeInputBuffer(NetBuffer *buffer);
-    std::size_t HandleInputEvent(std::function<void(const NetOutputEvent &)> cb,
-                                 std::size_t count = -1);
     bool AddOutputEvent(const NetInputEvent &event);
     NetConnector *GetFreeNetConnector(bool force = false);
     void FreeNetConnector(NetConnector *connector);
 
 private:
+    NetConnector *GetConnector(NetConnectionID id);
+    NetPeerConnector *GetPeerConnector(NetConnectionID id);
+    void SendTo(NetConnectionID id, NetBuffer *buffer);
+    void Disconnect(NetConnectionID id);
+    void FreeInputBuffer(NetBuffer *buffer);
     bool InitIOServer();
+    void HandleInputEvent();
     void Wakeup();
     void OnWakeup();
     void Run();

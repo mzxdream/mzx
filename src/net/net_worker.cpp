@@ -121,6 +121,171 @@ bool NetWorker::InputEventWriteAvailable() const
     return input_event_list_->WriteAvailable();
 }
 
+static bool EpollCtl(int efd, int fd, int pevents, int events, void *ptr)
+{
+    int op = EPOLL_CTL_MOD;
+    if (pevents & (EPOLLIN | EPOLLOUT))
+    {
+        if (!(events & (EPOLLIN | EPOLLOUT)))
+        {
+            op = EPOLL_CTL_DEL;
+        }
+    }
+    else
+    {
+        if (!(events & (EPOLLIN | EPOLLOUT)))
+        {
+            MZX_WARN("epoll:", efd, " ctl:", fd, " events:", events,
+                     " not has in or out event");
+            return false;
+        }
+        op = EPOLL_CTL_ADD;
+    }
+    epoll_event ee;
+    ee.events = events;
+    ee.data.ptr = ptr;
+    int ret = epoll_ctl(efd, op, fd, &ee);
+    if (ret < 0)
+    {
+        MZX_ERR("epoll:", efd, " ctl:", fd, " events:", events,
+                " failed ret:", ret);
+        return false;
+    }
+    return true;
+}
+
+void NetWorker::SendTo(NetConnectionID id, NetBuffer *buffer)
+{
+    auto connection_type = ParseNetConnectionType(id);
+    if (connection_type == NetConnectionType::kConnector)
+    {
+        auto *connector = GetConnector(id);
+        if (!connector)
+        {
+            FreeInputBuffer(buffer);
+        }
+        else
+        {
+            // TODO
+        }
+    }
+    else if (connection_type == NetConnectionType::kPeerConnector)
+    {
+    }
+    else
+    {
+        MZX_ERR("invalid connection type:", connection_type, " id:", id);
+    }
+}
+
+static bool OnConnectorEvents(NetWorker *worker, NetHandler *handler)
+{
+    return true;
+}
+
+static bool OnAcceptorEvents(NetWorker *worker, NetHandler *handler)
+{
+    return true;
+}
+
+static bool OnPeerConnectorEvents(NetWorker *worker, NetHandler *handler)
+{
+    return true;
+}
+
+void NetWorker::HandleInputEvent()
+{
+    NetInputEvent event;
+    auto size = input_event_list_->ReadAvailable();
+    while (size-- > 0 && input_event_list_->Pop(&event))
+    {
+        switch (event.type)
+        {
+            case NetInputEventType::kSend:
+            {
+                SendTo(event.id, event.data.send_event.buffer);
+            }
+            break;
+            case NetInputEventType::kAccept:
+            {
+                auto index = ParseNetConnectionIndex(event.id);
+                for (std::size_t i = acceptor_list_.size(); i <= index; ++i)
+                {
+                    auto *acceptor = new NetAcceptor();
+                    acceptor->id = kNetConnectionIDInvalid;
+                    acceptor_list_.emplace_back(acceptor);
+                }
+                auto *acceptor = acceptor_list_[index];
+                if (acceptor->id != kNetConnectionIDInvalid)
+                {
+                    MZX_ERR("acceptor is exist id:", acceptor->id,
+                            " event id:", event.id);
+                    break;
+                }
+                acceptor->id = event.id;
+                acceptor->sock = event.data.accept_event.sock;
+                acceptor->handler.events = EPOLLIN | EPOLLET;
+                acceptor->handler.event_cb = OnAcceptorEvents;
+                EpollCtl(epoll_fd_, acceptor->sock, 0, acceptor->handler.events,
+                         acceptor);
+            }
+            break;
+            case NetInputEventType::kPeerConnect:
+            {
+                auto index = ParseNetConnectionIndex(event.id);
+                for (std::size_t i = peer_connector_list_.size(); i <= index;
+                     ++i)
+                {
+                    auto *peer_connector = new NetPeerConnector();
+                    peer_connector->id = kNetConnectionIDInvalid;
+                    peer_connector_list_.emplace_back(peer_connector);
+                }
+                auto *peer_connector = peer_connector_list_[index];
+                if (peer_connector->id != kNetConnectionIDInvalid)
+                {
+                    MZX_ERR("peer connector is exist id:", peer_connector->id,
+                            " event id:", event.id);
+                    break;
+                }
+                auto &peer_connector_data = event.data.peer_connect_event;
+                auto sock = NetSocket::CreateTcpSocket(
+                    peer_connector_data.addr, nullptr,
+                    kNetSocketFlagNonBlock | kNetSocketFlagReuseAddr |
+                        kNetSocketFlagCloseOnExec);
+                if (sock == kNetSocketIDInvalid)
+                {
+                    MZX_ERR("create sock failed");
+                    break;
+                }
+                auto error = NetSocket::Connect(sock, peer_connector_data.addr);
+                if (error != Error::kSuccess)
+                {
+                    if (error == Error::kAgain)
+                    {
+                    }
+                }
+                peer_connector->id = event.id;
+                peer_connector->sock = event.data.accept_event.sock;
+                peer_connector->handler.events = EPOLLOUT | EPOLLET;
+                peer_connector->handler.event_cb = OnAcceptorEvents;
+                EpollCtl(epoll_fd_, peer_connector->sock, 0,
+                         peer_connector->handler.events, peer_connector);
+            }
+            break;
+            case NetInputEventType::kDisconnect:
+            {
+                Disconnect(event.id);
+            }
+            break;
+            default:
+            {
+                MZX_ERR("unknown input event type:", event.type);
+            }
+            break;
+        }
+    }
+}
+
 void NetWorker::Wakeup()
 {
     uint64_t tmp = 1;
@@ -182,258 +347,6 @@ void NetWorker::Run()
                 node = node->Next();
             }
         }
-        if (!active_handler_list_.Empty())
-        {
-            auto *end_node = active_handler_list_.RBegin();
-            ListNode *node = nullptr;
-            while (true)
-            {
-                node = active_handler_list_.PopFront();
-            }
-        }
-    }
-}
-
-void uv__io_poll(uv_loop_t *loop, int timeout)
-{
-    /* A bug in kernels < 2.6.37 makes timeouts larger than ~30 minutes
-     * effectively infinite on 32 bits architectures.  To avoid blocking
-     * indefinitely, we cap the timeout and poll again if necessary.
-     *
-     * Note that "30 minutes" is a simplification because it depends on
-     * the value of CONFIG_HZ.  The magic constant assumes CONFIG_HZ=1200,
-     * that being the largest value I have seen in the wild (and only once.)
-     */
-    static const int max_safe_timeout = 1789569;
-    struct epoll_event events[1024];
-    struct epoll_event *pe;
-    struct epoll_event e;
-    int real_timeout;
-    QUEUE *q;
-    uv__io_t *w;
-    sigset_t sigset;
-    sigset_t *psigset;
-    uint64_t base;
-    int have_signals;
-    int nevents;
-    int count;
-    int nfds;
-    int fd;
-    int op;
-    int i;
-
-    if (loop->nfds == 0)
-    {
-        assert(QUEUE_EMPTY(&loop->watcher_queue));
-        return;
-    }
-
-    memset(&e, 0, sizeof(e));
-
-    while (!QUEUE_EMPTY(&loop->watcher_queue))
-    {
-        q = QUEUE_HEAD(&loop->watcher_queue);
-        QUEUE_REMOVE(q);
-        QUEUE_INIT(q);
-
-        w = QUEUE_DATA(q, uv__io_t, watcher_queue);
-        assert(w->pevents != 0);
-        assert(w->fd >= 0);
-        assert(w->fd < (int)loop->nwatchers);
-
-        e.events = w->pevents;
-        e.data.fd = w->fd;
-
-        if (w->events == 0)
-            op = EPOLL_CTL_ADD;
-        else
-            op = EPOLL_CTL_MOD;
-
-        /* XXX Future optimization: do EPOLL_CTL_MOD lazily if we stop watching
-         * events, skip the syscall and squelch the events after epoll_wait().
-         */
-        if (epoll_ctl(loop->backend_fd, op, w->fd, &e))
-        {
-            if (errno != EEXIST)
-                abort();
-
-            assert(op == EPOLL_CTL_ADD);
-
-            /* We've reactivated a file descriptor that's been watched before.
-             */
-            if (epoll_ctl(loop->backend_fd, EPOLL_CTL_MOD, w->fd, &e))
-                abort();
-        }
-
-        w->events = w->pevents;
-    }
-
-    psigset = NULL;
-    if (loop->flags & UV_LOOP_BLOCK_SIGPROF)
-    {
-        sigemptyset(&sigset);
-        sigaddset(&sigset, SIGPROF);
-        psigset = &sigset;
-    }
-
-    assert(timeout >= -1);
-    base = loop->time;
-    count = 48; /* Benchmarks suggest this gives the best throughput. */
-    real_timeout = timeout;
-
-    for (;;)
-    {
-        /* See the comment for max_safe_timeout for an explanation of why
-         * this is necessary.  Executive summary: kernel bug workaround.
-         */
-        if (sizeof(int32_t) == sizeof(long) && timeout >= max_safe_timeout)
-            timeout = max_safe_timeout;
-
-        nfds = epoll_pwait(loop->backend_fd, events, ARRAY_SIZE(events),
-                           timeout, psigset);
-
-        /* Update loop->time unconditionally. It's tempting to skip the update
-         * when timeout == 0 (i.e. non-blocking poll) but there is no guarantee
-         * that the operating system didn't reschedule our process while in the
-         * syscall.
-         */
-        SAVE_ERRNO(uv__update_time(loop));
-
-        if (nfds == 0)
-        {
-            assert(timeout != -1);
-
-            if (timeout == 0)
-                return;
-
-            /* We may have been inside the system call for longer than |timeout|
-             * milliseconds so we need to update the timestamp to avoid drift.
-             */
-            goto update_timeout;
-        }
-
-        if (nfds == -1)
-        {
-            if (errno != EINTR)
-                abort();
-
-            if (timeout == -1)
-                continue;
-
-            if (timeout == 0)
-                return;
-
-            /* Interrupted by a signal. Update timeout and poll again. */
-            goto update_timeout;
-        }
-
-        have_signals = 0;
-        nevents = 0;
-
-        assert(loop->watchers != NULL);
-        loop->watchers[loop->nwatchers] = (void *)events;
-        loop->watchers[loop->nwatchers + 1] = (void *)(uintptr_t)nfds;
-        for (i = 0; i < nfds; i++)
-        {
-            pe = events + i;
-            fd = pe->data.fd;
-
-            /* Skip invalidated events, see uv__platform_invalidate_fd */
-            if (fd == -1)
-                continue;
-
-            assert(fd >= 0);
-            assert((unsigned)fd < loop->nwatchers);
-
-            w = loop->watchers[fd];
-
-            if (w == NULL)
-            {
-                /* File descriptor that we've stopped watching, disarm it.
-                 *
-                 * Ignore all errors because we may be racing with another
-                 * thread when the file descriptor is closed.
-                 */
-                epoll_ctl(loop->backend_fd, EPOLL_CTL_DEL, fd, pe);
-                continue;
-            }
-
-            /* Give users only events they're interested in. Prevents spurious
-             * callbacks when previous callback invocation in this loop has
-             * stopped the current watcher. Also, filters out events that users
-             * has not requested us to watch.
-             */
-            pe->events &= w->pevents | POLLERR | POLLHUP;
-
-            /* Work around an epoll quirk where it sometimes reports just the
-             * EPOLLERR or EPOLLHUP event.  In order to force the event loop to
-             * move forward, we merge in the read/write events that the watcher
-             * is interested in; uv__read() and uv__write() will then deal with
-             * the error or hangup in the usual fashion.
-             *
-             * Note to self: happens when epoll reports EPOLLIN|EPOLLHUP, the
-             * user reads the available data, calls uv_read_stop(), then
-             * sometime later calls uv_read_start() again.  By then, libuv has
-             * forgotten about the hangup and the kernel won't report EPOLLIN
-             * again because there's nothing left to read.  If anything, libuv
-             * is to blame here.  The current hack is just a quick bandaid; to
-             * properly fix it, libuv needs to remember the error/hangup event.
-             * We should get that for free when we switch over to edge-triggered
-             * I/O.
-             */
-            if (pe->events == POLLERR || pe->events == POLLHUP)
-                pe->events |= w->pevents &
-                              (POLLIN | POLLOUT | UV__POLLRDHUP | UV__POLLPRI);
-
-            if (pe->events != 0)
-            {
-                /* Run signal watchers last.  This also affects child process
-                 * watchers because those are implemented in terms of signal
-                 * watchers.
-                 */
-                if (w == &loop->signal_io_watcher)
-                    have_signals = 1;
-                else
-                    w->cb(loop, w, pe->events);
-
-                nevents++;
-            }
-        }
-
-        if (have_signals != 0)
-            loop->signal_io_watcher.cb(loop, &loop->signal_io_watcher, POLLIN);
-
-        loop->watchers[loop->nwatchers] = NULL;
-        loop->watchers[loop->nwatchers + 1] = NULL;
-
-        if (have_signals != 0)
-            return; /* Event loop should cycle now so don't poll again. */
-
-        if (nevents != 0)
-        {
-            if (nfds == ARRAY_SIZE(events) && --count != 0)
-            {
-                /* Poll for more events but don't block this time. */
-                timeout = 0;
-                continue;
-            }
-            return;
-        }
-
-        if (timeout == 0)
-            return;
-
-        if (timeout == -1)
-            continue;
-
-    update_timeout:
-        assert(timeout > 0);
-
-        real_timeout -= (loop->time - base);
-        if (real_timeout <= 0)
-            return;
-
-        timeout = real_timeout;
     }
 }
 
