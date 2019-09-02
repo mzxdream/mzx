@@ -60,8 +60,8 @@ public:
     // master thread
     bool Init(const NetConf &conf);
     void Uninit();
-    bool InputEventWriteAvailable() const;
-    NetBuffer *GetFreeInputBuffer(std::size_t size);
+    std::size_t InputEventWriteAvailable() const;
+    NetBuffer *GetFreeInputBuffer();
     void FreeOutputBuffer(NetBuffer *buffer);
     std::size_t
     HandleOutputEvent(std::function<void(const NetOutputEvent &)> cb,
@@ -90,10 +90,12 @@ private:
 private:
     int epoll_fd_{-1};
     int wakeup_fd_{-1};
+
     std::vector<NetConnector *> connector_list_;
     List connector_free_list_;
     std::vector<NetAcceptor *> acceptor_list_;
     std::vector<NetPeerConnector *> peer_connector_list_;
+
     List active_handler_list_;
     SPSCQueue<NetInputEvent> *input_event_list_;
     SPSCQueue<NetOutputEvent> *output_event_list_;

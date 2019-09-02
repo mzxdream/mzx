@@ -116,10 +116,37 @@ void NetWorker::Uninit()
     delete output_buffer_free_list_;
 }
 
-bool NetWorker::InputEventWriteAvailable() const
+std::size_t NetWorker::InputEventWriteAvailable() const
 {
     return input_event_list_->WriteAvailable();
 }
+
+NetBuffer *NetWorker::GetFreeInputBuffer()
+{
+    NetBuffer *buffer = nullptr;
+    input_buffer_free_list_->Pop(&buffer);
+    return buffer;
+}
+
+void NetWorker::FreeOutputBuffer(NetBuffer *buffer)
+{
+    output_buffer_free_list_->Push(buffer);
+}
+
+std::size_t
+NetWorker::HandleOutputEvent(std::function<void(const NetOutputEvent &)> cb,
+                             std::size_t count)
+{
+    MZX_CHECK(cb != nullptr);
+    return output_event_list_->Consume(cb, count);
+}
+
+bool NetWorker::AddInputEvent(const NetInputEvent &event)
+{
+    return input_event_list_->Push(event);
+}
+
+
 
 static bool EpollCtl(int efd, int fd, int pevents, int events, void *ptr)
 {
@@ -295,7 +322,7 @@ void NetWorker::Wakeup()
 void NetWorker::OnWakeup()
 {
     uint64_t tmp = 0;
-    read(wakeup_fd_, &tmp, sizeof(tmp));
+    (void)read(wakeup_fd_, &tmp, sizeof(tmp));
 }
 
 void NetWorker::Run()
@@ -308,7 +335,7 @@ void NetWorker::Run()
         {
             timeout = 0;
         }
-        // TODO
+        // TODO calculate timeout
         int nfds =
             epoll_wait(epoll_fd_, events, MZX_ARRAY_SIZE(events), timeout);
         if (nfds == -1)
