@@ -35,14 +35,14 @@ public:
     SPSCQueue &operator=(const SPSCQueue &) = delete;
 
 public:
-    std::size_t ReadAvailable() const
+    std::size_t ReadAvailable() const //only for read thread
     {
         auto write_index = write_index_.load(std::memory_order_acquire);
         auto read_index = read_index_.load(std::memory_order_relaxed);
         return ReadAvailable(write_index, read_index, max_size_);
     }
 
-    std::size_t WriteAvailable() const
+    std::size_t WriteAvailable() const //only for write thread
     {
         auto write_index = write_index_.load(std::memory_order_relaxed);
         auto read_index = read_index_.load(std::memory_order_acquire);
@@ -52,16 +52,6 @@ public:
     bool MaxSize() const
     {
         return max_size_;
-    }
-
-    std::size_t NextIndex(std::size_t index)
-    {
-        ++index;
-        while (index >= max_size_)
-        {
-            index -= max_size_;
-        }
-        return index;
     }
 
     bool Push(const T &data)
@@ -149,6 +139,16 @@ private:
     const T *Data() const
     {
         return static_cast<const T *>(data_);
+    }
+
+    std::size_t NextIndex(std::size_t index)
+    {
+        ++index;
+        while (index >= max_size_)
+        {
+            index -= max_size_;
+        }
+        return index;
     }
 
     static std::size_t ReadAvailable(std::size_t write_index,
