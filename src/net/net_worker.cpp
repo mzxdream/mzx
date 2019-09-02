@@ -146,7 +146,50 @@ bool NetWorker::AddInputEvent(const NetInputEvent &event)
     return input_event_list_->Push(event);
 }
 
+NetBuffer *NetWorker::GetFreeOutputBuffer()
+{
+    NetBuffer *buffer = nullptr;
+    output_buffer_free_list_->Pop(&buffer);
+    return nullptr;
+}
 
+NetConnector *NetWorker::GetFreeNetConnector()
+{
+    auto *node = connector_free_list_.PopFront();
+    if (!node)
+    {
+        return nullptr;
+    }
+    auto *connector = MZX_CONTAINER_OF(node, NetConnector, list_link);
+    MZX_CHECK(connector != nullptr);
+    connector->list_link.Erase();
+    return connector;
+}
+
+void NetWorker::FreeNetConnector(NetConnector *connector)
+{
+    MZX_CHECK(connector != nullptr);
+    connector->id = NextNetConnectionID(connector->id);
+    connector_free_list_.PushBack(&connector->list_link);
+}
+
+NetConnector *NetWorker::GetConnector(NetConnectionID id)
+{
+    MZX_CHECK(ParseNetConnectionType(id) == NetConnectionType::kConnector);
+    auto index = ParseNetConnectionIndex(id);
+    MZX_CHECK(index < connector_list_.size());
+    auto *connector = connector_list_[index];
+    if (connector->id != id)
+    {
+        return nullptr;
+    }
+    return connector;
+}
+
+NetPeerConnector *NetWorker::GetPeerConnector(NetConnectionID id)
+{
+    return nullptr;
+}
 
 static bool EpollCtl(int efd, int fd, int pevents, int events, void *ptr)
 {
@@ -184,24 +227,35 @@ static bool EpollCtl(int efd, int fd, int pevents, int events, void *ptr)
 void NetWorker::SendTo(NetConnectionID id, NetBuffer *buffer)
 {
     auto connection_type = ParseNetConnectionType(id);
-    if (connection_type == NetConnectionType::kConnector)
+    switch (connection_type)
     {
-        auto *connector = GetConnector(id);
-        if (!connector)
+        case NetConnectionType::kConnector:
         {
-            FreeInputBuffer(buffer);
+            auto *connector = GetConnector(id);
+            if (!connector)
+            {
+                FreeInputBuffer(buffer);
+            }
+            else
+            {
+                if (connector->write_buffer_list.empty())
+                {
+                    // Try write
+                }
+                //
+                connector->write_buffer_list.push_back(buffer);
+            }
         }
-        else
+        break;
+        case NetConnectionType::kPeerConnector:
         {
-            // TODO
         }
-    }
-    else if (connection_type == NetConnectionType::kPeerConnector)
-    {
-    }
-    else
-    {
-        MZX_ERR("invalid connection type:", connection_type, " id:", id);
+        break;
+        default:
+        {
+            MZX_ERR("invalid connection type:", connection_type, " id:", id);
+        }
+        break;
     }
 }
 

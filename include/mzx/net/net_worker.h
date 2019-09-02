@@ -1,6 +1,7 @@
 #ifndef __MZX_NET_WORKER_H__
 #define __MZX_NET_WORKER_H__
 
+#include <list>
 #include <vector>
 
 #include <mzx/data_structure/list.h>
@@ -34,6 +35,8 @@ struct NetPeerConnector
 {
     NetConnectionID id{kNetConnectionIDInvalid};
     NetSocketID sock{kNetSocketIDInvalid};
+    NetBuffer *read_buffer{nullptr};
+    std::list<NetBuffer *> write_buffer_list;
     Error error;
     NetHandler handler;
 };
@@ -43,6 +46,8 @@ struct NetConnector
     NetConnectionID id{kNetConnectionIDInvalid};
     NetSocketID sock{kNetSocketIDInvalid};
     NetAcceptor *acceptor{nullptr};
+    NetBuffer *read_buffer{nullptr};
+    std::list<NetBuffer *> write_buffer_list;
     Error error;
     NetHandler handler;
     ListNode list_link;
@@ -70,9 +75,9 @@ public:
 
 private:
     // worker thread
-    NetBuffer *GetFreeOutputBuffer(std::size_t size);
+    NetBuffer *GetFreeOutputBuffer();
     bool AddOutputEvent(const NetInputEvent &event);
-    NetConnector *GetFreeNetConnector(bool force = false);
+    NetConnector *GetFreeNetConnector();
     void FreeNetConnector(NetConnector *connector);
 
 private:
