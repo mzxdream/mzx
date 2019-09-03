@@ -51,7 +51,46 @@ void NetMaster::Uninit()
 
 NetConnectionID NetMaster::AddAcceptor(const NetAcceptorConf &conf)
 {
-    return kNetConnectionIDInvalid;
+    MZX_CHECK(acceptor_list_.size() < kNetConnectionMaxCount &&
+              worker_list_.size() > 0);
+    NetAddress bind_addr(conf.bind_port, conf.bind_ip.c_str(), conf.is_ipv6);
+    Error error = Error::kSuccess;
+    auto sock = NetSocket::CreateTcpSocket(bind_addr,
+                                           kNetSocketFlagNonBlock |
+                                               kNetSocketFlagCloseOnExec |
+                                               kNetSocketFlagReuseAddr,
+                                           &error);
+    if (sock == kNetSocketIDInvalid)
+    {
+        MZX_ERR("create sock failed error:", error);
+        return kNetSocketIDInvalid;
+    }
+    error = NetSocket::Listen(sock);
+    if (error != Error::kSuccess)
+    {
+        MZX_ERR("sock:", sock, " listen failed error:", error);
+        NetSocket::DestroySocket(sock);
+        return kNetConnectionIDInvalid;
+    }
+    auto *acceptor = new NetAcceptorInfo;
+    acceptor->id = InitNetConnectionID(NetConnectionType::kAcceptor, 0,
+                                       acceptor_list_.size());
+    acceptor->sock = sock;
+    acceptor->conf = conf;
+    acceptor_list_.emplace_back(acceptor);
+    NetInputEvent event;
+    event.type = NetInputEventType::kAccept;
+    event.id = acceptor->id;
+    event.data.accept_event.sock = sock;
+    for (std::size_t i = 0; i < worker_list_.size(); ++i)
+    {
+        if (!worker_list_[i]->AddInputEvent(event))
+        {
+            MZX_ERR("worker index:", i, " add input event failed");
+            continue;
+        }
+    }
+    return acceptor->id;
 }
 
 NetConnectionID NetMaster::AddPeerConnector(const NetPeerConnectorConf &conf)
@@ -84,17 +123,31 @@ bool NetMaster::Send(NetConnectionID id, const char *data, std::size_t size)
         MZX_FATAL("connection_type is unknown type:", connection_type);
     }
     MZX_CHECK(worker_index < worker_list_.size());
-    auto *buffer = worker_list_[worker_index]->GetFreeInputBuffer();
+    auto *worker = worker_list_[worker_index];
+    MZX_CHECK(worker != nullptr);
+    if (worker->InputEventWriteAvailable() == 0)
+    {
+        MZX_ERR("worker:", worker_index, " input event is full");
+        return false;
+    }
+    auto *buffer = worker->GetFreeInputBuffer();
     if (!buffer)
     {
         MZX_ERR("buffer is full worker:", worker_index);
         return false;
     }
-    MZX_CHECK(buffer->Size);
+    MZX_CHECK(buffer->WriteAvailable() >= size);
+    memcpy(buffer->WriteBegin(), data, size);
+    buffer->Write(size);
     NetInputEvent event;
     event.type = NetInputEventType::kSend;
     event.id = id;
-    event.data.send_event = buffer;
+    event.data.send_event.buffer = buffer;
+    if (!worker->AddInputEvent(event))
+    {
+        MZX_ERR("worker index:", worker_index, " add input event failed");
+        return false;
+    }
     return true;
 }
 
@@ -104,10 +157,22 @@ bool NetMaster::Disconnect(NetConnectionID id)
     MZX_CHECK(connection_type == NetConnectionType::kConnector);
     auto worker_index = ParseNetWorkerIndex(id);
     MZX_CHECK(worker_index < worker_list_.size());
+    auto *worker = worker_list_[worker_index];
+    MZX_CHECK(worker != nullptr);
+    if (worker->InputEventWriteAvailable() == 0)
+    {
+        MZX_ERR("worker:", worker_index, " input event is full");
+        return false;
+    }
     NetInputEvent event;
     event.type = NetInputEventType::kDisconnect;
     event.id = id;
-    return worker_list_[worker_index]->AddInputEvent(event);
+    if (!worker->AddInputEvent(event))
+    {
+        MZX_ERR("worker index:", worker_index, " add input event failed");
+        return false;
+    }
+    return true;
 }
 
 } // namespace mzx

@@ -7,7 +7,7 @@
 namespace mzx
 {
 
-NetSocketID NetSocket::CreateTcpSocket(bool is_ipv6, Error *error, int flags)
+NetSocketID NetSocket::CreateTcpSocket(bool is_ipv6, int flags, Error *error)
 {
     auto sock = socket(is_ipv6 ? PF_INET6 : PF_INET, SOCK_STREAM, 0);
     if (sock == kNetSocketIDInvalid)
@@ -31,10 +31,10 @@ NetSocketID NetSocket::CreateTcpSocket(bool is_ipv6, Error *error, int flags)
     return sock;
 }
 
-NetSocketID NetSocket::CreateTcpSocket(const NetAddress &addr, Error *error,
-                                       int flags)
+NetSocketID NetSocket::CreateTcpSocket(const NetAddress &addr, int flags,
+                                       Error *error)
 {
-    auto sock = CreateTcpSocket(addr.IsIPv6(), error, flags);
+    auto sock = CreateTcpSocket(addr.IsIPv6(), flags, error);
     if (sock != kNetSocketIDInvalid)
     {
         auto err = Bind(sock, addr);
@@ -77,8 +77,8 @@ Error NetSocket::Listen(NetSocketID sock, int backlog)
     return Error::kSuccess;
 }
 
-NetSocketID NetSocket::Accept(NetSocketID sock, int flags, Error *error,
-                              NetAddress *addr)
+NetSocketID NetSocket::Accept(NetSocketID sock, NetAddress *addr, int flags,
+                              Error *error)
 {
     NetSocketID accept_sock = kNetSocketIDInvalid;
     if (addr)

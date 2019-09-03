@@ -17,16 +17,15 @@ constexpr int kNetSocketFlagReuseAddr = 0x4;
 class NetSocket
 {
 public:
-    static NetSocketID CreateTcpSocket(bool is_ipv6 = false,
-                                       Error *error = nullptr, int flags = 0);
-    static NetSocketID CreateTcpSocket(const NetAddress &addr,
-                                       Error *error = nullptr, int flags = 0);
+    static NetSocketID CreateTcpSocket(bool is_ipv6 = false, int flags = 0,
+                                       Error *error = nullptr);
+    static NetSocketID CreateTcpSocket(const NetAddress &addr, int flags = 0,
+                                       Error *error = nullptr);
     static void DestroySocket(NetSocketID sock);
     static Error Bind(NetSocketID sock, const NetAddress &addr);
     static Error Listen(NetSocketID sock, int backlog = 128);
-    static NetSocketID Accept(NetSocketID sock, int flags = 0,
-                              Error *error = nullptr,
-                              NetAddress *addr = nullptr);
+    static NetSocketID Accept(NetSocketID sock, NetAddress *addr = nullptr,
+                              int flags = 0, Error *error = nullptr);
     static Error Connect(NetSocketID sock, const NetAddress &addr);
     static int Read(NetSocketID sock, char *data, std::size_t size,
                     Error *error = nullptr);

@@ -16,6 +16,7 @@ class NetWorker;
 
 struct NetAcceptorConf final
 {
+    bool is_ipv6{false};
     std::string bind_ip;
     short bind_port{0};
     std::function<void(NetConnectionID, const char *, std::size_t)> recv_cb;

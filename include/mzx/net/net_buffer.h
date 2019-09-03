@@ -66,6 +66,7 @@ public:
     void Write(std::size_t size)
     {
         MZX_CHECK(write_pos_ + size <= size);
+        write_pos_ += size;
     }
 
 private:
