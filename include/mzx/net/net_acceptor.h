@@ -3,22 +3,14 @@
 
 #include <functional>
 
-#include <mzx/logger.h>
 #include <mzx/error.h>
-#include <mzx/net/net_define.h>
+#include <mzx/logger.h>
 #include <mzx/net/net_address.h>
 #include <mzx/net/net_buffer.h>
+#include <mzx/net/net_define.h>
 
 namespace mzx
 {
-
-struct NetAcceptorConf final
-{
-    NetAddress addr;
-    std::function<void(NetConnectionID, const char *, std::size_t)> recv_cb;
-    std::function<void(NetConnectionID, const NetAddress &)> connect_cb;
-    std::function<void(NetConnectionID, Error)> disconnect_cb;
-};
 
 class NetMaster;
 

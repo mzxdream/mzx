@@ -3,6 +3,8 @@
 
 #include <cstdint>
 
+#include <mzx/logger.h>
+
 namespace mzx
 {
 
@@ -11,6 +13,8 @@ namespace mzx
  */
 using NetConnectionID = uint64_t;
 constexpr NetConnectionID kNetConnectionIDInvalid = (NetConnectionID)-1;
+constexpr std::size_t kNetWorkerMaxCount = 0xFFF;
+constexpr std::size_t kNetConnectionMaxCount = 0xFFFFFFFF;
 
 enum class NetConnectionType : char
 {
@@ -35,9 +39,12 @@ inline std::size_t ParseNetWorkerIndex(NetConnectionID id)
 }
 
 inline NetConnectionID InitNetConnectionID(NetConnectionType type,
+                                           std::size_t worker_index,
                                            std::size_t index)
 {
-    return (((NetConnectionID)type) << 56) + (index & 0xFFFFFFFF);
+    MZX_CHECK(worker_index <= kNetWorkerMaxCount &&
+              index <= kNetConnectionMaxCount);
+    return (((NetConnectionID)type) << 56) + (worker_index << 48) + index;
 }
 
 inline NetConnectionID NextNetConnectionID(NetConnectionID id)
@@ -48,7 +55,7 @@ inline NetConnectionID NextNetConnectionID(NetConnectionID id)
 
 struct NetConf
 {
-    std::size_t work_count{1};
+    std::size_t worker_count{1};
     std::size_t connector_count{1024};
     std::size_t input_event_count{2048};
     std::size_t output_event_count{2048};

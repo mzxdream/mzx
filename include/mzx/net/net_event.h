@@ -5,6 +5,7 @@
 #include <mzx/net/net_address.h>
 #include <mzx/net/net_buffer.h>
 #include <mzx/net/net_define.h>
+#include <mzx/net/net_socket.h>
 
 namespace mzx
 {
@@ -17,27 +18,27 @@ enum class NetInputEventType : char
     kDisconnect,
 };
 
-struct NetEventSend
+struct NetEventSend final
 {
-    NetBuffer *buffer{nullptr};
+    NetBuffer *buffer;
 };
 
 struct NetEventAccept
 {
-    int sock{-1};
+    NetSocketID sock;
 };
 
 struct NetEventPeerConnect
 {
     NetAddress addr;
-    int64_t outdate{-1};
-    int64_t retry_interval{-1};
-    bool auto_reconnect{false};
+    int64_t outdate;
+    int64_t retry_interval;
+    bool auto_reconnect;
 };
 
 struct NetInputEvent
 {
-    NetInputEventType type;
+    NetInputEventType type{NetInputEventType::kSend};
     NetConnectionID id{kNetConnectionIDInvalid};
     union {
         NetEventSend send_event;

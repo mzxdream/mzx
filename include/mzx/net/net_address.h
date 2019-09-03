@@ -13,10 +13,7 @@ namespace mzx
 class NetAddress final
 {
 public:
-    explicit NetAddress()
-    {
-        memset(&address_, 0, sizeof(address_));
-    }
+    NetAddress() = default;
     explicit NetAddress(short port, const char *ip = nullptr,
                         bool is_ipv6 = false)
     {
