@@ -9,6 +9,7 @@
 #include <mzx/net/net_define.h>
 #include <mzx/net/net_event.h>
 #include <mzx/net/net_socket.h>
+#include <mzx/data_structure/list.h>
 
 namespace mzx
 {
@@ -81,6 +82,7 @@ private:
     std::vector<NetWorker *> worker_list_;
     std::vector<NetAcceptorInfo *> acceptor_list_;
     std::vector<NetPeerConnectorInfo *> peer_connector_list_;
+    List 
     NetConf conf_;
 };
 
