@@ -33,6 +33,7 @@ struct NetAcceptorInfo final
 
 struct NetPeerConnectorConf final
 {
+    bool is_ipv6{false};
     std::string remote_ip;
     short remote_port{0};
     std::function<void(NetConnectionID, const char *, std::size_t)> recv_cb;

@@ -72,6 +72,7 @@ public:
     HandleOutputEvent(std::function<void(const NetOutputEvent &)> cb,
                       std::size_t count = -1);
     bool AddInputEvent(const NetInputEvent &event);
+    bool GetOutputEvent(NetOutputEvent *event);
 
 private:
     // worker thread

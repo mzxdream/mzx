@@ -56,7 +56,7 @@ enum class NetOutputEventType : char
 
 struct NetEventRecv
 {
-    NetBuffer *buffer{nullptr};
+    NetBuffer *buffer;
 };
 
 struct NetEventConnected

@@ -10,6 +10,7 @@ NetMaster::NetMaster()
 
 NetMaster::~NetMaster()
 {
+    Uninit();
 }
 
 bool NetMaster::Init(const NetConf &conf)
@@ -47,6 +48,42 @@ void NetMaster::Uninit()
         delete peer_connector;
     }
     peer_connector_list_.clear();
+}
+
+void NetMaster::Update()
+{
+    NetOutputEvent event;
+    for (std::size_t i = 0; i < worker_list_.size(); ++i)
+    {
+        auto *worker = worker_list_[i];
+        for (std::size_t j = 0; j < 1024; ++j)
+        {
+            if (!worker->GetOutputEvent(&event))
+            {
+                break;
+            }
+            switch (event.type)
+            {
+                case NetOutputEventType::kRecv:
+                {
+                }
+                break;
+                case NetOutputEventType::kConnected:
+                {
+                }
+                break;
+                case NetOutputEventType::kDisConnected:
+                {
+                }
+                break;
+                default:
+                {
+                    MZX_ERR("unknown output event type:", event.type);
+                }
+                break;
+            }
+        }
+    }
 }
 
 NetConnectionID NetMaster::AddAcceptor(const NetAcceptorConf &conf)
@@ -95,7 +132,33 @@ NetConnectionID NetMaster::AddAcceptor(const NetAcceptorConf &conf)
 
 NetConnectionID NetMaster::AddPeerConnector(const NetPeerConnectorConf &conf)
 {
-    return kNetConnectionIDInvalid;
+    MZX_CHECK(peer_connector_list_.size() < kNetConnectionMaxCount &&
+              worker_list_.size() > 0);
+    auto worker_index = peer_connector_list_.size() % worker_list_.size();
+    auto *worker = worker_list_[worker_index];
+    MZX_CHECK(worker != nullptr);
+    if (worker->InputEventWriteAvailable() == 0)
+    {
+        MZX_ERR("worker index:", worker_index, " input event is full");
+        return kNetConnectionIDInvalid;
+    }
+    auto *peer_connector = new NetPeerConnectorInfo;
+    peer_connector->id = InitNetConnectionID(NetConnectionType::kPeerConnector,
+                                             0, peer_connector_list_.size());
+    peer_connector->worker_index = worker_index;
+    peer_connector->conf = conf;
+    peer_connector_list_.emplace_back(peer_connector);
+    NetInputEvent event;
+    event.type = NetInputEventType::kPeerConnect;
+    event.id = peer_connector->id;
+    event.data.peer_connect_event.addr =
+        NetAddress(conf.remote_port, conf.remote_ip.c_str(), conf.is_ipv6);
+    if (!worker->AddInputEvent(event))
+    {
+        MZX_ERR("worker index:", worker_index, " add input event failed");
+        return kNetConnectionIDInvalid;
+    }
+    return peer_connector->id;
 }
 
 bool NetMaster::Send(NetConnectionID id, const char *data, std::size_t size)
