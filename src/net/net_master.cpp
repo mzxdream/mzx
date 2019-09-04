@@ -66,6 +66,50 @@ void NetMaster::Update()
             {
                 case NetOutputEventType::kRecv:
                 {
+                    auto handler_connection_type =
+                        ParseNetConnectionType(event.handler_id);
+                    auto handler_index =
+                        ParseNetConnectionIndex(event.handler_id);
+                    if (handler_connection_type == NetConnectionType::kAcceptor)
+                    {
+                        if (handler_index < acceptor_list_.size())
+                        {
+                            auto *acceptor = acceptor_list_[handler_index];
+                            if (acceptor->id == event.handler_id &&
+                                acceptor->conf.recv_cb)
+                            {
+                                (acceptor->conf.recv_cb)(
+                                    event.id,
+                                    event.data.recv_event.buffer->ReadBegin(),
+                                    event.data.recv_event.buffer
+                                        ->ReadAvailable());
+                            }
+                        }
+                    }
+                    else if (handler_connection_type ==
+                             NetConnectionType::kPeerConnector)
+                    {
+                        if (handler_index < peer_connector_list_.size())
+                        {
+                            auto *peer_connector =
+                                peer_connector_list_[handler_index];
+                            if (peer_connector->id == event.handler_id &&
+                                peer_connector->conf.recv_cb)
+                            {
+                                (peer_connector->conf.recv_cb)(
+                                    event.id,
+                                    event.data.recv_event.buffer->ReadBegin(),
+                                    event.data.recv_event.buffer
+                                        ->ReadAvailable());
+                            }
+                        }
+                    }
+                    else
+                    {
+                        MZX_ERR("unknown handler type:",
+                                handler_connection_type);
+                    }
+                    worker->FreeOutputBuffer(event.data.recv_event.buffer);
                 }
                 break;
                 case NetOutputEventType::kConnected:

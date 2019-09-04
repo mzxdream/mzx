@@ -71,7 +71,7 @@ struct NetEventDisconnected
 
 struct NetOutputEvent
 {
-    NetOutputEventType type;
+    NetOutputEventType type{NetOutputEventType::kRecv};
     NetConnectionID id{kNetConnectionIDInvalid};
     NetConnectionID handler_id{kNetConnectionIDInvalid};
     union {
