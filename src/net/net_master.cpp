@@ -50,13 +50,129 @@ void NetMaster::Uninit()
     peer_connector_list_.clear();
 }
 
+void NetMaster::HandleRecvEvent(NetWorker *worker, NetConnectionID id,
+                                NetConnectionID handler_id,
+                                const NetEventRecv &event)
+{
+    MZX_CHECK(worker != nullptr && event.buffer != nullptr);
+    auto handler_type = ParseNetConnectionType(handler_id);
+    auto handler_index = ParseNetConnectionIndex(handler_id);
+    if (handler_type == NetConnectionType::kAcceptor)
+    {
+        if (handler_index < acceptor_list_.size())
+        {
+            auto *acceptor = acceptor_list_[handler_index];
+            if (acceptor && acceptor->id == handler_id &&
+                acceptor->conf.recv_cb)
+            {
+                (acceptor->conf.recv_cb)(id, event.buffer->ReadBegin(),
+                                         event.buffer->ReadAvailable());
+            }
+        }
+    }
+    else if (handler_type == NetConnectionType::kPeerConnector)
+    {
+        if (handler_index < peer_connector_list_.size())
+        {
+            auto *peer_connector = peer_connector_list_[handler_index];
+            if (peer_connector && peer_connector->id == handler_id &&
+                peer_connector->conf.recv_cb)
+            {
+                (peer_connector->conf.recv_cb)(id, event.buffer->ReadBegin(),
+                                               event.buffer->ReadAvailable());
+            }
+        }
+    }
+    else
+    {
+        MZX_ERR("unknown handler type:", handler_type);
+    }
+    worker->FreeOutputBuffer(event.buffer);
+}
+
+void NetMaster::HandleConnectedEvent(NetWorker *worker, NetConnectionID id,
+                                     NetConnectionID handler_id,
+                                     const NetEventConnected &event)
+{
+    MZX_CHECK(worker != nullptr);
+    auto handler_type = ParseNetConnectionType(handler_id);
+    auto handler_index = ParseNetConnectionIndex(handler_id);
+    if (handler_type == NetConnectionType::kAcceptor)
+    {
+        if (handler_index < acceptor_list_.size())
+        {
+            auto *acceptor = acceptor_list_[handler_index];
+            if (acceptor && acceptor->id == handler_id &&
+                acceptor->conf.connect_cb)
+            {
+                (acceptor->conf.connect_cb)(id, event.addr.IP(),
+                                            event.addr.Port());
+            }
+        }
+    }
+    else if (handler_type == NetConnectionType::kPeerConnector)
+    {
+        if (handler_index < peer_connector_list_.size())
+        {
+            auto *peer_connector = peer_connector_list_[handler_index];
+            if (peer_connector && peer_connector->id == handler_id &&
+                peer_connector->conf.connect_cb)
+            {
+                (peer_connector->conf.connect_cb)(id, event.addr.IP(),
+                                                  event.addr.Port());
+            }
+        }
+    }
+    else
+    {
+        MZX_ERR("unknown handler type:", handler_type);
+    }
+}
+
+void NetMaster::HandleDisconnectedEvent(NetWorker *worker, NetConnectionID id,
+                                        NetConnectionID handler_id,
+                                        const NetEventDisconnected &event)
+{
+    MZX_CHECK(worker != nullptr);
+    auto handler_type = ParseNetConnectionType(handler_id);
+    auto handler_index = ParseNetConnectionIndex(handler_id);
+    if (handler_type == NetConnectionType::kAcceptor)
+    {
+        if (handler_index < acceptor_list_.size())
+        {
+            auto *acceptor = acceptor_list_[handler_index];
+            if (acceptor && acceptor->id == handler_id &&
+                acceptor->conf.disconnect_cb)
+            {
+                (acceptor->conf.disconnect_cb)(id, event.error);
+            }
+        }
+    }
+    else if (handler_type == NetConnectionType::kPeerConnector)
+    {
+        if (handler_index < peer_connector_list_.size())
+        {
+            auto *peer_connector = peer_connector_list_[handler_index];
+            if (peer_connector && peer_connector->id == handler_id &&
+                peer_connector->conf.disconnect_cb)
+            {
+                (peer_connector->conf.disconnect_cb)(id, event.error);
+            }
+        }
+    }
+    else
+    {
+        MZX_ERR("unknown handler type:", handler_type);
+    }
+}
+
 void NetMaster::Update()
 {
     NetOutputEvent event;
-    for (std::size_t i = 0; i < worker_list_.size(); ++i)
+    for (auto *worker : worker_list_)
     {
-        auto *worker = worker_list_[i];
-        for (std::size_t j = 0; j < 1024; ++j)
+        MZX_CHECK(worker != nullptr);
+        for (std::size_t j = 0; j < conf_.handle_count; ++j)
         {
             if (!worker->GetOutputEvent(&event))
             {
@@ -66,58 +182,20 @@ void NetMaster::Update()
             {
                 case NetOutputEventType::kRecv:
                 {
-                    auto handler_connection_type =
-                        ParseNetConnectionType(event.handler_id);
-                    auto handler_index =
-                        ParseNetConnectionIndex(event.handler_id);
-                    if (handler_connection_type == NetConnectionType::kAcceptor)
-                    {
-                        if (handler_index < acceptor_list_.size())
-                        {
-                            auto *acceptor = acceptor_list_[handler_index];
-                            if (acceptor->id == event.handler_id &&
-                                acceptor->conf.recv_cb)
-                            {
-                                (acceptor->conf.recv_cb)(
-                                    event.id,
-                                    event.data.recv_event.buffer->ReadBegin(),
-                                    event.data.recv_event.buffer
-                                        ->ReadAvailable());
-                            }
-                        }
-                    }
-                    else if (handler_connection_type ==
-                             NetConnectionType::kPeerConnector)
-                    {
-                        if (handler_index < peer_connector_list_.size())
-                        {
-                            auto *peer_connector =
-                                peer_connector_list_[handler_index];
-                            if (peer_connector->id == event.handler_id &&
-                                peer_connector->conf.recv_cb)
-                            {
-                                (peer_connector->conf.recv_cb)(
-                                    event.id,
-                                    event.data.recv_event.buffer->ReadBegin(),
-                                    event.data.recv_event.buffer
-                                        ->ReadAvailable());
-                            }
-                        }
-                    }
-                    else
-                    {
-                        MZX_ERR("unknown handler type:",
-                                handler_connection_type);
-                    }
-                    worker->FreeOutputBuffer(event.data.recv_event.buffer);
+                    HandleRecvEvent(worker, event.id, event.handler_id,
+                                    event.data.recv_event);
                 }
                 break;
                 case NetOutputEventType::kConnected:
                 {
+                    HandleConnectedEvent(worker, event.id, event.handler_id,
+                                         event.data.connected_event);
                 }
                 break;
                 case NetOutputEventType::kDisConnected:
                 {
+                    HandleDisconnectedEvent(worker, event.id, event.handler_id,
+                                            event.data.disconnected_event);
                 }
                 break;
                 default:

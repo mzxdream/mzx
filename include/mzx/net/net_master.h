@@ -7,6 +7,7 @@
 
 #include <mzx/error.h>
 #include <mzx/net/net_define.h>
+#include <mzx/net/net_event.h>
 #include <mzx/net/net_socket.h>
 
 namespace mzx
@@ -65,6 +66,16 @@ public:
     NetConnectionID AddPeerConnector(const NetPeerConnectorConf &conf);
     bool Send(NetConnectionID id, const char *data, std::size_t size);
     bool Disconnect(NetConnectionID id);
+
+private:
+    void HandleRecvEvent(NetWorker *worker, NetConnectionID id,
+                         NetConnectionID handler_id, const NetEventRecv &event);
+    void HandleConnectedEvent(NetWorker *worker, NetConnectionID id,
+                              NetConnectionID handler_id,
+                              const NetEventConnected &event);
+    void HandleDisconnectedEvent(NetWorker *worker, NetConnectionID id,
+                                 NetConnectionID handler_id,
+                                 const NetEventDisconnected &event);
 
 private:
     std::vector<NetWorker *> worker_list_;

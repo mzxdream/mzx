@@ -56,6 +56,7 @@ inline NetConnectionID NextNetConnectionID(NetConnectionID id)
 struct NetConf
 {
     std::size_t worker_count{1};
+    std::size_t handle_count{128};
     std::size_t connector_count{1024};
     std::size_t input_event_count{2048};
     std::size_t output_event_count{2048};
